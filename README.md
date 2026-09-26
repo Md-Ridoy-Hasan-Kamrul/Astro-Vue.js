@@ -336,5 +336,4 @@ git status
 ```
 
 **Avoid:** putting the project inside OneDrive sync of `.git`, force-closing during commit, editing `.git` files by hand.
-#   A s t r o - V u e . j s  
- 
+#
