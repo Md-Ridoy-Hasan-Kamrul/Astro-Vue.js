@@ -1,0 +1,91 @@
+---
+/**
+ * Hero glassy orb — plays /hero/orb-purple.webm exactly as authored.
+ * Black plate is knocked out with mix-blend-screen; color grade matches the liquid-glass spec.
+ */
+import {
+	ORB_COLOR_GRADE,
+	ORB_SCALE,
+	ORB_SOURCE_PATH,
+} from '../../lib/hero/glassyOrb';
+---
+
+<div class="hero-orb" aria-hidden="true">
+	<video
+		class="hero-orb__video"
+		data-hero-orb
+		src={ORB_SOURCE_PATH}
+		autoplay
+		loop
+		muted
+		playsinline
+		preload="auto"
+	>
+	</video>
+</div>
+
+<style define:vars={{ orbFilter: ORB_COLOR_GRADE, orbScale: ORB_SCALE }}>
+	.hero-orb {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		pointer-events: none;
+		overflow: visible;
+	}
+
+	.hero-orb__video {
+		display: block;
+		width: min(88%, 18rem);
+		max-width: none;
+		height: auto;
+		aspect-ratio: 1;
+		object-fit: cover;
+		mix-blend-mode: screen;
+		transform: scale(var(--orbScale));
+		transform-origin: center;
+		filter: var(--orbFilter);
+	}
+
+	@media (min-width: 40rem) {
+		.hero-orb__video {
+			width: min(82%, 22rem);
+		}
+	}
+
+	@media (min-width: 64rem) {
+		.hero-orb__video {
+			width: min(92%, 24rem);
+			translate: 6% 0;
+		}
+	}
+
+	@media (min-width: 90rem) {
+		.hero-orb__video {
+			width: min(90%, 26rem);
+			translate: 8% 0;
+		}
+	}
+</style>
+
+<script>
+	const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+	function syncOrbPlayback() {
+		for (const node of document.querySelectorAll('[data-hero-orb]')) {
+			if (!(node instanceof HTMLVideoElement)) continue;
+			node.muted = true;
+			node.playsInline = true;
+			if (motion.matches) {
+				node.pause();
+				continue;
+			}
+			const play = node.play();
+			if (play && typeof play.catch === 'function') play.catch(() => {});
+		}
+	}
+
+	syncOrbPlayback();
+	document.addEventListener('astro:page-load', syncOrbPlayback);
+	motion.addEventListener('change', syncOrbPlayback);
+</script>
