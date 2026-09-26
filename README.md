@@ -127,6 +127,7 @@ Learning project: **Astro** pages + **Vue** islands, with Tailwind, Zustand, Tan
 - [x] Crextio admin dashboard (`/dashboard`) + one-click admin login
 - [x] Lenis site-wide smooth scroll (persists as the app grows)
 - [x] Migrated interactive islands from Svelte → Vue 3
+- [x] Hero → partner page-transition (scroll fly-in) + PartnerAbout section
 - [ ] (Add next goals here when the owner shares them)
 
 ---

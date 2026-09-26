@@ -1,0 +1,15 @@
+---
+/**
+ * Hero → partner page transition — plane fly-across only (no text).
+ */
+import ScrollFlyIn from '../islands/ScrollFlyIn.vue';
+import { FLY_IMAGE_PATH } from '../../lib/transition/scrollFlyIn';
+---
+
+<section id="page-transition" class="relative bg-paper" aria-label="Page transition">
+	<ScrollFlyIn
+		client:visible
+		imageUrl={FLY_IMAGE_PATH}
+		imageAlt="Private jet flying across the screen"
+	/>
+</section>
