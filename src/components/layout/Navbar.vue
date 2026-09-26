@@ -209,7 +209,7 @@ const ink = '#111111';
   <header
     :class="isDark
       ? 'fixed inset-x-0 top-0 z-40 w-full max-w-[100vw] overflow-x-clip'
-      : 'sticky top-0 z-40 w-full max-w-[100vw] overflow-x-clip'"
+      : 'sticky top-0 z-40 w-full max-w-[100vw] overflow-x-clip bg-[#f4f5f7]'"
   >
     <!-- Desktop: Liquid Glass -->
     <div class="hidden px-[clamp(0.75rem,3vw,1.25rem)] pb-2 pt-3 min-[1021px]:block">
