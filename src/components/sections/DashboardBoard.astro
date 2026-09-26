@@ -1,0 +1,278 @@
+---
+/**
+ * Crextio dashboard home board — chrome lives in DashboardLayout.
+ */
+import SidebarAccordion from '../islands/dashboard/SidebarAccordion.vue';
+import TimeTracker from '../islands/dashboard/TimeTracker.vue';
+import OnboardingTasks from '../islands/dashboard/OnboardingTasks.vue';
+
+const weekBars = [
+	{ day: 'S', h: 28 },
+	{ day: 'M', h: 52 },
+	{ day: 'T', h: 40 },
+	{ day: 'W', h: 62 },
+	{ day: 'T', h: 48 },
+	{ day: 'F', h: 78, active: true, tip: '5h 23m' },
+	{ day: 'S', h: 34 },
+];
+
+const sidebarRows = [
+	{ id: 'pension', label: 'Pension contributions' },
+	{
+		id: 'devices',
+		label: 'Devices',
+		detail: {
+			image: '/dashboard/macbook.jpg',
+			title: 'MacBook Air',
+			subtitle: 'Version M1',
+		},
+	},
+	{ id: 'compensation', label: 'Compensation Summary' },
+	{ id: 'benefits', label: 'Employee Benefits' },
+];
+
+const tasks = [
+	{ id: '1', title: 'Interview', time: '9:00 am', icon: 'interview' as const, done: true },
+	{ id: '2', title: 'Team Meeting', time: '10:00 am', icon: 'team' as const, done: true },
+	{ id: '3', title: 'Project Update', time: '11:30 am', icon: 'project' as const, done: false },
+	{ id: '4', title: 'Discuss Q3 Goals', time: '1:00 pm', icon: 'goals' as const, done: false },
+	{ id: '5', title: 'HR Policy Review', time: '3:15 pm', icon: 'hr' as const, done: false },
+];
+---
+
+	<!-- Welcome + KPIs -->
+	<section class="mb-5 grid gap-4 min-[768px]:mb-6 min-[768px]:gap-5 min-[1021px]:grid-cols-[1.2fr_0.8fr] min-[1021px]:items-end">
+		<div>
+			<h1 class="mb-4 font-display text-[clamp(1.65rem,5.5vw,2.75rem)] font-semibold tracking-tight text-[#1c1c1c] min-[768px]:mb-5">
+				Welcome in, Nixtio
+			</h1>
+			<div class="flex flex-wrap gap-2">
+				<span
+					class="inline-flex min-w-[5.75rem] flex-1 items-center justify-between gap-2 rounded-full bg-[#1c1c1c] px-3 py-2 text-[0.7rem] font-medium text-white min-[375px]:min-w-[6.5rem] min-[375px]:text-xs min-[768px]:flex-none"
+				>
+					Interviews <strong class="font-semibold text-[#ffd74b]">15%</strong>
+				</span>
+				<span
+					class="inline-flex min-w-[5.75rem] flex-1 items-center justify-between gap-2 rounded-full bg-[#ffd74b] px-3 py-2 text-[0.7rem] font-medium text-[#1c1c1c] min-[375px]:min-w-[6.5rem] min-[375px]:text-xs min-[768px]:flex-none"
+				>
+					Hired <strong class="font-semibold">15%</strong>
+				</span>
+				<span
+					class="cx-stripe inline-flex min-w-[100%] flex-1 items-center justify-between gap-2 rounded-full px-3 py-2 text-[0.7rem] font-medium text-[#1c1c1c] min-[425px]:min-w-[9rem] min-[375px]:text-xs min-[768px]:max-w-[16rem] min-[768px]:flex-none"
+				>
+					Project time <strong class="font-semibold">60%</strong>
+				</span>
+				<span
+					class="inline-flex min-w-[5.5rem] flex-1 items-center justify-between gap-2 rounded-full border border-[#1c1c1c]/18 bg-transparent px-3 py-2 text-[0.7rem] font-medium text-[#1c1c1c] min-[375px]:text-xs min-[768px]:flex-none"
+				>
+					Output <strong class="font-semibold">10%</strong>
+				</span>
+			</div>
+		</div>
+
+		<div class="flex flex-wrap items-end justify-start gap-4 min-[375px]:gap-6 min-[1021px]:justify-end">
+			<div class="flex items-center gap-2 min-[375px]:gap-2.5">
+				<span class="grid size-9 place-items-center rounded-full bg-white text-[#1c1c1c] shadow-sm min-[375px]:size-10" aria-hidden="true">
+					<svg class="size-4" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+						><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path
+							d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+							stroke-linecap="round"></path></svg
+					>
+				</span>
+				<div>
+					<p class="m-0 text-xl font-semibold tracking-tight min-[375px]:text-2xl">78</p>
+					<p class="m-0 text-[0.65rem] text-[#6b6b6b] min-[375px]:text-xs">Employee</p>
+				</div>
+			</div>
+			<div class="flex items-center gap-2 min-[375px]:gap-2.5">
+				<span class="grid size-9 place-items-center rounded-full bg-white text-[#1c1c1c] shadow-sm min-[375px]:size-10" aria-hidden="true">
+					<svg class="size-4" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+						><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path
+							d="M19 8v6M22 11h-6"
+							stroke-linecap="round"></path></svg
+					>
+				</span>
+				<div>
+					<p class="m-0 text-xl font-semibold tracking-tight min-[375px]:text-2xl">56</p>
+					<p class="m-0 text-[0.65rem] text-[#6b6b6b] min-[375px]:text-xs">Hirings</p>
+				</div>
+			</div>
+			<div class="flex items-center gap-2 min-[375px]:gap-2.5">
+				<span class="grid size-9 place-items-center rounded-full bg-white text-[#1c1c1c] shadow-sm min-[375px]:size-10" aria-hidden="true">
+					<svg class="size-4" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+						><rect x="3" y="4" width="18" height="14" rx="2"></rect><path d="M8 21h8M12 18v3" stroke-linecap="round"></path></svg
+					>
+				</span>
+				<div>
+					<p class="m-0 text-xl font-semibold tracking-tight min-[375px]:text-2xl">203</p>
+					<p class="m-0 text-[0.65rem] text-[#6b6b6b] min-[375px]:text-xs">Projects</p>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- Main grid — desktop ≥1021 unchanged; laptop/tablet 2-col; mobile 1-col -->
+	<div
+		class="grid grid-cols-1 gap-3 min-[375px]:gap-4 min-[768px]:grid-cols-2 min-[1021px]:grid-cols-[0.95fr_1.05fr_1.05fr_0.95fr] min-[1021px]:grid-rows-[auto_1fr]"
+	>
+		<!-- Profile -->
+		<article
+			class="relative overflow-hidden rounded-[1.35rem] bg-white shadow-[0_18px_40px_rgb(28_28_28_/0.06)] min-[375px]:rounded-[1.75rem] min-[768px]:row-span-2 min-[1021px]:col-start-1 min-[1021px]:row-span-1 min-[1021px]:row-start-1"
+		>
+			<img
+				src="/dashboard/lora.jpg"
+				alt="Lora Piterson"
+				class="aspect-[5/4] w-full object-cover min-[425px]:aspect-[4/5] min-[768px]:aspect-auto min-[768px]:h-full min-[768px]:min-h-[18rem] min-[1021px]:min-h-[22rem]"
+				width="640"
+				height="800"
+			/>
+			<div
+				class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent p-4 pt-14 text-white min-[375px]:p-5 min-[375px]:pt-16"
+			>
+				<p class="m-0 text-base font-semibold min-[375px]:text-lg">Lora Piterson</p>
+				<p class="m-0 text-xs text-white/75 min-[375px]:text-sm">UX/UI Designer</p>
+			</div>
+			<span
+				class="absolute bottom-4 right-4 rounded-full border border-white/40 bg-white/85 px-3 py-1 text-xs font-semibold text-[#1c1c1c] shadow backdrop-blur-sm min-[375px]:bottom-5 min-[375px]:right-5 min-[375px]:px-3.5 min-[375px]:py-1.5 min-[375px]:text-sm"
+			>
+				$1,200
+			</span>
+		</article>
+
+		<!-- Progress -->
+		<article
+			class="relative rounded-[1.35rem] bg-white p-4 shadow-[0_18px_40px_rgb(28_28_28_/0.06)] min-[375px]:rounded-[1.75rem] min-[375px]:p-5 min-[1021px]:col-start-2 min-[1021px]:row-start-1"
+		>
+			<button
+				type="button"
+				class="absolute right-3 top-3 grid size-8 place-items-center rounded-full border border-[#e8e4dc] bg-white text-[#1c1c1c] min-[375px]:right-4 min-[375px]:top-4"
+				aria-label="Open work time"
+			>
+				<svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+					><path d="M7 17L17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"></path></svg
+				>
+			</button>
+			<p class="m-0 text-sm font-medium text-[#6b6b6b]">Progress</p>
+			<p class="m-0 mt-1 text-[1.75rem] font-semibold tracking-tight text-[#1c1c1c] min-[375px]:text-[2rem]">6.1 h</p>
+			<p class="mb-4 mt-0.5 text-sm text-[#6b6b6b] min-[375px]:mb-5">Work Time this week</p>
+			<div class="flex h-28 items-end justify-between gap-1.5 px-0.5 min-[375px]:h-36 min-[375px]:gap-2.5 min-[375px]:px-1">
+				{
+					weekBars.map((bar) => (
+						<div class="relative flex h-full flex-1 flex-col items-center justify-end gap-1.5 min-[375px]:gap-2">
+							{bar.active && bar.tip ? (
+								<span class="absolute top-0 z-10 rounded-full bg-[#1c1c1c] px-1.5 py-0.5 text-[0.6rem] font-medium text-white min-[375px]:px-2 min-[375px]:text-[0.65rem]">
+									{bar.tip}
+								</span>
+							) : null}
+							<div
+								class:list={[
+									'w-full max-w-6 rounded-full min-[375px]:max-w-8',
+									bar.active ? 'bg-[#ffd74b]' : 'bg-[#2a2a2a]',
+								]}
+								style={`height:${bar.h}%`}
+							/>
+							<span class="text-[0.65rem] text-[#6b6b6b] min-[375px]:text-[0.7rem]">{bar.day}</span>
+						</div>
+					))
+				}
+			</div>
+		</article>
+
+		<!-- Time tracker -->
+		<div class="min-[1021px]:col-start-3 min-[1021px]:row-start-1">
+			<TimeTracker client:visible />
+		</div>
+
+		<!-- Onboarding % -->
+		<article
+			class="flex min-h-[10rem] flex-col justify-between rounded-[1.35rem] bg-white p-4 shadow-[0_18px_40px_rgb(28_28_28_/0.06)] min-[375px]:rounded-[1.75rem] min-[375px]:p-5 min-[1021px]:col-start-4 min-[1021px]:row-start-1"
+		>
+			<div>
+				<p class="m-0 text-sm text-[#6b6b6b]">Onboarding</p>
+				<p class="mt-1 m-0 text-3xl font-semibold tracking-tight text-[#1c1c1c]">18%</p>
+			</div>
+			<div class="mt-6">
+				<p class="mb-2 text-xs font-medium text-[#6b6b6b]">Task</p>
+				<div class="flex h-3 overflow-hidden rounded-full bg-[#ece8e0]">
+					<span class="h-full w-[30%] bg-[#ffd74b]"></span>
+					<span class="h-full w-[25%] bg-[#1c1c1c]"></span>
+					<span class="h-full w-[45%] bg-transparent"></span>
+				</div>
+				<div class="mt-2 flex justify-between text-[0.65rem] text-[#6b6b6b]">
+					<span>30%</span><span>25%</span><span>0%</span>
+				</div>
+			</div>
+		</article>
+
+		<!-- Sidebar accordion -->
+		<div
+			class="rounded-[1.35rem] bg-white px-3 py-1 shadow-[0_18px_40px_rgb(28_28_28_/0.06)] min-[375px]:rounded-[1.75rem] min-[375px]:px-4 min-[375px]:py-2 min-[768px]:col-span-2 min-[1021px]:col-span-1 min-[1021px]:col-start-1 min-[1021px]:row-start-2"
+		>
+			<SidebarAccordion client:visible rows={sidebarRows} />
+		</div>
+
+		<!-- Calendar -->
+		<article
+			class="flex flex-col rounded-[1.35rem] bg-white p-4 shadow-[0_18px_40px_rgb(28_28_28_/0.06)] min-[375px]:rounded-[1.75rem] min-[375px]:p-5 min-[768px]:col-span-2 min-[1021px]:col-span-2 min-[1021px]:col-start-2 min-[1021px]:row-start-2"
+		>
+			<div class="mb-3 flex items-center justify-between gap-3 min-[375px]:mb-4">
+				<div>
+					<p class="m-0 text-sm font-semibold text-[#1c1c1c]">September 2024</p>
+					<p class="m-0 text-xs text-[#6b6b6b]">Week of Mon 22 – Sat 27</p>
+				</div>
+			</div>
+			<div
+				class="mb-3 hidden grid-cols-[2.5rem_repeat(6,1fr)] gap-1 text-center text-[0.65rem] text-[#6b6b6b] min-[425px]:grid min-[768px]:grid-cols-[3rem_repeat(6,1fr)] min-[768px]:text-[0.7rem]"
+			>
+				<span></span>
+				<span>Mon 22</span><span>Tue 23</span><span>Wed 24</span><span>Thu 25</span><span>Fri 26</span
+				><span>Sat 27</span>
+			</div>
+			<div class="relative grid flex-1 grid-cols-1 gap-2 text-xs text-[#6b6b6b] min-[425px]:grid-cols-[2.5rem_1fr] min-[768px]:grid-cols-[3rem_1fr]">
+				<div class="hidden flex-col justify-between py-1 min-[425px]:flex">
+					<span>8:00</span>
+					<span>9:00</span>
+					<span>10:00</span>
+					<span>11:00</span>
+				</div>
+				<div class="relative flex min-h-[12rem] flex-col gap-3 rounded-[1.1rem] bg-[#f7f5ef] p-3 min-[425px]:min-h-[14rem] min-[425px]:p-0 min-[768px]:rounded-[1.25rem]">
+					<div class="relative w-full rounded-[1rem] bg-[#1c1c1c] p-3 text-white min-[425px]:absolute min-[425px]:left-[4%] min-[425px]:top-[12%] min-[425px]:w-[42%] min-[425px]:rounded-[1.1rem]">
+						<p class="m-0 text-[0.8rem] font-semibold">Weekly Team Sync</p>
+						<p class="m-0 text-[0.65rem] text-white/60">8:30 – 9:30</p>
+						<div class="mt-2 flex -space-x-2">
+							<span class="size-6 rounded-full border-2 border-[#1c1c1c] bg-[#ffd74b]"></span>
+							<span class="size-6 rounded-full border-2 border-[#1c1c1c] bg-[#8ecae6]"></span>
+							<span class="size-6 rounded-full border-2 border-[#1c1c1c] bg-[#adb5bd]"></span>
+						</div>
+					</div>
+					<div
+						class="relative w-full rounded-[1rem] border border-[#e8e4dc] bg-white p-3 text-[#1c1c1c] min-[425px]:absolute min-[425px]:bottom-[10%] min-[425px]:left-[48%] min-[425px]:w-[46%] min-[425px]:rounded-[1.1rem]"
+					>
+						<p class="m-0 text-[0.8rem] font-semibold">Onboarding Session</p>
+						<p class="m-0 text-[0.65rem] text-[#6b6b6b]">10:30 – 11:30</p>
+						<div class="mt-2 flex -space-x-2">
+							<span class="size-6 rounded-full border-2 border-white bg-[#ffd74b]"></span>
+							<span class="size-6 rounded-full border-2 border-white bg-[#adb5bd]"></span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</article>
+
+		<!-- Onboarding tasks -->
+		<div class="min-[768px]:col-span-2 min-[1021px]:col-span-1 min-[1021px]:col-start-4 min-[1021px]:row-start-2">
+			<OnboardingTasks client:visible tasks={tasks} />
+		</div>
+	</div>
+
+<style>
+	.cx-stripe {
+		background: repeating-linear-gradient(
+			-45deg,
+			#ece8e0,
+			#ece8e0 6px,
+			#f7f5ef 6px,
+			#f7f5ef 12px
+		);
+	}
+</style>

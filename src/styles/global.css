@@ -1,0 +1,361 @@
+@import "tailwindcss";
+
+@theme {
+	--font-display: "Syne", system-ui, sans-serif;
+	--font-body: "Figtree Variable", "Figtree", system-ui, sans-serif;
+	--font-mono: "Space Mono", ui-monospace, monospace;
+	/* Shared project cursors — use these wherever a cursor is needed */
+	--cursor-site-default: url("/cursors/default.svg") 16 16, auto;
+	--cursor-site-pointer: url("/cursors/pointer.svg") 16 16, pointer;
+	--cursor-site-text: url("/cursors/text.svg") 16 16, text;
+	--color-ink: #14212b;
+	--color-ink-soft: #3a4a56;
+	--color-mist: #eef3f5;
+	--color-paper: #f7fafb;
+	--color-sea: #1a6b73;
+	--color-sea-deep: #0f454c;
+	--color-foam: #c8dde1;
+	--color-sand: #e8dcc8;
+	--color-accent: #c47a2c;
+	--color-line: rgb(20 33 43 / 0.12);
+	--color-hero: #f4f8f9;
+	--color-hero-soft: #dce9eb;
+}
+
+@layer base {
+	html {
+		scroll-behavior: auto;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		html {
+			scroll-behavior: auto;
+		}
+
+		*,
+		*::before,
+		*::after {
+			animation-duration: 0.01ms !important;
+			animation-iteration-count: 1 !important;
+			transition-duration: 0.01ms !important;
+		}
+	}
+
+	body {
+		min-height: 100%;
+		font-family: var(--font-body);
+		font-size: 1.0625rem;
+		line-height: 1.6;
+		color: var(--color-ink);
+		cursor: var(--cursor-site-default);
+		background:
+			radial-gradient(120% 80% at 100% 0%, rgb(26 107 115 / 0.12), transparent 55%),
+			radial-gradient(90% 60% at 0% 40%, rgb(196 122 44 / 0.08), transparent 50%),
+			linear-gradient(180deg, var(--color-mist) 0%, var(--color-paper) 40%, #e6eef1 100%);
+		background-attachment: fixed;
+	}
+
+	a,
+	button,
+	[role="button"],
+	[role="tab"],
+	summary,
+	label[for],
+	.cursor-site-pointer {
+		cursor: var(--cursor-site-pointer);
+	}
+
+	input,
+	textarea,
+	select,
+	[contenteditable="true"],
+	.cursor-site-text {
+		cursor: var(--cursor-site-text);
+	}
+
+	:disabled,
+	[aria-disabled="true"] {
+		cursor: not-allowed;
+	}
+
+	.cursor-site-default {
+		cursor: var(--cursor-site-default);
+	}
+
+	/* Map common Tailwind cursor utilities to the project cursors */
+	.cursor-pointer,
+	.cursor-grab,
+	.cursor-grabbing {
+		cursor: var(--cursor-site-pointer);
+	}
+
+	.cursor-text {
+		cursor: var(--cursor-site-text);
+	}
+
+	.cursor-auto,
+	.cursor-default {
+		cursor: var(--cursor-site-default);
+	}
+
+	img {
+		display: block;
+		max-width: 100%;
+	}
+
+	a {
+		color: inherit;
+	}
+}
+
+@keyframes rise {
+	from {
+		opacity: 0;
+		transform: translateY(1.25rem);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes drift {
+	from {
+		transform: translateY(0);
+	}
+	to {
+		transform: translateY(-0.6rem);
+	}
+}
+
+/* Liquid Glass Button — shared CTA (Framer LiquidGlassButtons port) */
+.liquid-glass-btn {
+	--lg-radius: 999px;
+	--lg-padding: 0.75rem 1.75rem;
+	--lg-blur: 14px;
+	--lg-text: #141419;
+	--lg-tint: #ffffff;
+	--lg-tint-alpha: 0.12;
+	--lg-focus: #1a6b73;
+	--lg-text-shadow: 0 1px 0 rgb(255 255 255 / 0.35);
+
+	appearance: none;
+	position: relative;
+	display: inline-flex;
+	max-width: 100%;
+	min-width: 3rem;
+	min-height: 3rem;
+	padding: 0;
+	border: 0;
+	border-radius: var(--lg-radius);
+	background: none;
+	color: var(--lg-text);
+	font: inherit;
+	font-weight: 600;
+	line-height: 1.25;
+	text-decoration: none;
+	vertical-align: middle;
+	cursor: var(--cursor-site-pointer);
+	user-select: none;
+	outline: none;
+	-webkit-tap-highlight-color: transparent;
+	touch-action: manipulation;
+}
+
+.liquid-glass-btn--sm {
+	--lg-padding: 0.5rem 1rem;
+	min-height: 2.25rem;
+	min-width: 2.25rem;
+	font-size: 0.8125rem;
+}
+
+.liquid-glass-btn *,
+.liquid-glass-btn *::before,
+.liquid-glass-btn *::after {
+	box-sizing: border-box;
+}
+
+.liquid-glass-btn__face {
+	position: relative;
+	display: flex;
+	isolation: isolate;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	min-height: inherit;
+	height: 100%;
+	padding: var(--lg-padding);
+	border-radius: inherit;
+	transition: transform 180ms ease;
+}
+
+.liquid-glass-btn:hover .liquid-glass-btn__face {
+	transform: translateY(-1px);
+}
+
+.liquid-glass-btn:active .liquid-glass-btn__face {
+	transform: translateY(0) scale(0.98);
+}
+
+.liquid-glass-btn__body,
+.liquid-glass-btn__surface,
+.liquid-glass-btn__tint,
+.liquid-glass-btn__shoulder,
+.liquid-glass-btn__rim,
+.liquid-glass-btn__reflection,
+.liquid-glass-btn__caustic,
+.liquid-glass-btn__bottom {
+	pointer-events: none;
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+}
+
+.liquid-glass-btn__body {
+	box-shadow:
+		0 1px 1px rgb(0 0 0 / 0.16),
+		0 4px 5px -3px rgb(0 0 0 / 0.22),
+		0 12px 20px -10px rgb(0 0 0 / 0.21);
+}
+
+.liquid-glass-btn__surface {
+	overflow: hidden;
+	background: linear-gradient(150deg, #ffffff32, #ffffff08 42%, #ffffff24);
+	box-shadow:
+		inset 0 1px 1px #ffffffcc,
+		inset 0 -1px 1px #ffffffaa,
+		inset 1px 0 0.5px #ffffffaa,
+		inset -1px 0 0.5px #00000020;
+	backdrop-filter: blur(var(--lg-blur)) saturate(1.08);
+	-webkit-backdrop-filter: blur(var(--lg-blur)) saturate(1.08);
+}
+
+.liquid-glass-btn[data-surface='dark'] .liquid-glass-btn__surface {
+	background: linear-gradient(155deg, #ffffff14, #ffffff03 48%, #ffffff08);
+}
+
+.liquid-glass-btn[data-surface='dark'] {
+	--lg-text: #f4f8f9;
+	--lg-text-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+	--lg-tint-alpha: 0.08;
+}
+
+.liquid-glass-btn__tint {
+	background: var(--lg-tint);
+	opacity: var(--lg-tint-alpha);
+}
+
+.liquid-glass-btn__shoulder {
+	box-shadow:
+		inset 0 9px 12px -8px #00000070,
+		inset 0 -9px 9px -7px #ffffffed,
+		inset 5px 0 8px -7px #0000006b,
+		inset -5px 0 8px -7px #0000004d;
+}
+
+.liquid-glass-btn__rim {
+	padding: 1.25px;
+	background: linear-gradient(
+		160deg,
+		#ffffff 0%,
+		#d8d8d8 35%,
+		#8f8f8f 68%,
+		#ffffff 100%
+	);
+	-webkit-mask:
+		linear-gradient(#fff 0 0) content-box,
+		linear-gradient(#fff 0 0);
+	mask:
+		linear-gradient(#fff 0 0) content-box,
+		linear-gradient(#fff 0 0);
+	-webkit-mask-composite: xor;
+	mask-composite: exclude;
+}
+
+.liquid-glass-btn__reflection {
+	inset: -45% -50%;
+	transform-origin: 50% 50%;
+	background: linear-gradient(
+		112deg,
+		#fff0 27%,
+		#ffffff03 32%,
+		#ffffff42 42%,
+		#ffffff66 46%,
+		#ffffff18 53%,
+		#fff0 61%
+	);
+}
+
+.liquid-glass-btn__caustic {
+	inset: auto auto 1px 10%;
+	width: 44%;
+	height: 2px;
+	border-radius: 100%;
+	background: linear-gradient(90deg, #fff0, #ffffffed 48%, #fff0);
+	filter: blur(0.35px);
+}
+
+.liquid-glass-btn__bottom {
+	inset: auto 14% 1.25px;
+	height: 1px;
+	border-radius: 100%;
+	opacity: 0.8;
+	background: linear-gradient(
+		90deg,
+		#fff0 0%,
+		#ffffff08 20%,
+		#ffffffcf 53%,
+		#ffffff12 86%,
+		#fff0
+	);
+}
+
+.liquid-glass-btn__label {
+	position: relative;
+	z-index: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	pointer-events: none;
+	text-shadow: var(--lg-text-shadow);
+}
+
+.liquid-glass-btn[data-disabled='true'],
+.liquid-glass-btn:disabled {
+	cursor: not-allowed;
+	opacity: 0.45;
+}
+
+.liquid-glass-btn[data-disabled='true']:hover .liquid-glass-btn__face,
+.liquid-glass-btn:disabled:hover .liquid-glass-btn__face {
+	transform: none;
+}
+
+.liquid-glass-btn:focus-visible {
+	outline: 2px solid var(--lg-focus);
+	outline-offset: 5px;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+	.liquid-glass-btn .liquid-glass-btn__surface {
+		backdrop-filter: none !important;
+		-webkit-backdrop-filter: none !important;
+		background: #d5d7da;
+	}
+
+	.liquid-glass-btn[data-surface='dark'] .liquid-glass-btn__surface {
+		background: #303239;
+	}
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+	.liquid-glass-btn .liquid-glass-btn__surface {
+		background: #d5d7da;
+	}
+
+	.liquid-glass-btn[data-surface='dark'] .liquid-glass-btn__surface {
+		background: #303239;
+	}
+}
+

@@ -1,0 +1,139 @@
+---
+import LiquidGlassCarousel from '../islands/LiquidGlassCarousel.vue';
+
+const features = [
+	{
+		title: 'Astro pages',
+		body: 'Ship HTML by default from .astro files — layouts, slots, and zero JS until you ask for it.',
+		image: '/tunnel/01.jpg',
+		href: '/#how',
+	},
+	{
+		title: 'Vue islands',
+		body: 'Drop interactive .vue components where you need them, hydrated with client directives.',
+		image: '/tunnel/02.jpg',
+		href: '/#how',
+	},
+	{
+		title: 'Clear structure',
+		body: 'pages/, components/, and layouts/ stay predictable so the site grows without chaos.',
+		image: '/tunnel/03.jpg',
+		href: '/about',
+	},
+	{
+		title: 'Server islands',
+		body: 'Defer live data with server:defer — HTML ships first, stats fill in when ready.',
+		image: '/tunnel/04.jpg',
+		href: '/#stack',
+	},
+	{
+		title: 'TanStack Query',
+		body: 'Loading, error, cache, and retry stay in one place for client fetches.',
+		image: '/tunnel/05.jpg',
+		href: '/#stack',
+	},
+	{
+		title: 'Zustand state',
+		body: 'Tiny client store for UI and request status next to your islands.',
+		image: '/tunnel/06.jpg',
+		href: '/#stack',
+	},
+	{
+		title: 'Liquid glass UI',
+		body: 'Navbar, buttons, and footer share one metallic glass language.',
+		image: '/tunnel/07.jpg',
+		href: '/#stack',
+	},
+	{
+		title: 'Image tunnel',
+		body: 'Hero motion from Infinite Image Tunnel — perspective tiles that never end.',
+		image: '/tunnel/08.jpg',
+		href: '/#top',
+	},
+	{
+		title: 'Typed Axios',
+		body: 'HTTP through Axios with shared error helpers and typed responses.',
+		image: '/tunnel/09.jpg',
+		href: '/#stack',
+	},
+	{
+		title: 'Vitest + Playwright',
+		body: 'Unit, component, and E2E gates keep the landing honest in CI.',
+		image: '/tunnel/10.jpg',
+		href: '/about',
+	},
+	{
+		title: 'Tailwind 4',
+		body: 'Utility-first styling with theme tokens for ink, sea, and paper.',
+		image: '/tunnel/11.jpg',
+		href: '/#features',
+	},
+	{
+		title: 'Vercel ready',
+		body: 'Adapter, sitemap, and cache headers for a deployable demo.',
+		image: '/tunnel/12.jpg',
+		href: '/#stack',
+	},
+];
+
+const projects = features.map(({ title, body, image }) => ({
+	brand: title,
+	description: body,
+	image,
+}));
+---
+
+<section
+	id="features"
+	class="overflow-hidden py-[clamp(2rem,5vw,3.5rem)]"
+	aria-labelledby="features-title"
+>
+	<div class="mx-auto w-[min(100%,72rem)]">
+		<div class="mx-auto mb-6 w-[min(100%-2rem,72rem)] px-0 min-[640px]:mb-4">
+			<p class="mb-3 font-display text-xs font-bold uppercase tracking-[0.14em] text-sea">
+				Features
+			</p>
+			<h2
+				id="features-title"
+				class="mb-3 font-display text-[clamp(1.75rem,4vw,2.75rem)] font-bold leading-tight tracking-tight text-ink"
+			>
+				What this stack is for
+			</h2>
+			<p class="m-0 max-w-xl text-lg text-ink-soft">
+				Keep most of the UI static. Hydrate only the pieces that need client-side state. Drag or
+				scroll the glass carousel to explore.
+			</p>
+		</div>
+
+		<div
+			class="h-[min(70vh,28rem)] w-full overflow-hidden rounded-[1.25rem] min-[640px]:h-[min(78vh,40rem)] min-[900px]:h-[42rem]"
+		>
+			<LiquidGlassCarousel
+				client:load
+				projects={projects}
+				showLabels={true}
+				showCursor={true}
+				config={{
+					background: '#eef3f5',
+					foreground: '#14212b',
+					panelHeight: 420,
+					blueColor: '#1a6b73',
+					entryAnimation: true,
+				}}
+				class="h-full"
+			/>
+		</div>
+
+		<!-- Screen-reader / SEO fallback of the original feature copy -->
+		<ul class="sr-only">
+			{
+				features.slice(0, 3).map((feature) => (
+					<li>
+						<h3>{feature.title}</h3>
+						<p>{feature.body}</p>
+					</li>
+				))
+			}
+		</ul>
+	</div>
+</section>

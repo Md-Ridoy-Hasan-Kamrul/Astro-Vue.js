@@ -1,0 +1,16 @@
+---
+import Layout from '../layouts/Layout.astro';
+import LoginSection from '../components/sections/LoginSection.astro';
+import ToastHost from '../components/islands/ToastHost.vue';
+---
+
+<Layout
+	title="Sign in — Astro Vue"
+	description="Login page with NeuroField inputs (Framer port)."
+	navSurface="dark"
+>
+	<ToastHost client:load />
+	<main id="main" class="min-h-svh overflow-x-clip bg-black">
+		<LoginSection />
+	</main>
+</Layout>

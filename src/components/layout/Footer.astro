@@ -1,0 +1,160 @@
+---
+/**
+ * Liquid Glass Footer — Astro port of
+ * https://framer.com/m/Liquid-Glass-Footer-PpecQS.js@NwnM5wWKuZaTzAqqZTeX
+ * (Framer ships React; this repo stays Astro + Vue.)
+ */
+import Icon from '../ui/Icon.vue';
+import FooterNewsletter from '../islands/FooterNewsletter.vue';
+
+const year = new Date().getFullYear();
+
+const productLinks = [
+	{ href: '/#features', label: 'Features' },
+	{ href: '/#how', label: 'How it works' },
+	{ href: '/#stack', label: 'Stack' },
+	{ href: '/login', label: 'Get started' },
+];
+
+const companyLinks = [
+	{ href: '/about', label: 'About' },
+	{ href: '/about#feedback', label: 'Feedback' },
+	{ href: '/#top', label: 'Home' },
+];
+
+const resourceLinks = [
+	{ href: 'https://docs.astro.build', label: 'Astro docs', external: true },
+	{ href: 'https://vuejs.org/guide/introduction.html', label: 'Vue docs', external: true },
+	{ href: 'https://tanstack.com/query/latest', label: 'TanStack Query', external: true },
+	{ href: 'https://tailwindcss.com', label: 'Tailwind', external: true },
+];
+
+const socialLinks = [
+	{
+		href: 'https://docs.astro.build',
+		label: 'Astro docs',
+		icon: 'book' as const,
+	},
+	{
+		href: 'https://vuejs.org/guide/introduction.html',
+		label: 'Vue docs',
+		icon: 'code' as const,
+	},
+	{
+		href: 'https://github.com/withastro/astro',
+		label: 'Astro on GitHub',
+		icon: 'layers' as const,
+	},
+	{
+		href: '/about',
+		label: 'About',
+		icon: 'info' as const,
+	},
+];
+
+const linkClass =
+	'inline-flex min-h-[1.875rem] items-center rounded-full px-3 text-[0.875rem] font-medium text-[#141419]/80 no-underline transition hover:bg-white/35 hover:text-[#141419]';
+const colTitleClass =
+	'm-0 px-3 py-1.5 text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-[#141419]/40';
+---
+
+<footer class="px-[clamp(0.75rem,3vw,1.5rem)] pb-[clamp(1.25rem,4vw,2rem)] pt-2" aria-label="Site">
+	<div
+		class="mx-auto w-[min(100%,71.25rem)] rounded-[2.5rem] p-[3px] max-[720px]:rounded-[2rem] [background:linear-gradient(180deg,#fff_0%,#c9c9c9_9%,#a1a1a1_32%,#757575_73%,#fff_100%)] [box-shadow:0.29px_4.36px_2.18px_rgba(0,0,0,0.01),0.48px_7.24px_3.63px_rgba(0,0,0,0.01),0.78px_11.7px_5.86px_rgba(0,0,0,0.02),1.28px_19.15px_9.6px_rgba(0,0,0,0.03),2.2px_32.97px_16.52px_rgba(0,0,0,0.03),4px_60px_30.07px_rgba(0,0,0,0.06)]"
+	>
+		<div
+			class="flex flex-col gap-7 rounded-[calc(2.5rem-3px)] px-11 pb-7 pt-10 max-[900px]:gap-6 max-[900px]:px-7 max-[900px]:pb-6 max-[900px]:pt-8 max-[720px]:rounded-[calc(2rem-3px)] max-[720px]:gap-6 max-[720px]:px-5 max-[720px]:pb-6 max-[720px]:pt-7 [background:linear-gradient(150deg,#d0d0d0_0%,#e8e8e8_50%,#c8c8c8_100%)] [box-shadow:inset_0_1px_1.5px_rgba(0,0,0,0.07),inset_0_-1px_1.5px_rgba(0,0,0,0.07)]"
+		>
+			<div
+				class="flex justify-between gap-10 max-[900px]:flex-col max-[900px]:gap-9"
+			>
+				<div class="flex w-full max-w-sm flex-col gap-6 max-[720px]:max-w-none">
+					<div class="flex flex-col gap-3">
+						<p
+							class="m-0 inline-flex items-center gap-2 font-display text-[1.35rem] font-extrabold tracking-tight text-[#141419]"
+						>
+							<Icon name="layers" class="size-5 text-sea" />
+							Astro Vue
+						</p>
+						<p class="m-0 max-w-xs text-[0.9375rem] leading-snug text-[#141419]/55">
+							Liquid glass interfaces, crafted with care for modern Astro + Vue
+							products that love detail.
+						</p>
+					</div>
+					<FooterNewsletter client:visible />
+				</div>
+
+				<div
+					class="flex gap-12 max-[900px]:w-full max-[900px]:justify-between max-[900px]:gap-5 max-[768px]:flex-col max-[768px]:gap-5"
+				>
+					<div class="flex flex-col gap-1">
+						<p class={colTitleClass}>Product</p>
+						{
+							productLinks.map((link) => (
+								<a href={link.href} class={linkClass}>
+									{link.label}
+								</a>
+							))
+						}
+					</div>
+					<div class="flex flex-col gap-1">
+						<p class={colTitleClass}>Company</p>
+						{
+							companyLinks.map((link) => (
+								<a href={link.href} class={linkClass}>
+									{link.label}
+								</a>
+							))
+						}
+					</div>
+					<div class="flex flex-col gap-1">
+						<p class={colTitleClass}>Resources</p>
+						{
+							resourceLinks.map((link) =>
+								link.external ? (
+									<a
+										href={link.href}
+										class={linkClass}
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										{link.label}
+									</a>
+								) : (
+									<a href={link.href} class={linkClass}>
+										{link.label}
+									</a>
+								),
+							)
+						}
+					</div>
+				</div>
+			</div>
+
+			<div class="h-px w-full bg-[#0a0a0c]/10" aria-hidden="true"></div>
+
+			<div
+				class="flex items-center justify-between gap-4 max-[720px]:flex-col max-[720px]:items-start"
+			>
+				<p class="m-0 text-[0.8125rem] text-[#141419]/55">
+					© {year} Astro Vue · Liquid glass footer port
+				</p>
+				<nav class="flex flex-wrap gap-2" aria-label="Social">
+					{
+						socialLinks.map((item) => (
+							<a
+								href={item.href}
+								aria-label={item.label}
+								class="grid size-10 place-items-center rounded-full border border-white/45 bg-white/35 text-[#141419] shadow-[inset_0_1px_1px_rgba(255,255,255,0.75),0_4px_10px_rgba(0,0,0,0.06)] transition hover:-translate-y-px hover:bg-white/55"
+								target={item.href.startsWith('http') ? '_blank' : undefined}
+								rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+							>
+								<Icon name={item.icon} class="size-4" />
+							</a>
+						))
+					}
+				</nav>
+			</div>
+		</div>
+	</div>
+</footer>

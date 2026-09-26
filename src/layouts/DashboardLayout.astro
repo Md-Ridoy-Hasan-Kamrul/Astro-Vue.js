@@ -1,0 +1,86 @@
+---
+/**
+ * Crextio dashboard chrome — separate from landing Layout/Navbar.
+ * Soft navigations keep the top bar mounted (no navbar shake).
+ */
+import '../styles/global.css';
+import '@fontsource-variable/figtree';
+import '@fontsource/syne/600.css';
+import '@fontsource/syne/700.css';
+import '@fontsource/syne/800.css';
+import { ClientRouter } from 'astro:transitions';
+import AuthGate from '../components/islands/dashboard/AuthGate.vue';
+import DashboardChrome from '../components/islands/dashboard/DashboardChrome.vue';
+import ToastHost from '../components/islands/ToastHost.vue';
+import SmoothScroll from '../components/islands/SmoothScroll.vue';
+
+interface Props {
+	title?: string;
+}
+
+const { title = 'Crextio Dashboard' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="crextio-html overflow-x-clip">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<meta name="description" content="Crextio HR dashboard — admin demo." />
+		<title>{title}</title>
+		<ClientRouter />
+		<style is:global>
+			:root {
+				--cx-bg0: #f3f1ea;
+				--cx-bg1: #fff8e0;
+				--cx-ink: #1c1c1c;
+				--cx-muted: #6b6b6b;
+				--cx-yellow: #ffd74b;
+				--cx-yellow-deep: #f0c83a;
+				--cx-card: #ffffff;
+				--cx-soft: #f0eee8;
+				--cx-stripe: #e6e3db;
+				--cx-radius: 1.75rem;
+				--cx-radius-sm: 1.15rem;
+				--cx-shadow: 0 18px 40px rgb(28 28 28 / 0.06);
+			}
+
+			html.crextio-html {
+				/* Stops horizontal “shake” when one tab has a scrollbar and another doesn’t */
+				scrollbar-gutter: stable;
+			}
+
+			body.crextio {
+				min-height: 100svh;
+				margin: 0;
+				color: var(--cx-ink);
+				font-family: var(--font-body);
+				background:
+					radial-gradient(90% 70% at 0% 0%, #eef1f5 0%, transparent 55%),
+					radial-gradient(80% 60% at 100% 100%, var(--cx-bg1) 0%, transparent 50%),
+					linear-gradient(160deg, var(--cx-bg0), #faf7ef 45%, var(--cx-bg1));
+				cursor: var(--cursor-site-default);
+			}
+
+			/* Quiet content swap — chrome stays put */
+			::view-transition-old(root),
+			::view-transition-new(root) {
+				animation-duration: 0.12s;
+				animation-timing-function: ease-out;
+			}
+		</style>
+	</head>
+	<body class="crextio overflow-x-clip">
+		<SmoothScroll client:load transition:persist="cx-lenis" />
+		<AuthGate client:load transition:persist="cx-auth" />
+		<ToastHost client:idle transition:persist="cx-toast" />
+		<div class="mx-auto w-[min(100%-1rem,78rem)] py-3 min-[375px]:w-[min(100%-1.25rem,78rem)] min-[375px]:py-4 md:py-6">
+			<div transition:persist="cx-chrome" class="mb-5 min-[768px]:mb-8">
+				<DashboardChrome client:load />
+			</div>
+			<slot />
+		</div>
+	</body>
+</html>

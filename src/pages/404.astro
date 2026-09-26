@@ -1,0 +1,22 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Footer from '../components/layout/Footer.astro';
+import LiquidGlassButton from '../components/ui/LiquidGlassButton.vue';
+---
+
+<Layout title="Page not found — Astro Vue" description="This page does not exist.">
+	<main id="main" class="mx-auto w-[min(100%-2rem,40rem)] py-[clamp(4rem,12vw,7rem)]">
+		<p class="mb-3 font-display text-xs font-bold uppercase tracking-[0.14em] text-sea">404</p>
+		<h1 class="mb-3 font-display text-[clamp(1.75rem,4vw,2.75rem)] font-bold text-ink">
+			Page not found
+		</h1>
+		<p class="mb-6 text-lg text-ink-soft">
+			That route is not in this project. Head home or open About.
+		</p>
+		<div class="flex flex-wrap gap-3">
+			<LiquidGlassButton href="/" label="Home" />
+			<LiquidGlassButton href="/about" label="About" surface="dark" />
+		</div>
+	</main>
+	<Footer />
+</Layout>

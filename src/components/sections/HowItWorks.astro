@@ -1,0 +1,153 @@
+---
+import AnimatedPath from '../islands/AnimatedPath.vue';
+import {
+	FRAMER_POINTS,
+	FRAMER_PROCESS_PATH,
+	FRAMER_VIEW_HEIGHT,
+	FRAMER_VIEW_WIDTH,
+} from '../../lib/animatedPath';
+
+/**
+ * How it works — Framer Animated Path process line:
+ * https://framer.com/m/AnimatedPath-zpq9rv.js@POpugJ0TBxWL4GA458rY
+ *
+ * Layout locks to Framer viewBox (927×400). Step copy sits *below* each
+ * path node so dots don't punch through titles.
+ */
+const steps = [
+	{
+		label: '01',
+		title: 'Compose in Astro',
+		body: 'Layouts wrap pages. Components compose the markup. Content stays close to the route.',
+		point: FRAMER_POINTS[0],
+	},
+	{
+		label: '02',
+		title: 'Import Vue',
+		body: 'Bring interactive UI from .vue files the same way you import any component.',
+		point: FRAMER_POINTS[1],
+	},
+	{
+		label: '03',
+		title: 'Add a directive',
+		body: 'Tag islands with client:load, client:visible, or client:idle so Astro knows when to hydrate.',
+		point: FRAMER_POINTS[2],
+	},
+	{
+		label: '04',
+		title: 'Hydrate on demand',
+		body: 'Above-the-fold UI can load immediately. Lower islands wait for visible or idle.',
+		point: FRAMER_POINTS[3],
+	},
+];
+
+/** One Framer path node per step (fills all four curve anchors). */
+const stepPoints = steps.map((step) => step.point);
+
+const aspect = `${FRAMER_VIEW_WIDTH} / ${FRAMER_VIEW_HEIGHT}`;
+---
+
+<section
+	id="how"
+	class="border-y border-line bg-foam/55 py-[clamp(3.5rem,8vw,6rem)]"
+	aria-labelledby="how-title"
+>
+	<div class="mx-auto w-[min(100%-2rem,72rem)]">
+		<div class="mb-8 max-w-xl min-[900px]:mb-12">
+			<p class="mb-3 font-display text-xs font-bold uppercase tracking-[0.14em] text-sea">
+				How it works
+			</p>
+			<h2
+				id="how-title"
+				class="mb-3 font-display text-[clamp(1.75rem,4vw,2.75rem)] font-bold leading-tight tracking-tight text-ink"
+			>
+				Same pattern as the docs
+			</h2>
+			<p class="m-0 text-lg text-ink-soft">
+				Astro owns the page shell. Vue owns interactive islands like a buy button or nav menu —
+				hydrated with a client directive.
+			</p>
+		</div>
+
+		<!-- Desktop / tablet: Framer viewBox aspect so % ≡ SVG coords -->
+		<div class="relative hidden w-full overflow-visible min-[720px]:block">
+			<div
+				class="relative w-full overflow-visible"
+				style={`aspect-ratio: ${aspect};`}
+			>
+				<div class="absolute inset-0">
+					<AnimatedPath
+						client:media="(min-width: 720px)"
+						path={FRAMER_PROCESS_PATH}
+						points={stepPoints}
+						viewWidth={FRAMER_VIEW_WIDTH}
+						viewHeight={FRAMER_VIEW_HEIGHT}
+						lineColor="#1a6b73"
+						dotColor="#0f454c"
+						strokeWidth={1}
+						dashLength={7}
+						gapLength={7}
+						dotSize={11}
+						speed={130}
+						trailLength={0.3}
+						startOnView={true}
+						showBase={true}
+						baseOpacity={0.16}
+						class="h-full w-full"
+					/>
+				</div>
+
+				<ol class="absolute inset-0 m-0 list-none overflow-visible p-0">
+					{
+						steps.map((step) => {
+							const left = (step.point.x / FRAMER_VIEW_WIDTH) * 100;
+							const top = (step.point.y / FRAMER_VIEW_HEIGHT) * 100;
+							return (
+								<li
+									class="absolute w-[min(15rem,28%)] -translate-x-1/2"
+									style={`left: ${left}%; top: ${top}%;`}
+								>
+									{/* Spacer clears the SVG dot; copy sits under the node */}
+									<div class="pt-5 min-[900px]:pt-6">
+										<span class="mb-1 block font-display text-[0.95rem] font-extrabold tracking-wide text-sea">
+											{step.label}
+										</span>
+										<h3 class="mb-1 font-display text-[1.05rem] font-semibold tracking-tight text-ink min-[900px]:text-[1.15rem]">
+											{step.title}
+										</h3>
+										<p class="m-0 text-[0.875rem] leading-snug text-ink-soft min-[900px]:text-[0.95rem]">
+											{step.body}
+										</p>
+									</div>
+								</li>
+							);
+						})
+					}
+				</ol>
+			</div>
+			{/* Room for step-03 copy below the last path node */}
+			<div class="h-28 min-[900px]:h-32" aria-hidden="true"></div>
+		</div>
+
+		<!-- Mobile: stacked steps only (path distorts under ~720px) -->
+		<div class="min-[720px]:hidden">
+			<ol class="m-0 grid list-none gap-6 p-0">
+				{
+					steps.map((step) => (
+						<li class="grid grid-cols-[auto_1fr] items-start gap-3 min-[375px]:gap-4">
+							<span class="pt-0.5 font-display text-[0.95rem] font-extrabold tracking-wide text-sea">
+								{step.label}
+							</span>
+							<div class="min-w-0">
+								<h3 class="mb-1 font-display text-[clamp(1.05rem,4vw,1.15rem)] tracking-tight text-ink">
+									{step.title}
+								</h3>
+								<p class="m-0 text-[clamp(0.9rem,3.5vw,1rem)] text-ink-soft">{step.body}</p>
+							</div>
+						</li>
+					))
+				}
+			</ol>
+		</div>
+	</div>
+</section>

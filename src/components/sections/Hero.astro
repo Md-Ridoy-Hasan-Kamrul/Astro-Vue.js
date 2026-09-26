@@ -1,0 +1,47 @@
+---
+import InfiniteImageTunnel from '../islands/InfiniteImageTunnel.vue';
+import LiquidGlassButton from '../ui/LiquidGlassButton.vue';
+---
+
+<section
+	id="top"
+	class="relative isolate grid h-svh min-h-[28rem] place-items-center overflow-hidden text-hero"
+	aria-labelledby="hero-brand"
+>
+	<!-- Infinite Image Tunnel (Framer port) -->
+	<div class="absolute inset-0 -z-10" aria-hidden="true">
+		<InfiniteImageTunnel
+			client:load
+			class="h-full"
+			backgroundColor="#0a0f12"
+			animationSpeed={1}
+		/>
+		<div
+			class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgb(10_15_18/0.15)_0%,rgb(20_33_43/0.55)_55%,rgb(10_15_18/0.82)_100%),linear-gradient(180deg,rgb(10_15_18/0.35)_0%,transparent_40%,rgb(10_15_18/0.45)_100%)]"
+		>
+		</div>
+	</div>
+
+	<div
+		class="relative z-10 mx-auto flex w-[min(100%-2rem,40rem)] flex-col items-center px-4 py-8 text-center motion-safe:[animation:rise_700ms_ease_both]"
+	>
+		<p
+			id="hero-brand"
+			class="mb-3 font-display text-[clamp(1.75rem,5vw,2.75rem)] font-extrabold leading-none tracking-tight text-blue-300"
+		>
+			Astro Vue
+		</p>
+		<h1
+			class="mb-4 font-display text-[clamp(1.35rem,3.2vw,2rem)] font-semibold leading-snug tracking-tight text-hero-soft"
+		>
+			Static <span class="text-blue-300">speed</span>. Interactive <span class="text-blue-300">islands</span>.
+		</h1>
+		<p class="mb-7 max-w-md text-[clamp(1rem,2.8vw,1.1rem)] text-hero/85">
+			Build the page in Astro, hydrate only what needs to move with Vue.
+		</p>
+		<div class="flex flex-wrap justify-center gap-3">
+			<LiquidGlassButton href="#stack" label="Start building" surface="light" />
+			<LiquidGlassButton href="#features" label="See features" surface="dark" />
+		</div>
+	</div>
+</section>

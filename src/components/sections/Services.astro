@@ -1,0 +1,38 @@
+---
+/**
+ * Services — static shell + Service Accordion island.
+ * Framer ref: https://framer.com/m/Service-Accordion-9AKRk0.js@5705lIQS0zFn3fQ1EDtH
+ */
+import ServiceAccordion from '../islands/ServiceAccordion.vue';
+
+const services = [
+	{
+		title: 'Astro pages',
+		tags: ['Routing', 'Layouts', 'SSR', 'Islands'],
+		image: '/tunnel/01.jpg',
+		imageAlt: 'Astro pages visual',
+	},
+	{
+		title: 'Vue islands',
+		tags: ['Composition API', 'client:*', 'Hydration', 'Forms'],
+		image: '/tunnel/02.jpg',
+		imageAlt: 'Vue islands visual',
+	},
+	{
+		title: 'Data & feedback',
+		tags: ['Axios', 'TanStack Query', 'Zustand', 'Toasts'],
+		image: '/tunnel/05.jpg',
+		imageAlt: 'Data and feedback visual',
+	},
+];
+---
+
+<section
+	id="services"
+	class="border-t border-line py-[clamp(3.5rem,8vw,6rem)]"
+	aria-label="Services"
+>
+	<div class="mx-auto w-[min(100%-2rem,72rem)]">
+		<ServiceAccordion client:visible items={services} />
+	</div>
+</section>

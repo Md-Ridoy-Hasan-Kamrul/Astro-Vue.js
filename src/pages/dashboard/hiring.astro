@@ -1,0 +1,13 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import DashboardSectionPage from '../../components/sections/DashboardSectionPage.astro';
+import { DASHBOARD_SECTIONS } from '../../lib/dashboard/sections';
+
+const section = DASHBOARD_SECTIONS.hiring;
+---
+
+<DashboardLayout title={`Crextio - ${section.title}`}>
+	<main id="main">
+		<DashboardSectionPage section={section} />
+	</main>
+</DashboardLayout>
