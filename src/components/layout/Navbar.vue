@@ -21,9 +21,10 @@ const props = withDefaults(
 
 const SECTION_IDS = ['features', 'how', 'stack'] as const;
 type SectionId = (typeof SECTION_IDS)[number];
-type LinkMatch = SectionId | 'about';
+type LinkMatch = 'services' | 'about' | 'work' | 'pricing' | 'blog' | 'career';
 
 const open = ref(false);
+const servicesOpen = ref(false);
 const path = ref(normalizePath(props.currentPath));
 const hash = ref('');
 const scrolledSection = ref<SectionId | ''>('');
@@ -56,6 +57,15 @@ function toggle() {
 
 function close() {
   open.value = false;
+  servicesOpen.value = false;
+}
+
+function toggleServices() {
+  servicesOpen.value = !servicesOpen.value;
+}
+
+function closeServices() {
+  servicesOpen.value = false;
 }
 
 // Sync body overflow & smooth scroll with open state
@@ -172,10 +182,18 @@ onUnmounted(() => {
 });
 
 const links = [
-  { href: '/#features', label: 'Features', match: 'features' as const },
-  { href: '/#how', label: 'How it works', match: 'how' as const },
-  { href: '/#stack', label: 'Stack', match: 'stack' as const },
-  { href: '/about', label: 'About', match: 'about' as const },
+  { href: '/about#services', label: 'Services', match: 'services' as const, hasMenu: true },
+  { href: '/about', label: 'About Us', match: 'about' as const, hasMenu: false },
+  { href: '/#stack', label: 'Work', match: 'work' as const, hasMenu: false },
+  { href: '/#features', label: 'Pricing', match: 'pricing' as const, hasMenu: false },
+  { href: '/#how', label: 'Blog', match: 'blog' as const, hasMenu: false },
+  { href: '/dashboard/hiring', label: 'Career', match: 'career' as const, hasMenu: false },
+] as const;
+
+const serviceMenu = [
+  { href: '/about#services', label: 'Astro pages' },
+  { href: '/about#services', label: 'Vue islands' },
+  { href: '/about#services', label: 'Data & feedback' },
 ] as const;
 
 const socials = [
@@ -184,17 +202,29 @@ const socials = [
   { href: 'https://github.com/withastro/astro', label: 'GitHub' },
 ] as const;
 
+const sectionByMatch: Partial<Record<LinkMatch, SectionId>> = {
+  pricing: 'features',
+  blog: 'how',
+  work: 'stack',
+};
+
 function isActive(match: LinkMatch) {
-  if (match === 'about') return path.value === '/about';
+  if (match === 'services') {
+    return path.value === '/about' && hash.value === '#services';
+  }
+  if (match === 'about') {
+    return path.value === '/about' && hash.value !== '#services' && hash.value !== '#feedback';
+  }
+  if (match === 'career') return path.value === '/dashboard/hiring';
   if (path.value !== '/') return false;
-  const fromHash = hash.value === `#${match}`;
-  const fromScroll = scrolledSection.value === match;
-  return fromHash || fromScroll;
+  const section = sectionByMatch[match];
+  if (!section) return false;
+  return hash.value === `#${section}` || scrolledSection.value === section;
 }
 
 function linkClass(match: LinkMatch) {
   const base =
-    'rounded-full px-3 py-2 text-[0.9375rem] font-semibold tracking-[-0.01em] no-underline transition';
+    'inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[0.9375rem] font-semibold tracking-[-0.01em] no-underline transition';
   if (isActive(match)) {
     return `${base} bg-[#f7f7f8] text-[#0a0a0c] shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_1px_2px_rgba(0,0,0,0.08)]`;
   }
@@ -214,12 +244,12 @@ const ink = '#111111';
     <!-- Desktop: Liquid Glass -->
     <div class="hidden px-[clamp(0.75rem,3vw,1.25rem)] pb-2 pt-3 min-[1021px]:block">
       <div
-        class="mx-auto w-[min(100%,48.75rem)] rounded-full p-0.75 [background:linear-gradient(180deg,#fff_0%,#c9c9c9_9%,#a1a1a1_32%,#757575_73%,#fff_100%)] [box-shadow:0.29px_4.36px_2.18px_rgba(0,0,0,0.01),0.48px_7.24px_3.63px_rgba(0,0,0,0.01),0.78px_11.7px_5.86px_rgba(0,0,0,0.02),1.28px_19.15px_9.6px_rgba(0,0,0,0.03),2.2px_32.97px_16.52px_rgba(0,0,0,0.03),4px_60px_30.07px_rgba(0,0,0,0.06)]"
+        class="mx-auto w-[min(100%,58rem)] rounded-full p-0.75 [background:linear-gradient(180deg,#fff_0%,#c9c9c9_9%,#a1a1a1_32%,#757575_73%,#fff_100%)] [box-shadow:0.29px_4.36px_2.18px_rgba(0,0,0,0.01),0.48px_7.24px_3.63px_rgba(0,0,0,0.01),0.78px_11.7px_5.86px_rgba(0,0,0,0.02),1.28px_19.15px_9.6px_rgba(0,0,0,0.03),2.2px_32.97px_16.52px_rgba(0,0,0,0.03),4px_60px_30.07px_rgba(0,0,0,0.06)]"
       >
         <div
-          class="relative flex items-center justify-between gap-3 overflow-hidden rounded-full px-2.5 py-2 pl-3.5 [background:linear-gradient(150deg,#d0d0d0_0%,#e8e8e8_50%,#c8c8c8_100%)] [box-shadow:inset_0_1px_1.5px_rgba(0,0,0,0.07),inset_0_-1px_1.5px_rgba(0,0,0,0.07)]"
+          class="relative flex items-center justify-between gap-3 overflow-visible rounded-full px-2.5 py-2 pl-3.5 [background:linear-gradient(150deg,#d0d0d0_0%,#e8e8e8_50%,#c8c8c8_100%)] [box-shadow:inset_0_1px_1.5px_rgba(0,0,0,0.07),inset_0_-1px_1.5px_rgba(0,0,0,0.07)]"
         >
-          <a href="/" class="inline-flex items-center gap-1.5 no-underline" data-astro-prefetch>
+          <a href="/" class="inline-flex shrink-0 items-center gap-1.5 no-underline" data-astro-prefetch>
             <span
               class="grid size-7.5 place-items-center rounded-[0.2rem] [background:linear-gradient(135deg,#f4f5f8_0%,#c4c8d0_55%,#9ea2ac_100%)] [box-shadow:inset_0_1px_1px_rgba(255,255,255,0.9),0_4px_7px_-1px_rgba(0,0,0,0.35)]"
               aria-hidden="true"
@@ -231,20 +261,68 @@ const ink = '#111111';
             </span>
           </a>
 
-          <nav class="flex items-center gap-0.5" aria-label="Primary">
-            <a
-              v-for="link in links"
-              :key="link.href"
-              :href="link.href"
-              :class="linkClass(link.match)"
-              :aria-current="isActive(link.match) ? 'page' : undefined"
-              data-astro-prefetch
-            >
-              {{ link.label }}
-            </a>
+          <nav class="flex min-w-0 flex-1 items-center justify-center gap-0.5" aria-label="Primary">
+            <template v-for="link in links" :key="link.href + link.label">
+              <div
+                v-if="link.hasMenu"
+                class="relative"
+                @mouseenter="servicesOpen = true"
+                @mouseleave="closeServices"
+              >
+                <button
+                  type="button"
+                  :class="linkClass(link.match)"
+                  :aria-expanded="servicesOpen"
+                  aria-haspopup="menu"
+                  @click="toggleServices"
+                >
+                  {{ link.label }}
+                  <span
+                    class="grid size-4 place-items-center rounded-full bg-white/70 text-[#0a0a0c]"
+                    aria-hidden="true"
+                  >
+                    <svg class="size-2.5" viewBox="0 0 12 12" fill="none">
+                      <path
+                        d="M3 4.5L6 7.5L9 4.5"
+                        stroke="currentColor"
+                        stroke-width="1.6"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </span>
+                </button>
+                <div
+                  v-if="servicesOpen"
+                  class="absolute left-0 top-[calc(100%-0.15rem)] z-50 min-w-[11rem] rounded-2xl bg-[#f7f7f8]/95 p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.12)] backdrop-blur-md"
+                  role="menu"
+                >
+                  <a
+                    v-for="item in serviceMenu"
+                    :key="item.label"
+                    :href="item.href"
+                    class="block rounded-xl px-3 py-2 text-[0.875rem] font-semibold text-[#0a0a0c]/80 no-underline transition hover:bg-white hover:text-[#0a0a0c]"
+                    role="menuitem"
+                    data-astro-prefetch
+                    @click="closeServices"
+                  >
+                    {{ item.label }}
+                  </a>
+                </div>
+              </div>
+              <a
+                v-else
+                :href="link.href"
+                :class="linkClass(link.match)"
+                :aria-current="isActive(link.match) ? 'page' : undefined"
+                data-astro-prefetch
+              >
+                {{ link.label }}
+              </a>
+            </template>
           </nav>
 
-          <LiquidGlassButton href="/login" label="Get started" size="sm" />
+          <LiquidGlassButton href="/about#feedback" label="Contact Us" size="sm" />
         </div>
       </div>
     </div>
@@ -378,8 +456,8 @@ const ink = '#111111';
             </div>
           </div>
           <LiquidGlassButton
-            href="/login"
-            label="Get started"
+            href="/about#feedback"
+            label="Contact Us"
             :surface="isDark ? 'dark' : 'light'"
             :on-click="close"
             class="self-start min-[768px]:self-auto"
