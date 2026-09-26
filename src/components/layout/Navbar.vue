@@ -292,7 +292,7 @@ const ink = '#111111';
                 </button>
                 <div
                   v-if="servicesOpen"
-                  class="absolute left-0 top-[calc(100%-0.15rem)] z-50 min-w-[11rem] rounded-2xl bg-[#f7f7f8]/95 p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.12)] backdrop-blur-md"
+                  class="absolute left-0 top-[calc(100%-0.15rem)] z-50 min-w-44 rounded-2xl bg-[#f7f7f8]/95 p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.12)] backdrop-blur-md"
                   role="menu"
                 >
                   <a
