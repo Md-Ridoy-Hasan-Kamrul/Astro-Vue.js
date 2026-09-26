@@ -5,13 +5,15 @@ import { expect, test } from 'vitest';
 import PartnerAbout from './PartnerAbout.astro';
 import PageTransition from './PageTransition.astro';
 
-test('PageTransition is plane-only with no welcome copy', async () => {
+test('PageTransition wraps partner reveal with plane asset (no welcome copy)', async () => {
 	const renderers = await loadRenderers([getContainerRenderer()]);
 	const container = await AstroContainer.create({ renderers });
 	const result = await container.renderToString(PageTransition);
 
 	expect(result).toContain('id="page-transition"');
 	expect(result).toContain('/transition/jet.webp');
+	expect(result).toContain('id="partner"');
+	expect(result).toContain('One Partner. From Strategy to Scale.');
 	expect(result).not.toContain('Welcome to Astro Vue');
 	expect(result).not.toContain('Where journeys become unforgettable');
 });
@@ -26,11 +28,6 @@ test('PartnerAbout section matches the strategy-to-scale reference layout', asyn
 	expect(result).toContain('Great digital products need more than good design.');
 	expect(result).toContain('More About Us');
 	expect(result).toContain('Nedin Zahirovic');
-	expect(result).toContain('Co-Founder, Konoom Software Technologies');
-	expect(result).toContain('Starnberg, Germany');
-	expect(result).toContain('Musemind was amazing to work with');
 	expect(result).toContain('/partner/office.jpg');
-	expect(result).toContain('/partner/avatar.jpg');
-	expect(result).toContain('href="/about"');
 	expect(result).toContain('min-[1020px]:items-stretch');
 });

@@ -1,15 +1,19 @@
 ---
 /**
- * Hero → partner page transition — plane fly-across only (no text).
+ * Hero → partner: ContainerInset-style open + plane pass.
+ * Partner section is slotted inside the sticky reveal (visible while plane flies).
  */
 import ScrollFlyIn from '../islands/ScrollFlyIn.vue';
+import PartnerAbout from './PartnerAbout.astro';
 import { FLY_IMAGE_PATH } from '../../lib/transition/scrollFlyIn';
 ---
 
-<section id="page-transition" class="relative bg-paper" aria-label="Page transition">
+<section id="page-transition" class="relative" aria-label="Page transition">
 	<ScrollFlyIn
 		client:visible
 		imageUrl={FLY_IMAGE_PATH}
 		imageAlt="Private jet flying across the screen"
-	/>
+	>
+		<PartnerAbout />
+	</ScrollFlyIn>
 </section>
