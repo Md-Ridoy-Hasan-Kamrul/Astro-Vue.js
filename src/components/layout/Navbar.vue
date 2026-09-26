@@ -39,7 +39,7 @@ function normalizePath(value: string) {
 
 function surfaceForPath(pathname: string): 'dark' | 'light' {
   const normalized = normalizePath(pathname);
-  return normalized === '/' || normalized === '/login' ? 'dark' : 'light';
+  return normalized === '/login' ? 'dark' : 'light';
 }
 
 function syncFromLocation() {

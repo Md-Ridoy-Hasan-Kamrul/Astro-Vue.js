@@ -1,47 +1,158 @@
 ---
-import InfiniteImageTunnel from '../islands/InfiniteImageTunnel.vue';
-import LiquidGlassButton from '../ui/LiquidGlassButton.vue';
+import TrustedByMarquee from '../islands/TrustedByMarquee.vue';
 ---
 
 <section
 	id="top"
-	class="relative isolate grid h-svh min-h-[28rem] place-items-center overflow-hidden text-hero"
-	aria-labelledby="hero-brand"
+	class="relative isolate overflow-hidden bg-[#f4f5f7] text-ink"
+	aria-labelledby="hero-heading"
 >
-	<!-- Infinite Image Tunnel (Framer port) -->
-	<div class="absolute inset-0 -z-10" aria-hidden="true">
-		<InfiniteImageTunnel
-			client:load
-			class="h-full"
-			backgroundColor="#0a0f12"
-			animationSpeed={1}
-		/>
+	<!-- Soft glass / prism decor (right) -->
+	<div class="pointer-events-none absolute inset-0" aria-hidden="true">
 		<div
-			class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgb(10_15_18/0.15)_0%,rgb(20_33_43/0.55)_55%,rgb(10_15_18/0.82)_100%),linear-gradient(180deg,rgb(10_15_18/0.35)_0%,transparent_40%,rgb(10_15_18/0.45)_100%)]"
+			class="absolute top-[-10%] right-[-8%] h-[70vmin] w-[70vmin] rounded-[2rem] bg-[radial-gradient(circle_at_30%_30%,rgb(255_255_255/0.95),rgb(220_228_236/0.35)_55%,transparent_70%)] blur-[2px]"
+		>
+		</div>
+		<div class="hero-glass hero-glass--a"></div>
+		<div class="hero-glass hero-glass--b"></div>
+		<div class="hero-glass hero-glass--c"></div>
+		<div
+			class="absolute inset-0 bg-[linear-gradient(105deg,rgb(244_245_247)_0%,rgb(244_245_247/0.92)_42%,rgb(244_245_247/0.35)_68%,transparent_100%)]"
 		>
 		</div>
 	</div>
 
-	<div
-		class="relative z-10 mx-auto flex w-[min(100%-2rem,40rem)] flex-col items-center px-4 py-8 text-center motion-safe:[animation:rise_700ms_ease_both]"
-	>
-		<p
-			id="hero-brand"
-			class="mb-3 font-display text-[clamp(1.75rem,5vw,2.75rem)] font-extrabold leading-none tracking-tight text-blue-300"
-		>
-			Astro Vue
-		</p>
-		<h1
-			class="mb-4 font-display text-[clamp(1.35rem,3.2vw,2rem)] font-semibold leading-snug tracking-tight text-hero-soft"
-		>
-			Static <span class="text-blue-300">speed</span>. Interactive <span class="text-blue-300">islands</span>.
-		</h1>
-		<p class="mb-7 max-w-md text-[clamp(1rem,2.8vw,1.1rem)] text-hero/85">
-			Build the page in Astro, hydrate only what needs to move with Vue.
-		</p>
-		<div class="flex flex-wrap justify-center gap-3">
-			<LiquidGlassButton href="#stack" label="Start building" surface="light" />
-			<LiquidGlassButton href="#features" label="See features" surface="dark" />
+	<div class="relative z-10 mx-auto w-[min(100%-2rem,72rem)] pt-[clamp(6.5rem,14vw,8.5rem)] pb-10 sm:pb-14">
+		<div class="max-w-xl lg:max-w-[34rem]">
+			<h1
+				id="hero-heading"
+				class="font-display text-[clamp(2.15rem,5.2vw,3.65rem)] font-extrabold leading-[1.08] tracking-tight text-ink"
+			>
+				Digital Product Design &amp; Development Company
+			</h1>
+			<p class="mt-5 max-w-[34rem] text-[clamp(1rem,2.2vw,1.125rem)] leading-relaxed text-ink-soft">
+				We transform complex business challenges into digital strategies, innovative user experiences,
+				AI-powered solutions, and technology built to drive exponential growth.
+			</p>
+
+			<div class="mt-8 flex flex-wrap items-center gap-5">
+				<a
+					href="/about#feedback"
+					class="inline-flex items-center justify-center rounded-full bg-ink px-7 py-3 text-[0.95rem] font-semibold text-paper transition hover:bg-ink/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sea"
+				>
+					Contact Us
+				</a>
+
+				<div class="flex items-center gap-2.5" aria-label="4.9 rating based on 48 Clutch reviews">
+					<span
+						class="grid size-8 place-items-center rounded-md bg-[#163239] text-sm font-bold text-paper"
+						aria-hidden="true"
+					>
+						C
+					</span>
+					<div class="leading-tight">
+						<div class="flex items-center gap-1.5">
+							<span class="text-[0.95rem] font-bold text-ink">4.9</span>
+							<span class="flex gap-0.5 text-[#E11D48]" aria-hidden="true">
+								{
+									Array.from({ length: 5 }).map(() => (
+										<svg class="size-3.5" viewBox="0 0 20 20" fill="currentColor">
+											<path d="M10 1.5l2.4 5.2 5.6.6-4.2 3.8 1.2 5.5L10 14.3 4.9 16.6l1.2-5.5L2 7.3l5.6-.6L10 1.5z" />
+										</svg>
+									))
+								}
+							</span>
+						</div>
+						<p class="text-[0.75rem] text-ink-soft">Based on 48 Clutch reviews</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="mt-[clamp(3.5rem,10vw,6rem)] border-t border-ink/5 pt-10 sm:pt-12">
+			<TrustedByMarquee client:visible />
 		</div>
 	</div>
 </section>
+
+<style>
+	.hero-glass {
+		position: absolute;
+		border-radius: 1.25rem;
+		background:
+			linear-gradient(
+				135deg,
+				rgb(255 255 255 / 0.55) 0%,
+				rgb(255 255 255 / 0.12) 40%,
+				rgb(180 200 220 / 0.18) 100%
+			);
+		border: 1px solid rgb(255 255 255 / 0.55);
+		box-shadow:
+			0 30px 60px rgb(20 33 43 / 0.08),
+			inset 0 1px 0 rgb(255 255 255 / 0.7);
+		backdrop-filter: blur(18px);
+		-webkit-backdrop-filter: blur(18px);
+		transform: rotate(-18deg) skewX(-8deg);
+	}
+
+	.hero-glass::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		background: linear-gradient(
+			120deg,
+			transparent 20%,
+			rgb(255 120 180 / 0.12),
+			rgb(120 200 255 / 0.14),
+			rgb(180 255 160 / 0.1),
+			transparent 80%
+		);
+		mix-blend-mode: soft-light;
+		pointer-events: none;
+	}
+
+	.hero-glass--a {
+		top: 12%;
+		right: 6%;
+		width: min(42vw, 28rem);
+		height: min(48vw, 32rem);
+		animation: glass-float 12s ease-in-out infinite;
+	}
+
+	.hero-glass--b {
+		top: 28%;
+		right: 22%;
+		width: min(28vw, 18rem);
+		height: min(34vw, 22rem);
+		opacity: 0.75;
+		transform: rotate(12deg) skewX(-4deg);
+		animation: glass-float 14s ease-in-out infinite reverse;
+	}
+
+	.hero-glass--c {
+		top: 48%;
+		right: -2%;
+		width: min(24vw, 16rem);
+		height: min(30vw, 20rem);
+		opacity: 0.55;
+		transform: rotate(-28deg) skewX(-10deg);
+		animation: glass-float 16s ease-in-out infinite;
+	}
+
+	@keyframes glass-float {
+		0%,
+		100% {
+			translate: 0 0;
+		}
+		50% {
+			translate: 0 -1.25rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hero-glass {
+			animation: none;
+		}
+	}
+</style>
