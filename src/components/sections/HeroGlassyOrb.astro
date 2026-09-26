@@ -29,41 +29,41 @@ import {
 		position: absolute;
 		inset: 0;
 		display: grid;
-		place-items: start end;
+		place-items: center end;
 		pointer-events: none;
 		overflow: visible;
 	}
 
 	.hero-orb__video {
 		display: block;
-		width: min(92%, 19.5rem);
+		width: min(96%, 20.5rem);
 		max-width: none;
 		height: auto;
 		aspect-ratio: 1;
 		object-fit: cover;
 		mix-blend-mode: screen;
 		transform: scale(var(--orbScale));
-		transform-origin: top right;
+		transform-origin: center right;
 		filter: var(--orbFilter);
 	}
 
 	@media (min-width: 40rem) {
 		.hero-orb__video {
-			width: min(88%, 23.5rem);
+			width: min(92%, 24rem);
 		}
 	}
 
 	@media (min-width: 64rem) {
 		.hero-orb__video {
-			width: min(100%, 27rem);
-			translate: 14% -10%;
+			width: min(100%, 27.5rem);
+			translate: 12% 0;
 		}
 	}
 
 	@media (min-width: 90rem) {
 		.hero-orb__video {
 			width: min(100%, 29rem);
-			translate: 18% -12%;
+			translate: 14% 0;
 		}
 	}
 </style>
