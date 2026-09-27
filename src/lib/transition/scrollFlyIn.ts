@@ -25,6 +25,10 @@ export const CONTENT_Y_PROGRESS_END = 0.8;
 export const CONTENT_Y_START_PX = 80;
 export const CONTENT_Y_END_PX = 0;
 
+/** Below this width the partner is taller than the screen, so the pin releases once the circle is open. */
+export const NARROW_LAYOUT_MAX_PX = 1020;
+export const NARROW_RELEASE_PROGRESS = 0.48;
+
 /** Plane: left → center while inset opens → fully off right. */
 export const PLANE_CENTER_PROGRESS = 0.42;
 export const PLANE_X_START_VIEWPORTS = -1.2;

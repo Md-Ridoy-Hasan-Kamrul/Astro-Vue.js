@@ -12,6 +12,8 @@ import {
 	PLANE_X_START_VIEWPORTS,
 	ROUND_END_PX,
 	ROUND_START_PX,
+	NARROW_LAYOUT_MAX_PX,
+	NARROW_RELEASE_PROGRESS,
 	SCROLL_TRACK_VH,
 	clamp01,
 	contentTranslateYPx,
@@ -27,6 +29,12 @@ import {
 describe('scrollFlyIn tokens', () => {
 	it('uses a tall ContainerScroll-style track', () => {
 		expect(SCROLL_TRACK_VH).toBe(350);
+	});
+
+	it('releases the sticky pin on narrow screens once the circle is open', () => {
+		expect(NARROW_LAYOUT_MAX_PX).toBe(1020);
+		expect(NARROW_RELEASE_PROGRESS).toBeGreaterThan(0.4);
+		expect(NARROW_RELEASE_PROGRESS).toBeLessThan(0.6);
 	});
 
 	it('exposes local fly image + fallback URL', () => {

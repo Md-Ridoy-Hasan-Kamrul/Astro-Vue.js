@@ -3,11 +3,14 @@
  * ContainerScroll + ContainerInset + plane pass (Vue, no React/motion).
  * Inset opens circle→full; partner rises to center; plane flies off.
  */
-import { computed, ref, useTemplateRef } from 'vue';
+import { computed, onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
 import {
 	FALLBACK_FLY_IMAGE,
 	FLY_IMAGE_PATH,
+	INSET_PROGRESS_END,
+	NARROW_LAYOUT_MAX_PX,
 	SCROLL_TRACK_VH,
+	clamp01,
 	contentTranslateYPx,
 	insetClipPath,
 	planeOpacity,
@@ -34,17 +37,43 @@ const reducedMotion = ref(
 	typeof window !== 'undefined' &&
 		window.matchMedia('(prefers-reduced-motion: reduce)').matches,
 );
+const narrow = ref(false);
+let narrowQuery: MediaQueryList | null = null;
+
+function syncNarrow() {
+	narrow.value = window.matchMedia(`(max-width: ${NARROW_LAYOUT_MAX_PX}px)`).matches;
+}
+
+onMounted(() => {
+	narrowQuery = window.matchMedia(`(max-width: ${NARROW_LAYOUT_MAX_PX}px)`);
+	narrow.value = narrowQuery.matches;
+	narrowQuery.addEventListener('change', syncNarrow);
+});
+
+onUnmounted(() => {
+	narrowQuery?.removeEventListener('change', syncNarrow);
+});
+
+/** Circle veil only while the narrow track is actually on screen. */
+const showVeil = computed(
+	() => narrow.value && !reducedMotion.value && progress.value > 0.04 && progress.value < 0.92,
+);
+
+const holeStyle = computed(() => {
+	const open = clamp01(progress.value / INSET_PROGRESS_END);
+	return { width: `${8 + open * 150}vmax`, height: `${8 + open * 150}vmax` };
+});
 
 const insetStyle = computed(() => {
-	if (reducedMotion.value) {
-		return { clipPath: insetClipPath(1) };
+	if (narrow.value || reducedMotion.value) {
+		return { clipPath: 'none' };
 	}
 	return { clipPath: insetClipPath(progress.value) };
 });
 
 const contentStyle = computed(() => {
-	if (reducedMotion.value) {
-		return { transform: 'translate3d(0, 0, 0)' };
+	if (narrow.value || reducedMotion.value) {
+		return { transform: 'none' };
 	}
 	const y = contentTranslateYPx(progress.value);
 	return { transform: `translate3d(0, ${y}px, 0)` };
@@ -52,6 +81,9 @@ const contentStyle = computed(() => {
 
 const flyStyle = computed(() => {
 	if (typeof window === 'undefined' || reducedMotion.value) {
+		return { transform: 'translate3d(0, 0, 0)', opacity: 0 };
+	}
+	if (narrow.value && !showVeil.value) {
 		return { transform: 'translate3d(0, 0, 0)', opacity: 0 };
 	}
 	return {
@@ -69,7 +101,8 @@ function onImageError() {
 	<div
 		ref="track"
 		class="scroll-fly relative w-full"
-		:style="{ height: `${SCROLL_TRACK_VH}vh` }"
+		:class="{ 'scroll-fly--flow': narrow }"
+		:style="narrow ? undefined : { height: `${SCROLL_TRACK_VH}vh` }"
 		data-scroll-fly-in
 	>
 		<div
@@ -115,24 +148,26 @@ function onImageError() {
 				/>
 			</div>
 		</div>
+		<div v-show="showVeil" class="scroll-fly__hole" :style="holeStyle" aria-hidden="true"></div>
 	</div>
 </template>
 
 <style>
-	/* ≤1020: partner copy must flow at full width — no 100vh clip, no side inset. */
 	@media (max-width: 1020px) {
-		.scroll-fly {
+		/* Full partner height — quote author is in normal page scroll, not clipped by 100vh. */
+		.scroll-fly--flow {
 			height: auto !important;
+			padding-top: 100vh;
 		}
 
-		.scroll-fly__stage {
+		.scroll-fly--flow .scroll-fly__stage {
 			position: relative;
 			height: auto;
 			min-height: 0;
 			overflow: visible;
 		}
 
-		.scroll-fly__inset {
+		.scroll-fly--flow .scroll-fly__inset {
 			position: relative;
 			inset: auto;
 			height: auto;
@@ -140,15 +175,33 @@ function onImageError() {
 			clip-path: none !important;
 		}
 
-		.scroll-fly__content {
+		.scroll-fly--flow .scroll-fly__content {
 			display: block;
 			height: auto;
 			min-height: 0;
+			padding-top: 0;
 			transform: none !important;
 		}
 
-		.scroll-fly__plane {
-			display: none;
+		.scroll-fly--flow .scroll-fly__plane {
+			position: fixed;
+			z-index: 30;
 		}
+
+		.scroll-fly--flow .scroll-fly__plane img {
+			width: min(92vw, 34rem);
+			transform: scale(1);
+		}
+	}
+
+	.scroll-fly__hole {
+		position: fixed;
+		z-index: 28;
+		top: 50%;
+		left: 50%;
+		translate: -50% -50%;
+		border-radius: 999px;
+		box-shadow: 0 0 0 120vmax #f4f5f7;
+		pointer-events: none;
 	}
 </style>
