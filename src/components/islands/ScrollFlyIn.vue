@@ -68,12 +68,12 @@ function onImageError() {
 <template>
 	<div
 		ref="track"
-		class="relative w-full"
+		class="scroll-fly relative w-full"
 		:style="{ height: `${SCROLL_TRACK_VH}vh` }"
 		data-scroll-fly-in
 	>
 		<div
-			class="sticky top-0 flex min-h-svh w-full items-center justify-center overflow-hidden bg-[#f4f5f7]"
+			class="scroll-fly__stage sticky top-0 flex min-h-svh w-full items-center justify-center overflow-hidden bg-[#f4f5f7]"
 		>
 			<div
 				class="pointer-events-none absolute inset-0 opacity-90"
@@ -89,11 +89,11 @@ function onImageError() {
 
 			<!-- Partner section revealed through opening inset (visible before plane fully exits) -->
 			<div
-				class="absolute inset-0 z-10 overflow-hidden bg-paper"
+				class="scroll-fly__inset absolute inset-0 z-10 overflow-hidden bg-paper"
 				:style="insetStyle"
 			>
 				<div
-					class="flex min-h-svh w-full items-center"
+					class="scroll-fly__content flex min-h-svh w-full items-center"
 					:style="contentStyle"
 				>
 					<slot />
@@ -102,7 +102,7 @@ function onImageError() {
 
 			<!-- Large plane pass — leaves completely after center -->
 			<div
-				class="pointer-events-none absolute inset-0 z-20 flex items-center justify-center"
+				class="scroll-fly__plane pointer-events-none absolute inset-0 z-20 flex items-center justify-center"
 				:style="flyStyle"
 				aria-hidden="true"
 			>
@@ -117,3 +117,38 @@ function onImageError() {
 		</div>
 	</div>
 </template>
+
+<style>
+	/* ≤1020: partner copy must flow at full width — no 100vh clip, no side inset. */
+	@media (max-width: 1020px) {
+		.scroll-fly {
+			height: auto !important;
+		}
+
+		.scroll-fly__stage {
+			position: relative;
+			height: auto;
+			min-height: 0;
+			overflow: visible;
+		}
+
+		.scroll-fly__inset {
+			position: relative;
+			inset: auto;
+			height: auto;
+			overflow: visible;
+			clip-path: none !important;
+		}
+
+		.scroll-fly__content {
+			display: block;
+			height: auto;
+			min-height: 0;
+			transform: none !important;
+		}
+
+		.scroll-fly__plane {
+			display: none;
+		}
+	}
+</style>

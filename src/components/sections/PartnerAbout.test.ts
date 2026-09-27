@@ -29,5 +29,5 @@ test('PartnerAbout section matches the strategy-to-scale reference layout', asyn
 	expect(result).toContain('More About Us');
 	expect(result).toContain('Nedin Zahirovic');
 	expect(result).toContain('/partner/office.jpg');
-	expect(result).toContain('min-[1020px]:items-stretch');
+	expect(result).toContain('min-[1021px]:items-stretch');
 });

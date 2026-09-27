@@ -20,11 +20,11 @@ const paragraphs = [
 	aria-labelledby="partner-heading"
 >
 	<div
-		class="mx-auto grid w-[min(100%-2rem,72rem)] gap-8 py-[clamp(3.5rem,9vw,6.5rem)] min-[768px]:gap-10 min-[1020px]:grid-cols-2 min-[1020px]:items-stretch min-[1020px]:gap-x-12 min-[1020px]:gap-y-0"
+		class="mx-auto grid w-[min(100%-1.5rem,72rem)] gap-6 px-0 py-8 min-[375px]:w-[min(100%-2rem,72rem)] min-[375px]:gap-8 min-[375px]:py-10 min-[425px]:py-12 min-[768px]:gap-10 min-[768px]:py-14 min-[1021px]:grid-cols-2 min-[1021px]:items-stretch min-[1021px]:gap-x-12 min-[1021px]:gap-y-0 min-[1021px]:py-[clamp(3.5rem,9vw,6.5rem)]"
 	>
-		<!-- Image height matches content column on desktop (grid stretch). -->
+		<!-- Stacked + shorter image through 1020px; desktop image matches the text column. -->
 		<div
-			class="relative aspect-[4/5] overflow-hidden min-[1020px]:aspect-auto min-[1020px]:h-full min-[1020px]:min-h-0"
+			class="relative aspect-[5/4] min-h-0 w-full min-w-0 overflow-hidden min-[375px]:aspect-[4/3] min-[768px]:aspect-[16/10] min-[1021px]:aspect-auto min-[1021px]:h-full"
 		>
 			<img
 				src={officeImage}
@@ -37,19 +37,19 @@ const paragraphs = [
 			/>
 		</div>
 
-		<div class="flex min-w-0 flex-col">
+		<div class="flex min-w-0 max-w-full flex-col">
 			<h2
 				id="partner-heading"
-				class="font-display text-[clamp(1.85rem,4.2vw,2.75rem)] font-extrabold leading-[1.12] tracking-tight text-ink"
+				class="max-w-full font-display text-[clamp(1.45rem,6.4vw,2.75rem)] font-extrabold leading-[1.12] tracking-tight text-balance text-ink min-[768px]:text-[clamp(1.85rem,4.2vw,2.75rem)]"
 			>
 				One Partner. From Strategy to Scale.
 			</h2>
 
-			<p class="mt-5 text-[clamp(1rem,2.1vw,1.125rem)] leading-relaxed text-ink-soft min-[768px]:mt-6">
+			<p class="mt-4 max-w-full text-[0.95rem] leading-relaxed text-ink-soft min-[425px]:text-base min-[768px]:mt-6 min-[768px]:text-[clamp(1rem,2.1vw,1.125rem)]">
 				{intro}
 			</p>
 
-			<div class="mt-4 space-y-4 text-[clamp(0.95rem,2vw,1.0625rem)] leading-relaxed text-ink-soft">
+			<div class="mt-4 max-w-full space-y-4 text-[0.95rem] leading-relaxed text-ink-soft min-[425px]:text-base min-[768px]:text-[clamp(0.95rem,2vw,1.0625rem)]">
 				{paragraphs.map((text) => <p class="m-0">{text}</p>)}
 			</div>
 
