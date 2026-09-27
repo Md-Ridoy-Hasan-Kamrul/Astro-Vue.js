@@ -48,6 +48,21 @@ import {
 		translate: 6% 0;
 	}
 
+	@media (max-width: 320px) {
+		.hero-orb {
+			place-items: center;
+			overflow: hidden;
+		}
+
+		.hero-orb__video {
+			width: 16rem;
+			margin-inline: auto;
+			translate: 0 0;
+			transform: scale(1);
+			transform-origin: center center;
+		}
+	}
+
 	@media (min-width: 40rem) {
 		.hero-orb__video {
 			width: min(92%, 25rem);
