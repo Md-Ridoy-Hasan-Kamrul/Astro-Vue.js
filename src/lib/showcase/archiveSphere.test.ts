@@ -20,8 +20,17 @@ import {
 	perspectiveForWidth,
 	scrollZoomProgress,
 	sphereRadius,
+	circleDolly,
+	eyeClipPath,
+	eyeFilmProgress,
+	eyeLayerOpacity,
+	eyeZoomScale,
+	containerScrollProgress,
 	thumbUrl,
 	worldTransform,
+	EYE_WINDOW_END,
+	EYE_ZOOM_END,
+	TRACK_HEIGHT_VH,
 } from './archiveSphere';
 
 describe('archive catalog', () => {
@@ -38,6 +47,24 @@ describe('archive catalog', () => {
 		expect(thumbUrl(archiveShots[0]!.id)).toBe(`${ARCHIVE_CDN}${archiveShots[0]!.id}_min.webp`);
 		expect(ARCHIVE_FILM_URL).toContain('cloudfront.net');
 		expect(HEADLINE_COPY).toBe('I See Through the Wild');
+	});
+
+	it('opens the eye with scroll, zooms in, then shows the circle', () => {
+		expect(TRACK_HEIGHT_VH).toBe(350);
+		expect(containerScrollProgress(400, 2800, 800)).toBe(0);
+		expect(containerScrollProgress(800 - 2800, 2800, 800)).toBe(1);
+		expect(eyeClipPath(0)).toContain('inset(45%');
+		expect(eyeClipPath(EYE_WINDOW_END)).toContain('inset(0%');
+		expect(eyeZoomScale(0)).toBe(1);
+		expect(eyeZoomScale(EYE_WINDOW_END)).toBe(1);
+		expect(eyeZoomScale(EYE_ZOOM_END)).toBeGreaterThan(1.1);
+		expect(eyeZoomScale(EYE_ZOOM_END)).toBeLessThan(1.4);
+		expect(eyeFilmProgress(0)).toBe(0);
+		expect(eyeFilmProgress(EYE_ZOOM_END)).toBe(1);
+		expect(eyeLayerOpacity(EYE_WINDOW_END)).toBe(1);
+		expect(eyeLayerOpacity(1)).toBe(0);
+		expect(circleDolly(EYE_ZOOM_END)).toBe(0);
+		expect(circleDolly(1)).toBe(1);
 	});
 });
 
@@ -96,7 +123,9 @@ describe('camera and headline', () => {
 		expect(headlineOpacity(1)).toBeCloseTo(0.45, 5);
 	});
 
-	it('spins on hover and holds still while dragging or blocked', () => {
+	it('spins slowly while active and holds still while dragging or blocked', () => {
+		expect(HOVER_SPIN_DEG).toBeGreaterThan(0.12);
+		expect(HOVER_SPIN_DEG).toBeLessThan(0.35);
 		expect(hoverYaw(10, true, false, false)).toBe(10 + HOVER_SPIN_DEG);
 		expect(hoverYaw(10, false, false, false)).toBe(10);
 		expect(hoverYaw(10, true, true, false)).toBe(10);

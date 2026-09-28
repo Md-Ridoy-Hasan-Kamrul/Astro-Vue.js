@@ -9,6 +9,7 @@ import {
 	ARCHIVE_FONT_URL,
 	CAM_Z_EASE,
 	DRAG_DEG_PER_PX,
+	EYE_ZOOM_END,
 	HEADLINE_WORDS,
 	hoverYaw,
 	PITCH_LIMIT_DEG,
@@ -20,13 +21,18 @@ import {
 	cardDim,
 	cardFade,
 	cardTransform,
+	circleDolly,
 	distributeSphere,
+	eyeClipPath,
+	eyeFilmProgress,
+	eyeLayerOpacity,
+	eyeZoomScale,
 	headlineOpacity,
 	headlineTransform,
 	worldTransform,
 	perspectiveForWidth,
+	containerScrollProgress,
 	rotateUnit,
-	scrollZoomProgress,
 	sphereRadius,
 	stillUrl,
 	thumbUrl,
@@ -40,18 +46,23 @@ const TOUCH_START_PX = 10;
 const VELOCITY_SNAP = 0.002;
 const RESIZE_IGNORE_PX = 20;
 const DEEP_PROGRESS = 0.45;
+const VIEW_TOP_RATIO = 0.45;
+const VIEW_BOTTOM_RATIO = 0.4;
+const CARD_HOVER_SCALE = 1.06;
 
 const rootRef = useTemplateRef<HTMLElement>('root');
 const worldRef = useTemplateRef<HTMLElement>('world');
 const headlineRef = useTemplateRef<HTMLElement>('headline');
-const filmRef = useTemplateRef<HTMLVideoElement>('film');
+const eyeFilmRef = useTemplateRef<HTMLVideoElement>('eyeFilm');
 
 const points: SpherePoint[] = distributeSphere(archiveShots.length);
-const filmOpen = ref(true);
 const revealed = ref(false);
 const gridOpen = ref(false);
 const litIndex = ref(-1);
 const litSrc = ref('');
+const eyeClip = ref(eyeClipPath(0));
+const eyeZoom = ref(1);
+const eyeOpacity = ref(1);
 
 const motion = {
 	dragX: 0,
@@ -63,7 +74,8 @@ const motion = {
 	radius: 200,
 	perspective: 1150,
 	dragging: false,
-	hovering: false,
+	inView: false,
+	sequence: 0,
 	pointerId: -1,
 	originX: 0,
 	originY: 0,
@@ -79,6 +91,11 @@ const motion = {
 let frame = 0;
 let removeScroll: (() => void) | null = null;
 let reducedMotion = false;
+
+function onCardReady(event: Event) {
+	const image = event.target;
+	if (image instanceof HTMLImageElement) image.classList.add('in');
+}
 
 function loadFonts() {
 	if (document.querySelector('link[data-archive-font]')) return;
@@ -120,18 +137,36 @@ function layoutCards() {
 	});
 }
 
+function scrubEyeFilm() {
+	const video = eyeFilmRef.value;
+	if (!video || reducedMotion) return;
+	if (!video.paused) video.pause();
+	if (!Number.isFinite(video.duration) || video.duration <= 0) return;
+	const next = eyeFilmProgress(motion.sequence) * video.duration;
+	if (Math.abs(video.currentTime - next) > 0.04) video.currentTime = next;
+}
+
 function readZoom() {
 	const track = rootRef.value?.closest('.archive-track');
 	if (!track) return;
-	const top = track.getBoundingClientRect().top;
-	motion.progress = scrollZoomProgress(-top, window.innerHeight);
+	const rect = track.getBoundingClientRect();
+	const viewport = window.innerHeight;
+	motion.sequence = reducedMotion ? 1 : containerScrollProgress(rect.top, rect.height, viewport);
+	motion.progress = circleDolly(motion.sequence);
+	eyeClip.value = reducedMotion || motion.sequence >= EYE_ZOOM_END ? 'none' : eyeClipPath(motion.sequence);
+	eyeZoom.value = reducedMotion ? 1 : eyeZoomScale(motion.sequence);
+	eyeOpacity.value = reducedMotion ? 0 : eyeLayerOpacity(motion.sequence);
+	scrubEyeFilm();
+	motion.inView = rect.top < viewport * VIEW_TOP_RATIO && rect.bottom > viewport * VIEW_BOTTOM_RATIO;
+	if (motion.inView) revealed.value = true;
 }
 
 function stepCamera() {
-	const blocked = litIndex.value >= 0 || gridOpen.value || reducedMotion;
-	if (!motion.dragging && !blocked && !motion.hovering) decayDrag();
-	motion.dragX = hoverYaw(motion.dragX, motion.hovering, motion.dragging, blocked);
-	if (motion.hovering && !motion.dragging && !blocked) {
+	const eyeOpen = motion.sequence >= EYE_ZOOM_END;
+	const blocked = gridOpen.value || reducedMotion || !motion.inView || !eyeOpen;
+	if (!motion.dragging && blocked) decayDrag();
+	motion.dragX = hoverYaw(motion.dragX, motion.inView, motion.dragging, blocked);
+	if (motion.inView && !motion.dragging && !gridOpen.value && !reducedMotion) {
 		motion.velX = 0;
 		motion.velY = 0;
 	}
@@ -172,15 +207,14 @@ function paintFrame() {
 function paintCards(yaw: number, pitch: number) {
 	const root = rootRef.value;
 	if (!root) return;
-	const open = litIndex.value >= 0;
 	root.querySelectorAll<HTMLElement>('[data-card]').forEach((card, index) => {
 		const point = points[index];
 		if (!point) return;
 		const turned = rotateUnit(point, yaw, pitch);
 		card.style.opacity = String(
-			cardFade(turned.z, motion.radius, motion.camZ, motion.perspective, index === litIndex.value),
+			cardFade(turned.z, motion.radius, motion.camZ, motion.perspective, false),
 		);
-		card.style.setProperty('--d', cardDim(turned.z, motion.progress, open).toFixed(3));
+		card.style.setProperty('--d', cardDim(turned.z, motion.progress, false).toFixed(3));
 	});
 }
 
@@ -204,16 +238,8 @@ function capturePointer(event: PointerEvent) {
 	}
 }
 
-function onStageEnter() {
-	motion.hovering = true;
-}
-
-function onStageLeave() {
-	motion.hovering = false;
-}
-
 function onPointerDown(event: PointerEvent) {
-	if (litIndex.value >= 0 || gridOpen.value) return;
+	if (gridOpen.value) return;
 	const card = (event.target as HTMLElement).closest<HTMLElement>('[data-card]');
 	motion.downIndex = card ? Number(card.dataset.idx) : -1;
 	motion.originX = event.clientX;
@@ -279,36 +305,26 @@ function closeShot() {
 
 function toggleGrid() {
 	gridOpen.value = !gridOpen.value;
-	if (gridOpen.value) motion.hovering = false;
-}
-
-function revealFromFilm() {
-	filmOpen.value = false;
-	revealed.value = true;
-}
-
-function onFilmPlay(event: Event) {
-	const video = event.target;
-	if (video instanceof HTMLVideoElement) video.playbackRate = 2;
 }
 
 onMounted(() => {
 	reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-	loadFonts();
-	layoutCards();
-	revealed.value = true;
-	const video = filmRef.value;
-	if (video) {
-		video.muted = true;
-		video.defaultMuted = true;
-		video.playsInline = true;
-		video.playbackRate = 2;
-		void video.play().catch(() => {
-			filmOpen.value = false;
-		});
-	} else {
-		filmOpen.value = false;
+	if (reducedMotion) {
+		eyeClip.value = 'none';
+		eyeOpacity.value = 0;
 	}
+	const film = eyeFilmRef.value;
+	if (film) {
+		film.muted = true;
+		film.defaultMuted = true;
+		film.playsInline = true;
+		film.pause();
+	}
+	loadFonts();
+	rootRef.value?.querySelectorAll<HTMLImageElement>('.card img').forEach((image) => {
+		if (image.complete && image.naturalWidth > 0) image.classList.add('in');
+	});
+	layoutCards();
 	const onScroll = () => readZoom();
 	const lenis = getLenis();
 	if (lenis) lenis.on('scroll', onScroll);
@@ -332,18 +348,22 @@ onUnmounted(() => {
 	<div
 		ref="root"
 		class="archive"
-		:class="{ revealed, gridview: gridOpen, lit: litIndex >= 0 }"
+		:class="{ revealed, gridview: gridOpen, lit: litIndex >= 0, entering: eyeOpacity > 0.05 && !gridOpen && litIndex < 0 }"
+		:style="{ clipPath: gridOpen || litIndex >= 0 ? 'none' : eyeClip }"
 	>
 		<div
 			id="stage"
 			class="stage"
-			@pointerenter="onStageEnter"
-			@pointerleave="onStageLeave"
+			:style="{
+				opacity: gridOpen || litIndex >= 0 ? 1 : 1 - eyeOpacity,
+				pointerEvents: eyeOpacity > 0.05 && !gridOpen && litIndex < 0 ? 'none' : 'auto',
+			}"
 			@pointerdown="onPointerDown"
 			@pointermove="onPointerMove"
 			@pointerup="onPointerUp"
 			@pointercancel="onPointerUp"
 		>
+			<div class="enter">
 			<div id="world" ref="world" class="world">
 				<div id="orb" class="orb">
 					<div
@@ -355,7 +375,12 @@ onUnmounted(() => {
 						:data-idx="index"
 					>
 						<figure>
-							<img :src="thumbUrl(shot.id)" :alt="shot.title" draggable="false" />
+							<img
+								:src="thumbUrl(shot.id)"
+								:alt="shot.title"
+								draggable="false"
+								@load="onCardReady"
+							/>
 						</figure>
 					</div>
 				</div>
@@ -367,6 +392,7 @@ onUnmounted(() => {
 						</template>
 					</span>
 				</h1>
+			</div>
 			</div>
 		</div>
 
@@ -393,7 +419,7 @@ onUnmounted(() => {
 			</div>
 		</div>
 
-		<div v-if="litIndex >= 0" id="lit" class="lit" @click.self="closeShot">
+		<div v-if="litIndex >= 0" id="lit" class="lit">
 			<div class="plate">
 				<div class="shot">
 					<img :src="litSrc" :alt="archiveShots[litIndex]?.title" />
@@ -409,21 +435,23 @@ onUnmounted(() => {
 			</div>
 		</div>
 
-		<div v-if="filmOpen" id="intro" class="intro">
+		<div
+			v-show="eyeOpacity > 0.01 && !gridOpen && litIndex < 0"
+			class="eye-film"
+			:style="{ opacity: eyeOpacity }"
+			aria-hidden="true"
+		>
 			<video
-				id="film"
-				ref="film"
+				ref="eyeFilm"
+				class="eye-film__video"
 				:src="ARCHIVE_FILM_URL"
-				autoplay
+				:style="{ transform: `scale(${eyeZoom})` }"
 				muted
 				playsinline
 				preload="auto"
 				disablepictureinpicture
-				@playing="onFilmPlay"
-				@ended="revealFromFilm"
-				@error="revealFromFilm"
+				@loadedmetadata="scrubEyeFilm"
 			></video>
-			<button id="skip" type="button" class="skip" @click="revealFromFilm">Skip</button>
 		</div>
 	</div>
 </template>
@@ -441,17 +469,25 @@ onUnmounted(() => {
 		position: relative;
 		height: 100%;
 		overflow: hidden;
-		background: var(--bg);
+		background: transparent;
 		color: var(--ink);
 		font-family: var(--sans);
 		font-weight: 300;
 		-webkit-font-smoothing: antialiased;
 	}
 
+	.enter {
+		position: absolute;
+		inset: 0;
+		transform-origin: 50% 50%;
+		transform-style: preserve-3d;
+	}
+
 	.stage {
 		position: absolute;
 		inset: 0;
 		z-index: 10;
+		background: #000;
 		perspective: var(--persp);
 		perspective-origin: 50% 50%;
 		overflow: hidden;
@@ -489,12 +525,26 @@ onUnmounted(() => {
 		overflow: hidden;
 		border-radius: 3px;
 		background: #0a0a0a;
+		transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+	}
+
+	.card:hover figure {
+		transform: scale(v-bind(CARD_HOVER_SCALE));
 	}
 
 	.card img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+		opacity: 0;
+	}
+
+	.card img.in {
+		opacity: 1;
+	}
+
+	.revealed .card img {
+		transition: opacity 0.8s ease-out;
 	}
 
 	.card figure::after {
@@ -638,10 +688,32 @@ onUnmounted(() => {
 	}
 
 	.cue s {
+		position: relative;
 		display: block;
 		width: 44px;
 		height: 1px;
+		overflow: hidden;
 		background: rgba(244, 242, 239, 0.28);
+	}
+
+	.cue s::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: #f4f2ef;
+		animation: sweep 2.6s ease infinite;
+	}
+
+	@keyframes sweep {
+		0% {
+			transform: translateX(-100%);
+		}
+		55% {
+			transform: translateX(0);
+		}
+		100% {
+			transform: translateX(100%);
+		}
 	}
 
 	.grid {
@@ -703,11 +775,25 @@ onUnmounted(() => {
 		display: grid;
 		place-items: center;
 		padding: clamp(56px, 8vh, 84px) var(--pad);
-		background: rgba(0, 0, 0, 0.2);
+		background: transparent;
+		pointer-events: none;
 	}
 
 	.plate {
 		width: min(72vw, 860px);
+		pointer-events: auto;
+		animation: card-grow 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+	}
+
+	@keyframes card-grow {
+		from {
+			transform: scale(0.28);
+			opacity: 0.35;
+		}
+		to {
+			transform: none;
+			opacity: 1;
+		}
 	}
 
 	.shot {
@@ -765,35 +851,6 @@ onUnmounted(() => {
 		color: rgba(244, 242, 239, 0.62);
 	}
 
-	.intro {
-		position: absolute;
-		inset: 0;
-		z-index: 200;
-		background: #000;
-	}
-
-	.intro video {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
-
-	.skip {
-		position: absolute;
-		right: var(--pad);
-		bottom: var(--pad);
-		min-height: 44px;
-		padding: 10px 18px;
-		font-size: 11px;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-		color: rgba(244, 242, 239, 0.6);
-		background: transparent;
-		border: 1px solid rgba(244, 242, 239, 0.25);
-		border-radius: 999px;
-		cursor: var(--cursor-site-pointer);
-	}
-
 	@media (max-width: 900px) {
 		.meta {
 			grid-template-columns: 1fr;
@@ -839,6 +896,29 @@ onUnmounted(() => {
 		.rows {
 			grid-template-columns: 1fr;
 		}
+	}
+
+	.entering .vig,
+	.entering .chrome,
+	.entering .gridbtn {
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.eye-film {
+		position: absolute;
+		inset: 0;
+		z-index: 30;
+		overflow: hidden;
+		pointer-events: none;
+		background: #000;
+	}
+
+	.eye-film__video {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transform-origin: 50% 46%;
 	}
 
 	@media (prefers-reduced-motion: reduce) {

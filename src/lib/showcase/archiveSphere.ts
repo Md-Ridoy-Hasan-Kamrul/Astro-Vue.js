@@ -16,15 +16,22 @@ export const HEADLINE_WORDS = ['I', 'See', 'Through', 'the', 'Wild'] as const;
 export const TILT_DEG = -4;
 export const PITCH_LIMIT_DEG = 32;
 export const SCROLL_ZOOM_VIEWPORTS = 0.16;
-export const TRACK_HEIGHT_VH = 116;
+/** Sticky track: the eye window opens, then zooms inward, then the photo circle. */
+export const TRACK_HEIGHT_VH = 350;
+export const EYE_WINDOW_END = 0.46;
+export const EYE_ZOOM_END = 0.78;
+export const EYE_INSET_START = 45;
+export const EYE_ROUND_START = 1000;
+export const EYE_ROUND_END = 16;
+export const EYE_ZOOM_MAX = 1.22;
 export const HEADLINE_Z_RATIO = 0.62;
 export const CAM_Z_CAP = 64;
 export const CAM_Z_RADIUS_RATIO = 0.12;
 export const CAM_Z_EASE = 0.075;
 export const VELOCITY_DECAY = 0.94;
 export const DRAG_DEG_PER_PX = 0.13;
-/** Degrees of yaw added each frame while the pointer rests on the sphere. */
-export const HOVER_SPIN_DEG = 0.42;
+/** Visible slow yaw per frame while the archive is on screen. */
+export const HOVER_SPIN_DEG = 0.22;
 export const RADIUS_CAP = 480;
 export const HEADLINE_FADE = 0.55;
 
@@ -210,9 +217,55 @@ export function stillUrl(id: string): string {
 }
 
 export function clamp01(value: number): number {
-	if (value < 0) return 0;
-	if (value > 1) return 1;
+	if (value <= 0) return 0;
+	if (value >= 1) return 1;
 	return value;
+}
+
+/**
+ * ContainerScroll offset ["start center", "end end"].
+ * The eye stays closed until the section reaches the middle of the screen.
+ */
+export function containerScrollProgress(
+	targetTop: number,
+	targetHeight: number,
+	viewportHeight: number,
+): number {
+	const startTop = viewportHeight / 2;
+	const endTop = viewportHeight - targetHeight;
+	const span = startTop - endTop;
+	if (span <= 0) return targetTop <= startTop ? 1 : 0;
+	return clamp01((startTop - targetTop) / span);
+}
+
+/** Rounded window grows from a small eye to full frame. Never shrinks. */
+export function eyeClipPath(progress: number): string {
+	const t = clamp01(progress / EYE_WINDOW_END);
+	const inset = EYE_INSET_START * (1 - t);
+	const round = EYE_ROUND_START + (EYE_ROUND_END - EYE_ROUND_START) * t;
+	return `inset(${inset}% ${inset}% ${inset}% ${inset}% round ${round}px)`;
+}
+
+/** After the window is open, scroll zooms into the eye. */
+export function eyeZoomScale(progress: number): number {
+	if (progress <= EYE_WINDOW_END) return 1;
+	const t = clamp01((progress - EYE_WINDOW_END) / (EYE_ZOOM_END - EYE_WINDOW_END));
+	return 1 + (EYE_ZOOM_MAX - 1) * t;
+}
+
+/** 0..1 through the eye film while the window opens and the zoom finishes. */
+export function eyeFilmProgress(progress: number): number {
+	return clamp01(progress / EYE_ZOOM_END);
+}
+
+export function eyeLayerOpacity(progress: number): number {
+	if (progress <= EYE_ZOOM_END) return 1;
+	return clamp01(1 - (progress - EYE_ZOOM_END) / (1 - EYE_ZOOM_END));
+}
+
+/** Dolly starts only after the eye zoom has finished. */
+export function circleDolly(progress: number): number {
+	return clamp01((progress - EYE_ZOOM_END) / (1 - EYE_ZOOM_END));
 }
 
 export function distributeSphere(count: number): SpherePoint[] {
