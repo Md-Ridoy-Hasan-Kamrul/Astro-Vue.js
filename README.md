@@ -128,6 +128,7 @@ Learning project: **Astro** pages + **Vue** islands, with Tailwind, Zustand, Tan
 - [x] Lenis site-wide smooth scroll (persists as the app grows)
 - [x] Migrated interactive islands from Svelte → Vue 3
 - [x] Hero → partner page-transition (scroll fly-in) + PartnerAbout section
+- [x] Project showcase — Ethan Vale photo sphere after the partner section
 - [ ] (Add next goals here when the owner shares them)
 
 ---

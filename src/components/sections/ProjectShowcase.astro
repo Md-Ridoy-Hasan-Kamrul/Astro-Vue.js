@@ -1,0 +1,34 @@
+---
+/**
+ * Third landing section — Ethan Vale photo archive.
+ * The sticky track is 116vh so 16vh of scroll is the sphere dolly.
+ */
+import ArchiveSphere from '../islands/ArchiveSphere.vue';
+import { TRACK_HEIGHT_VH } from '../../lib/showcase/archiveSphere';
+---
+
+<section
+	id="showcase"
+	class="archive-track"
+	style={`height: ${TRACK_HEIGHT_VH}vh`}
+	aria-label="Project showcase"
+>
+	<div class="archive-pin">
+		<ArchiveSphere client:visible />
+	</div>
+</section>
+
+<style>
+	.archive-track {
+		position: relative;
+		background: #000;
+	}
+
+	.archive-pin {
+		position: sticky;
+		top: 0;
+		height: 100vh;
+		height: 100dvh;
+		overflow: hidden;
+	}
+</style>
