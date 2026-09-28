@@ -23,6 +23,8 @@ export const CAM_Z_RADIUS_RATIO = 0.12;
 export const CAM_Z_EASE = 0.075;
 export const VELOCITY_DECAY = 0.94;
 export const DRAG_DEG_PER_PX = 0.13;
+/** Degrees of yaw added each frame while the pointer rests on the sphere. */
+export const HOVER_SPIN_DEG = 0.42;
 export const RADIUS_CAP = 480;
 export const HEADLINE_FADE = 0.55;
 
@@ -290,6 +292,11 @@ export function scrollZoomProgress(scrollY: number, viewportHeight: number): num
 
 export function camZTarget(progress: number, radius: number): number {
 	return progress * Math.min(CAM_Z_CAP, radius * CAM_Z_RADIUS_RATIO);
+}
+
+export function hoverYaw(yaw: number, hovering: boolean, dragging: boolean, blocked: boolean): number {
+	if (dragging || blocked || !hovering) return yaw;
+	return yaw + HOVER_SPIN_DEG;
 }
 
 export function worldTransform(camZ: number, yaw: number, pitch: number): string {

@@ -5,6 +5,7 @@ import {
 	CAM_Z_CAP,
 	HEADLINE_COPY,
 	HEADLINE_Z_RATIO,
+	HOVER_SPIN_DEG,
 	SCROLL_ZOOM_VIEWPORTS,
 	SPHERE_COUNT,
 	TILT_DEG,
@@ -15,6 +16,7 @@ import {
 	distributeSphere,
 	headlineOpacity,
 	headlineTransform,
+	hoverYaw,
 	perspectiveForWidth,
 	scrollZoomProgress,
 	sphereRadius,
@@ -92,6 +94,13 @@ describe('camera and headline', () => {
 		);
 		expect(headlineOpacity(0)).toBe(1);
 		expect(headlineOpacity(1)).toBeCloseTo(0.45, 5);
+	});
+
+	it('spins on hover and holds still while dragging or blocked', () => {
+		expect(hoverYaw(10, true, false, false)).toBe(10 + HOVER_SPIN_DEG);
+		expect(hoverYaw(10, false, false, false)).toBe(10);
+		expect(hoverYaw(10, true, true, false)).toBe(10);
+		expect(hoverYaw(10, true, false, true)).toBe(10);
 	});
 });
 

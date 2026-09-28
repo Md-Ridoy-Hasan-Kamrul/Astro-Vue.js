@@ -14,7 +14,10 @@ test('Project showcase mounts the archive after the partner section', async () =
 	expect(result).toContain('>See</span>');
 	expect(result).toContain('>Through</span>');
 	expect(result).toContain('>Wild</span>');
-	expect(result).toContain('Ethan');
+	expect(result).toContain('Toggle grid view');
+	expect(result).not.toContain('Open menu');
+	expect(result).not.toContain('aria-label="Ethan Vale"');
+	expect(result).not.toContain('Wildlife photography is less about taking pictures');
 	expect(result).toContain('Before the Dust Settled');
 	expect(result).toContain('Left Behind');
 	expect(result).toContain('height: 116vh');

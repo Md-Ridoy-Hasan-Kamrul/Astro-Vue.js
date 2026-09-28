@@ -10,6 +10,7 @@ import {
 	CAM_Z_EASE,
 	DRAG_DEG_PER_PX,
 	HEADLINE_WORDS,
+	hoverYaw,
 	PITCH_LIMIT_DEG,
 	TILT_DEG,
 	VELOCITY_DECAY,
@@ -32,7 +33,6 @@ import {
 	type SpherePoint,
 } from '../../lib/showcase/archiveSphere';
 
-const AVATAR_ID = 'hf_20260922_194417_a455843c-d8db-461c-8ef6-74a325d2472c';
 const CLICK_SLOP_FINE = 6;
 const CLICK_SLOP_COARSE = 14;
 const TOUCH_CANCEL_RATIO = 1.15;
@@ -50,7 +50,6 @@ const points: SpherePoint[] = distributeSphere(archiveShots.length);
 const filmOpen = ref(true);
 const revealed = ref(false);
 const gridOpen = ref(false);
-const menuOpen = ref(false);
 const litIndex = ref(-1);
 const litSrc = ref('');
 
@@ -64,6 +63,7 @@ const motion = {
 	radius: 200,
 	perspective: 1150,
 	dragging: false,
+	hovering: false,
 	pointerId: -1,
 	originX: 0,
 	originY: 0,
@@ -78,6 +78,7 @@ const motion = {
 
 let frame = 0;
 let removeScroll: (() => void) | null = null;
+let reducedMotion = false;
 
 function loadFonts() {
 	if (document.querySelector('link[data-archive-font]')) return;
@@ -127,7 +128,13 @@ function readZoom() {
 }
 
 function stepCamera() {
-	if (!motion.dragging && litIndex.value < 0) decayDrag();
+	const blocked = litIndex.value >= 0 || gridOpen.value || reducedMotion;
+	if (!motion.dragging && !blocked && !motion.hovering) decayDrag();
+	motion.dragX = hoverYaw(motion.dragX, motion.hovering, motion.dragging, blocked);
+	if (motion.hovering && !motion.dragging && !blocked) {
+		motion.velX = 0;
+		motion.velY = 0;
+	}
 	motion.dragY = clampPitch(motion.dragY);
 	const targetZ = camZTarget(motion.progress, motion.radius);
 	motion.camZ += (targetZ - motion.camZ) * CAM_Z_EASE;
@@ -188,8 +195,25 @@ function coarsePointer() {
 	return window.matchMedia('(pointer: coarse)').matches;
 }
 
+function capturePointer(event: PointerEvent) {
+	try {
+		rootRef.value?.setPointerCapture(event.pointerId);
+		motion.pointerId = event.pointerId;
+	} catch {
+		motion.pointerId = -1;
+	}
+}
+
+function onStageEnter() {
+	motion.hovering = true;
+}
+
+function onStageLeave() {
+	motion.hovering = false;
+}
+
 function onPointerDown(event: PointerEvent) {
-	if (litIndex.value >= 0 || menuOpen.value) return;
+	if (litIndex.value >= 0 || gridOpen.value) return;
 	const card = (event.target as HTMLElement).closest<HTMLElement>('[data-card]');
 	motion.downIndex = card ? Number(card.dataset.idx) : -1;
 	motion.originX = event.clientX;
@@ -201,10 +225,7 @@ function onPointerDown(event: PointerEvent) {
 	motion.dragging = event.pointerType !== 'touch';
 	motion.velX = 0;
 	motion.velY = 0;
-	if (motion.dragging) {
-		rootRef.value?.setPointerCapture(event.pointerId);
-		motion.pointerId = event.pointerId;
-	}
+	if (motion.dragging) capturePointer(event);
 }
 
 function onPointerMove(event: PointerEvent) {
@@ -221,7 +242,7 @@ function onPointerMove(event: PointerEvent) {
 		}
 		motion.touchDecided = true;
 		motion.dragging = true;
-		rootRef.value?.setPointerCapture(event.pointerId);
+		capturePointer(event);
 	}
 	if (!motion.dragging) return;
 	motion.dragX += dx * DRAG_DEG_PER_PX;
@@ -258,16 +279,7 @@ function closeShot() {
 
 function toggleGrid() {
 	gridOpen.value = !gridOpen.value;
-	if (gridOpen.value) menuOpen.value = false;
-}
-
-function toggleMenu() {
-	menuOpen.value = !menuOpen.value;
-}
-
-function openGridFromMenu() {
-	menuOpen.value = false;
-	gridOpen.value = true;
+	if (gridOpen.value) motion.hovering = false;
 }
 
 function revealFromFilm() {
@@ -281,6 +293,7 @@ function onFilmPlay(event: Event) {
 }
 
 onMounted(() => {
+	reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 	loadFonts();
 	layoutCards();
 	revealed.value = true;
@@ -324,6 +337,8 @@ onUnmounted(() => {
 		<div
 			id="stage"
 			class="stage"
+			@pointerenter="onStageEnter"
+			@pointerleave="onStageLeave"
 			@pointerdown="onPointerDown"
 			@pointermove="onPointerMove"
 			@pointerup="onPointerUp"
@@ -356,35 +371,6 @@ onUnmounted(() => {
 		</div>
 
 		<div class="vig" aria-hidden="true"></div>
-
-		<header class="chrome bar">
-			<a class="wordmark" href="#showcase" aria-label="Ethan Vale">Ethan<em>Vale</em></a>
-			<button
-				type="button"
-				class="menu-btn"
-				:aria-expanded="menuOpen"
-				aria-controls="archive-menu"
-				:aria-label="menuOpen ? 'Close menu' : 'Open menu'"
-				@click="toggleMenu"
-			>
-				<span class="menu-label" :class="{ gone: menuOpen }">Menu</span>
-				<span class="bars" :class="{ open: menuOpen }" aria-hidden="true">
-					<i></i>
-					<i></i>
-				</span>
-			</button>
-		</header>
-
-		<aside class="bio chrome">
-			<div class="who">
-				<img :src="thumbUrl(AVATAR_ID)" alt="Ethan Vale" width="52" height="52" />
-				<b>Ethan Vale</b>
-			</div>
-			<p>
-				Wildlife photography is less about taking pictures and more about learning when not to
-				move. Every frame in this archive was captured in natural conditions without intervention.
-			</p>
-		</aside>
 
 		<p class="colophon chrome">Field Notes 2026</p>
 
@@ -421,19 +407,6 @@ onUnmounted(() => {
 					<p class="note">{{ archiveShots[litIndex]?.note }}</p>
 				</div>
 			</div>
-		</div>
-
-		<div id="archive-menu" class="menu" :class="{ open: menuOpen }">
-			<nav>
-				<a href="#showcase" @click.prevent="openGridFromMenu">The Archive</a>
-				<a href="#showcase" @click.prevent="menuOpen = false">Field Notes</a>
-				<a href="#showcase" @click.prevent="menuOpen = false">Studio</a>
-				<a href="#showcase" @click.prevent="menuOpen = false">Contact</a>
-			</nav>
-			<p class="addr">
-				Nairobi · Cape Town · Reykjavík<br />
-				studio@ethanvale.photo
-			</p>
 		</div>
 
 		<div v-if="filmOpen" id="intro" class="intro">
@@ -607,140 +580,6 @@ onUnmounted(() => {
 		opacity: 1;
 	}
 
-	.bar {
-		position: absolute;
-		z-index: 60;
-		top: 0;
-		left: 0;
-		right: 0;
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		padding: calc(4.5rem + var(--pad) * 0.35) var(--pad) calc(var(--pad) * 0.35);
-		mix-blend-mode: difference;
-	}
-
-	@media (min-width: 768px) {
-		.bar {
-			padding-top: calc(5rem + var(--pad) * 0.35);
-		}
-	}
-
-	@media (min-width: 1021px) {
-		.bar {
-			padding-top: calc(5.25rem + var(--pad) * 0.35);
-		}
-	}
-
-	.wordmark {
-		font-family: var(--serif);
-		font-size: clamp(19px, 2.1vw, 27px);
-		letter-spacing: 0.005em;
-		line-height: 1;
-		color: #fff;
-		text-decoration: none;
-		white-space: nowrap;
-	}
-
-	.wordmark em {
-		font-style: normal;
-	}
-
-	.menu-btn {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-end;
-		gap: 5px;
-		min-width: 44px;
-		min-height: 44px;
-		padding: 8px 0 4px;
-		color: inherit;
-		background: none;
-		border: 0;
-		cursor: var(--cursor-site-pointer);
-	}
-
-	.menu-label {
-		font-size: clamp(12px, 1.25vw, 15px);
-		color: #fff;
-	}
-
-	.menu-label.gone {
-		opacity: 0;
-	}
-
-	.bars {
-		position: relative;
-		width: clamp(42px, 4.4vw, 62px);
-		height: clamp(16px, 2vw, 22px);
-	}
-
-	.bars i {
-		position: absolute;
-		left: 0;
-		right: 0;
-		top: 50%;
-		height: 1px;
-		background: #fff;
-	}
-
-	.bars i:first-child {
-		transform: translateY(-5px);
-	}
-
-	.bars i:last-child {
-		width: clamp(34px, 3.6vw, 50px);
-		transform: translateY(5px);
-	}
-
-	.bars.open i {
-		width: 100%;
-		transform: translateY(0) rotate(45deg);
-	}
-
-	.bars.open i:last-child {
-		transform: translateY(0) rotate(-45deg);
-	}
-
-	.bio {
-		position: absolute;
-		z-index: 55;
-		left: var(--pad);
-		bottom: var(--pad);
-		max-width: min(320px, 46vw);
-	}
-
-	.who {
-		display: flex;
-		align-items: center;
-		gap: 14px;
-		margin-bottom: 14px;
-	}
-
-	.who img {
-		width: 52px;
-		height: 52px;
-		border-radius: 3px;
-		object-fit: cover;
-		filter: grayscale(0.15);
-	}
-
-	.who b {
-		font-family: var(--serif);
-		font-weight: 400;
-		font-size: 19px;
-	}
-
-	.bio p {
-		margin: 0;
-		font-size: 12.5px;
-		line-height: 1.62;
-		color: rgba(244, 242, 239, 0.72);
-	}
-
-	.deep .bio,
-	.gridview .bio,
-	.lit .bio,
 	.deep .cue,
 	.gridview .cue,
 	.lit .cue {
@@ -769,8 +608,8 @@ onUnmounted(() => {
 		width: 44px;
 		height: 44px;
 		padding: 5px;
-		opacity: 0;
-		pointer-events: none;
+		opacity: 1;
+		pointer-events: auto;
 		background: none;
 		border: 0;
 		cursor: var(--cursor-site-pointer);
@@ -779,12 +618,6 @@ onUnmounted(() => {
 	.gridbtn b {
 		background: #f4f2ef;
 		border-radius: 2px;
-	}
-
-	.deep .gridbtn,
-	.gridview .gridbtn {
-		opacity: 1;
-		pointer-events: auto;
 	}
 
 	.cue {
@@ -932,50 +765,6 @@ onUnmounted(() => {
 		color: rgba(244, 242, 239, 0.62);
 	}
 
-	.menu {
-		position: absolute;
-		inset: 0;
-		z-index: 80;
-		display: grid;
-		place-items: center;
-		background: #050505;
-		clip-path: inset(0 0 100% 0);
-		pointer-events: none;
-		transition: clip-path 0.85s cubic-bezier(0.22, 0.61, 0.36, 1);
-	}
-
-	.menu.open {
-		clip-path: inset(0);
-		pointer-events: auto;
-	}
-
-	.menu nav {
-		display: flex;
-		flex-direction: column;
-		gap: clamp(4px, 1vw, 10px);
-		text-align: center;
-	}
-
-	.menu a {
-		font-family: var(--serif);
-		font-size: clamp(34px, 7.6vw, 78px);
-		line-height: 1.08;
-		color: #f4f2ef;
-		text-decoration: none;
-		opacity: 0.55;
-	}
-
-	.addr {
-		position: absolute;
-		right: var(--pad);
-		bottom: var(--pad);
-		left: var(--pad);
-		margin: 0;
-		font-size: 12.5px;
-		line-height: 1.7;
-		color: var(--dim);
-	}
-
 	.intro {
 		position: absolute;
 		inset: 0;
@@ -1024,21 +813,12 @@ onUnmounted(() => {
 		.headline {
 			font-size: clamp(22px, 6.4vw, 34px);
 		}
-
-		.menu a {
-			font-size: clamp(28px, 9vw, 54px);
-		}
 	}
 
 	@media (max-width: 640px) {
 		.archive {
 			--hw: min(84vw, 360px);
 			--pad: clamp(12px, 4vw, 18px);
-		}
-
-		.who img {
-			width: 42px;
-			height: 42px;
 		}
 
 		.cue {
@@ -1054,10 +834,6 @@ onUnmounted(() => {
 	@media (max-width: 380px) {
 		.archive {
 			--hw: min(88vw, 320px);
-		}
-
-		.bio p {
-			display: none;
 		}
 
 		.rows {
