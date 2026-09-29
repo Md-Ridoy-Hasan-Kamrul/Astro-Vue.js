@@ -353,11 +353,11 @@ export function hoverYaw(yaw: number, hovering: boolean, dragging: boolean, bloc
 }
 
 export function worldTransform(camZ: number, yaw: number, pitch: number): string {
-	return `translateZ(${camZ}px) rotateY(${yaw}deg) rotateX(${pitch}deg)`;
+	return `translateZ(${camZ}px) rotateX(${pitch}deg) rotateY(${yaw}deg)`;
 }
 
 export function headlineTransform(pitch: number, yaw: number, radius: number): string {
-	return `rotateX(${-pitch}deg) rotateY(${-yaw}deg) translateZ(${radius * HEADLINE_Z_RATIO}px)`;
+	return `rotateY(${-yaw}deg) rotateX(${-pitch}deg) translateZ(${radius * HEADLINE_Z_RATIO}px)`;
 }
 
 export function headlineOpacity(progress: number): number {
@@ -383,16 +383,16 @@ export function cardFade(depth: number, radius: number, camZ: number, perspectiv
 export function rotateUnit(point: SpherePoint, yawDeg: number, pitchDeg: number): SpherePoint {
 	const pitch = (pitchDeg * Math.PI) / 180;
 	const yaw = (yawDeg * Math.PI) / 180;
-	const cosP = Math.cos(pitch);
-	const sinP = Math.sin(pitch);
-	const y1 = point.y * cosP - point.z * sinP;
-	const z1 = point.y * sinP + point.z * cosP;
 	const cosY = Math.cos(yaw);
 	const sinY = Math.sin(yaw);
+	const x1 = point.x * cosY + point.z * sinY;
+	const z1 = -point.x * sinY + point.z * cosY;
+	const cosP = Math.cos(pitch);
+	const sinP = Math.sin(pitch);
 	return {
 		...point,
-		x: point.x * cosY + z1 * sinY,
-		y: y1,
-		z: -point.x * sinY + z1 * cosY,
+		x: x1,
+		y: point.y * cosP - z1 * sinP,
+		z: point.y * sinP + z1 * cosP,
 	};
 }

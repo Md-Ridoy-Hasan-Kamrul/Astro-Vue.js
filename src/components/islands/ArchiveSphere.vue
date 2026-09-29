@@ -8,12 +8,7 @@ import {
 	ARCHIVE_FILM_URL,
 	ARCHIVE_FONT_URL,
 	CAM_Z_EASE,
-	DRAG_DEG_PER_PX,
 	HEADLINE_WORDS,
-	hoverYaw,
-	PITCH_LIMIT_DEG,
-	TILT_DEG,
-	VELOCITY_DECAY,
 	archiveShots,
 	camZTarget,
 	cardChrome,
@@ -37,8 +32,15 @@ const CLICK_SLOP_FINE = 6;
 const CLICK_SLOP_COARSE = 14;
 const TOUCH_CANCEL_RATIO = 1.15;
 const TOUCH_START_PX = 10;
-const VELOCITY_SNAP = 0.002;
 const RESIZE_IGNORE_PX = 20;
+/** Atomic globe: radians per pixel, idle spin, and the eased follow. */
+const GLOBE_DRAG_DEG = 0.0075 * (180 / Math.PI);
+const GLOBE_IDLE_DEG_PER_SEC = 0.06 * (180 / Math.PI);
+const GLOBE_FLING_DECAY = 0.94;
+const GLOBE_SPIN_EASE = 0.1;
+const GLOBE_TILT_EASE = 0.055;
+const GLOBE_TILT_DEG = 18;
+const GLOBE_TILT_LIMIT = 70;
 const DEEP_PROGRESS = 0.45;
 const VIEW_TOP_RATIO = 0.45;
 const VIEW_BOTTOM_RATIO = 0.4;
@@ -65,8 +67,10 @@ const EYE_FILM_END = 0.31;
 const motion = {
 	dragX: 0,
 	dragY: 0,
-	velX: 0,
-	velY: 0,
+	fling: 0,
+	showYaw: 0,
+	showPitch: GLOBE_TILT_DEG,
+	lastTick: 0,
 	camZ: 0,
 	progress: 0,
 	radius: 200,
@@ -191,38 +195,34 @@ function readZoom() {
 	if (motion.inView) revealed.value = true;
 }
 
-function stepCamera() {
+function stepCamera(frames: number, dt: number) {
 	const eyeOpen = eyeOpacity.value === 0;
 	const blocked = gridOpen.value || reducedMotion || !motion.inView || !eyeOpen;
-	if (!motion.dragging && blocked) decayDrag();
-	motion.dragX = hoverYaw(motion.dragX, motion.inView, motion.dragging, blocked);
-	if (motion.inView && !motion.dragging && !gridOpen.value && !reducedMotion) {
-		motion.velX = 0;
-		motion.velY = 0;
+	if (!motion.dragging && !blocked) {
+		motion.dragX += GLOBE_IDLE_DEG_PER_SEC * dt + motion.fling * frames;
+		motion.fling *= GLOBE_FLING_DECAY ** frames;
+		if (Math.abs(motion.fling) < 0.0008) motion.fling = 0;
+		const tiltEase = 1 - (1 - GLOBE_TILT_EASE) ** frames;
+		motion.dragY += (0 - motion.dragY) * tiltEase;
 	}
 	motion.dragY = clampPitch(motion.dragY);
+	const spinEase = 1 - (1 - GLOBE_SPIN_EASE) ** frames;
+	const pitch = GLOBE_TILT_DEG + motion.dragY;
+	motion.showYaw += (motion.dragX - motion.showYaw) * spinEase;
+	motion.showPitch += (pitch - motion.showPitch) * spinEase;
 	const targetZ = camZTarget(motion.progress, motion.radius);
 	motion.camZ += (targetZ - motion.camZ) * CAM_Z_EASE;
 }
 
-function decayDrag() {
-	motion.dragX += motion.velX;
-	motion.dragY += motion.velY;
-	motion.velX *= VELOCITY_DECAY;
-	motion.velY *= VELOCITY_DECAY;
-	if (Math.abs(motion.velX) < VELOCITY_SNAP) motion.velX = 0;
-	if (Math.abs(motion.velY) < VELOCITY_SNAP) motion.velY = 0;
-}
-
 function clampPitch(dragY: number) {
-	const maxPitch = PITCH_LIMIT_DEG - TILT_DEG;
-	const minPitch = -PITCH_LIMIT_DEG - TILT_DEG;
+	const maxPitch = GLOBE_TILT_LIMIT - GLOBE_TILT_DEG;
+	const minPitch = -GLOBE_TILT_LIMIT - GLOBE_TILT_DEG;
 	return Math.min(maxPitch, Math.max(minPitch, dragY));
 }
 
 function paintFrame() {
-	const pitch = TILT_DEG + motion.dragY;
-	const yaw = motion.dragX;
+	const pitch = motion.showPitch;
+	const yaw = motion.showYaw;
 	rootRef.value?.classList.toggle('deep', motion.progress > DEEP_PROGRESS);
 	if (worldRef.value) {
 		worldRef.value.style.transform = worldTransform(motion.camZ, yaw, pitch);
@@ -241,16 +241,20 @@ function paintCards(yaw: number, pitch: number) {
 		const point = points[index];
 		if (!point) return;
 		const turned = rotateUnit(point, yaw, pitch);
+		const focused = litIndex.value === index;
 		card.style.opacity = String(
-			cardFade(turned.z, motion.radius, motion.camZ, motion.perspective, false),
+			cardFade(turned.z, motion.radius, motion.camZ, motion.perspective, focused),
 		);
-		card.style.setProperty('--d', cardDim(turned.z, motion.progress, false).toFixed(3));
+		card.style.setProperty('--d', cardDim(turned.z, motion.progress, focused).toFixed(3));
 	});
 }
 
 function tick() {
+	const now = performance.now();
+	const dt = motion.lastTick ? Math.min(0.1, (now - motion.lastTick) / 1000) : 1 / 60;
+	motion.lastTick = now;
 	readZoom();
-	stepCamera();
+	stepCamera(dt * 60, dt);
 	paintFrame();
 	frame = requestAnimationFrame(tick);
 }
@@ -259,61 +263,94 @@ function coarsePointer() {
 	return window.matchMedia('(pointer: coarse)').matches;
 }
 
-function capturePointer(event: PointerEvent) {
-	try {
-		rootRef.value?.setPointerCapture(event.pointerId);
-		motion.pointerId = event.pointerId;
-	} catch {
-		motion.pointerId = -1;
-	}
+let gesture = false;
+
+function bindGesture() {
+	if (gesture) return;
+	gesture = true;
+	window.addEventListener('pointermove', onPointerMove);
+	window.addEventListener('pointerup', onPointerUp);
+	window.addEventListener('pointercancel', onPointerUp);
+}
+
+function unbindGesture() {
+	if (!gesture) return;
+	gesture = false;
+	window.removeEventListener('pointermove', onPointerMove);
+	window.removeEventListener('pointerup', onPointerUp);
+	window.removeEventListener('pointercancel', onPointerUp);
+}
+
+function frontCardAt(x: number, y: number) {
+	const root = rootRef.value;
+	if (!root) return -1;
+	const yaw = motion.showYaw;
+	const pitch = motion.showPitch;
+	let best = -1;
+	let bestDepth = -Infinity;
+	root.querySelectorAll<HTMLElement>('[data-card]').forEach((card, index) => {
+		const rect = card.getBoundingClientRect();
+		if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) return;
+		const point = points[index];
+		const depth = point ? rotateUnit(point, yaw, pitch).z : -1;
+		if (depth > bestDepth) {
+			bestDepth = depth;
+			best = Number(card.dataset.idx ?? index);
+		}
+	});
+	return best;
 }
 
 function onPointerDown(event: PointerEvent) {
-	if (gridOpen.value) return;
-	const card = (event.target as HTMLElement).closest<HTMLElement>('[data-card]');
-	motion.downIndex = card ? Number(card.dataset.idx) : -1;
+	if (gridOpen.value || litIndex.value >= 0) return;
+	if (event.pointerType === 'mouse' && event.button !== 0) return;
+	motion.downIndex = frontCardAt(event.clientX, event.clientY);
 	motion.originX = event.clientX;
 	motion.originY = event.clientY;
 	motion.lastX = event.clientX;
 	motion.lastY = event.clientY;
 	motion.moved = 0;
+	motion.fling = 0;
+	motion.dragging = false;
 	motion.touchDecided = event.pointerType !== 'touch';
-	motion.dragging = event.pointerType !== 'touch';
-	motion.velX = 0;
-	motion.velY = 0;
-	if (motion.dragging) capturePointer(event);
+	bindGesture();
 }
 
 function onPointerMove(event: PointerEvent) {
-	if (motion.downIndex < -1) return;
+	if (!gesture) return;
 	const dx = event.clientX - motion.lastX;
 	const dy = event.clientY - motion.lastY;
 	motion.moved = Math.hypot(event.clientX - motion.originX, event.clientY - motion.originY);
-	if (!motion.touchDecided && event.pointerType === 'touch' && motion.moved > TOUCH_START_PX) {
+	const slop = coarsePointer() ? CLICK_SLOP_COARSE : CLICK_SLOP_FINE;
+	if (!motion.touchDecided && event.pointerType === 'touch') {
+		if (motion.moved < TOUCH_START_PX) return;
 		const vertical = Math.abs(event.clientY - motion.originY);
 		const horizontal = Math.abs(event.clientX - motion.originX);
 		if (vertical > horizontal * TOUCH_CANCEL_RATIO) {
 			motion.downIndex = -2;
+			motion.dragging = false;
+			unbindGesture();
 			return;
 		}
 		motion.touchDecided = true;
-		motion.dragging = true;
-		capturePointer(event);
 	}
-	if (!motion.dragging) return;
-	motion.dragX += dx * DRAG_DEG_PER_PX;
-	motion.dragY += dy * DRAG_DEG_PER_PX;
-	motion.velX = dx * DRAG_DEG_PER_PX;
-	motion.velY = dy * DRAG_DEG_PER_PX;
+	if (motion.moved <= slop) return;
+	motion.dragging = true;
+	motion.fling = dx * GLOBE_DRAG_DEG;
+	motion.dragX += motion.fling;
+	motion.dragY += dy * GLOBE_DRAG_DEG;
 	motion.lastX = event.clientX;
 	motion.lastY = event.clientY;
 }
 
 function onPointerUp() {
 	const slop = coarsePointer() ? CLICK_SLOP_COARSE : CLICK_SLOP_FINE;
-	if (motion.downIndex >= 0 && motion.moved < slop) openShot(motion.downIndex);
+	const index = motion.downIndex;
+	const moved = motion.moved;
+	unbindGesture();
 	motion.dragging = false;
 	motion.downIndex = -1;
+	if (index >= 0 && moved < slop) openShot(index);
 }
 
 function openShot(index: number) {
@@ -375,6 +412,7 @@ onMounted(() => {
 
 onUnmounted(() => {
 	cancelAnimationFrame(frame);
+	unbindGesture();
 	removeScroll?.();
 });
 </script>
@@ -394,9 +432,6 @@ onUnmounted(() => {
 				pointerEvents: eyeOpacity > 0.05 && !gridOpen && litIndex < 0 ? 'none' : 'auto',
 			}"
 			@pointerdown="onPointerDown"
-			@pointermove="onPointerMove"
-			@pointerup="onPointerUp"
-			@pointercancel="onPointerUp"
 		>
 			<div class="enter">
 			<div id="world" ref="world" class="world">

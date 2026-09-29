@@ -112,12 +112,12 @@ describe('camera and headline', () => {
 
 	it('keeps the world on center and the title counter-rotated', () => {
 		expect(worldTransform(12, 20, TILT_DEG)).toBe(
-			`translateZ(12px) rotateY(20deg) rotateX(${TILT_DEG}deg)`,
+			`translateZ(12px) rotateX(${TILT_DEG}deg) rotateY(20deg)`,
 		);
 		expect(worldTransform(12, 20, TILT_DEG)).not.toContain('translateX');
 		expect(worldTransform(12, 20, TILT_DEG)).not.toContain('translateY');
 		expect(headlineTransform(TILT_DEG, 0, 200)).toBe(
-			`rotateX(${-TILT_DEG}deg) rotateY(0deg) translateZ(${200 * HEADLINE_Z_RATIO}px)`,
+			`rotateY(0deg) rotateX(${-TILT_DEG}deg) translateZ(${200 * HEADLINE_Z_RATIO}px)`,
 		);
 		expect(headlineOpacity(0)).toBe(1);
 		expect(headlineOpacity(1)).toBeCloseTo(0.45, 5);
