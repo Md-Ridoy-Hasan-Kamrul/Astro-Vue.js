@@ -450,7 +450,7 @@ onUnmounted(() => {
 	<div
 		ref="root"
 		class="archive"
-		:class="{ revealed, gridview: gridOpen, lit: openProduct, dim: Boolean(openProduct) && !leaving, entering: eyeOpacity > 0.05 && !gridOpen && !openProduct }"
+		:class="{ revealed, gridview: gridOpen, lit: openProduct, entering: eyeOpacity > 0.05 && !gridOpen && !openProduct }"
 		:style="{ clipPath: gridOpen || openProduct ? 'none' : eyeClip }"
 	>
 		<div
@@ -833,6 +833,7 @@ onUnmounted(() => {
 		overflow: auto;
 		overscroll-behavior: contain;
 		pointer-events: auto;
+		cursor: var(--cursor-site-pointer);
 		scrollbar-color: rgba(255, 255, 255, 0.45) transparent;
 	}
 
@@ -881,20 +882,6 @@ onUnmounted(() => {
 		background: linear-gradient(transparent, rgba(0, 0, 0, 0.82));
 	}
 
-	.stage,
-	.grid,
-	.vig,
-	.gridbtn {
-		transition: filter 0.45s ease;
-	}
-
-	.archive.dim .stage,
-	.archive.dim .grid,
-	.archive.dim .vig,
-	.archive.dim .gridbtn {
-		filter: blur(8px);
-	}
-
 	.lit {
 		position: absolute;
 		inset: 0;
@@ -902,8 +889,11 @@ onUnmounted(() => {
 		display: grid;
 		place-items: center;
 		padding: clamp(56px, 8vh, 84px) var(--pad);
-		background: rgba(0, 0, 0, 0.28);
+		background: rgba(0, 0, 0, 0.42);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
 		pointer-events: auto;
+		cursor: var(--cursor-site-default);
 	}
 
 	.plate {
@@ -911,32 +901,39 @@ onUnmounted(() => {
 		max-height: min(88vh, 840px);
 		overflow: auto;
 		pointer-events: auto;
+		cursor: var(--cursor-site-default);
 		background: #14161c;
 		border: 1px solid rgba(255, 255, 255, 0.06);
 		border-radius: 18px;
 		box-shadow: 0 28px 80px rgba(0, 0, 0, 0.55);
+		will-change: transform, opacity;
 	}
 
 	.shot-enter-active,
 	.shot-leave-active {
-		transition: background-color 0.45s ease;
+		transition:
+			background-color 0.28s ease,
+			backdrop-filter 0.28s ease,
+			-webkit-backdrop-filter 0.28s ease;
 	}
 
 	.shot-enter-active .plate,
 	.shot-leave-active .plate {
 		transition:
-			transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-			opacity 0.4s ease;
+			transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+			opacity 0.2s ease;
 	}
 
 	.shot-enter-from,
 	.shot-leave-to {
 		background-color: rgba(0, 0, 0, 0);
+		backdrop-filter: blur(0px);
+		-webkit-backdrop-filter: blur(0px);
 	}
 
 	.shot-enter-from .plate,
 	.shot-leave-to .plate {
-		transform: translateY(18px) scale(0.96);
+		transform: translate3d(0, 8px, 0);
 		opacity: 0;
 	}
 
