@@ -2,7 +2,7 @@
 /**
  * Photo-sphere archive. Camera math lives in lib/showcase/archiveSphere.ts.
  */
-import { onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
+import { computed, onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
 import { getLenis } from '../../lib/smoothScroll';
 import {
 	ARCHIVE_FILM_URL,
@@ -18,14 +18,13 @@ import {
 	distributeSphere,
 	headlineOpacity,
 	headlineTransform,
-	worldTransform,
 	perspectiveForWidth,
 	rotateUnit,
 	sphereRadius,
-	stillUrl,
-	thumbUrl,
+	worldTransform,
 	type SpherePoint,
 } from '../../lib/showcase/archiveSphere';
+import { productCatalog } from '../../lib/showcase/products';
 import { CIRCLE_BALL_PX, circleOpenState } from '../../lib/transition/scrollFlyIn';
 
 const CLICK_SLOP_FINE = 6;
@@ -54,8 +53,8 @@ const eyeFilmRef = useTemplateRef<HTMLVideoElement>('eyeFilm');
 const points: SpherePoint[] = distributeSphere(archiveShots.length);
 const revealed = ref(false);
 const gridOpen = ref(false);
-const litIndex = ref(-1);
-const litSrc = ref('');
+const litId = ref<string | null>(null);
+const openProduct = computed(() => productCatalog.find((item) => item.id === litId.value) ?? null);
 const eyeClip = ref('none');
 const eyeSize = ref(CIRCLE_BALL_PX);
 const eyeY = ref(0);
@@ -85,7 +84,7 @@ const motion = {
 	lastX: 0,
 	lastY: 0,
 	moved: 0,
-	downIndex: -1,
+	downId: '',
 	touchDecided: false,
 	width: 0,
 	height: 0,
@@ -131,7 +130,7 @@ function layoutCards() {
 		const point = points[index];
 		const shot = archiveShots[index];
 		if (!point || !shot) return;
-		const chrome = cardChrome(motion.radius, width, Boolean(shot.tall));
+		const chrome = cardChrome(motion.radius, width, false);
 		card.style.width = `${chrome.width}px`;
 		card.style.height = `${chrome.height}px`;
 		card.style.marginLeft = `${chrome.marginLeft}px`;
@@ -241,7 +240,8 @@ function paintCards(yaw: number, pitch: number) {
 		const point = points[index];
 		if (!point) return;
 		const turned = rotateUnit(point, yaw, pitch);
-		const focused = litIndex.value === index;
+		const shot = archiveShots[index];
+		const focused = Boolean(shot && litId.value === shot.id);
 		card.style.opacity = String(
 			cardFade(turned.z, motion.radius, motion.camZ, motion.perspective, focused),
 		);
@@ -283,10 +283,10 @@ function unbindGesture() {
 
 function frontCardAt(x: number, y: number) {
 	const root = rootRef.value;
-	if (!root) return -1;
+	if (!root) return '';
 	const yaw = motion.showYaw;
 	const pitch = motion.showPitch;
-	let best = -1;
+	let best = '';
 	let bestDepth = -Infinity;
 	root.querySelectorAll<HTMLElement>('[data-card]').forEach((card, index) => {
 		const rect = card.getBoundingClientRect();
@@ -295,16 +295,16 @@ function frontCardAt(x: number, y: number) {
 		const depth = point ? rotateUnit(point, yaw, pitch).z : -1;
 		if (depth > bestDepth) {
 			bestDepth = depth;
-			best = Number(card.dataset.idx ?? index);
+			best = card.dataset.id ?? '';
 		}
 	});
 	return best;
 }
 
 function onPointerDown(event: PointerEvent) {
-	if (gridOpen.value || litIndex.value >= 0) return;
+	if (gridOpen.value || litId.value) return;
 	if (event.pointerType === 'mouse' && event.button !== 0) return;
-	motion.downIndex = frontCardAt(event.clientX, event.clientY);
+	motion.downId = frontCardAt(event.clientX, event.clientY);
 	motion.originX = event.clientX;
 	motion.originY = event.clientY;
 	motion.lastX = event.clientX;
@@ -327,7 +327,7 @@ function onPointerMove(event: PointerEvent) {
 		const vertical = Math.abs(event.clientY - motion.originY);
 		const horizontal = Math.abs(event.clientX - motion.originX);
 		if (vertical > horizontal * TOUCH_CANCEL_RATIO) {
-			motion.downIndex = -2;
+			motion.downId = '';
 			motion.dragging = false;
 			unbindGesture();
 			return;
@@ -345,29 +345,21 @@ function onPointerMove(event: PointerEvent) {
 
 function onPointerUp() {
 	const slop = coarsePointer() ? CLICK_SLOP_COARSE : CLICK_SLOP_FINE;
-	const index = motion.downIndex;
+	const id = motion.downId;
 	const moved = motion.moved;
 	unbindGesture();
 	motion.dragging = false;
-	motion.downIndex = -1;
-	if (index >= 0 && moved < slop) openShot(index);
+	motion.downId = '';
+	if (id && moved < slop) openShot(id);
 }
 
-function openShot(index: number) {
-	const shot = archiveShots[index];
-	if (!shot) return;
-	litIndex.value = index;
-	litSrc.value = thumbUrl(shot.id);
-	const full = new Image();
-	const token = index;
-	full.onload = () => {
-		if (litIndex.value === token) litSrc.value = stillUrl(shot.id);
-	};
-	full.src = stillUrl(shot.id);
+function openShot(id: string) {
+	if (!productCatalog.some((item) => item.id === id)) return;
+	litId.value = id;
 }
 
 function closeShot() {
-	litIndex.value = -1;
+	litId.value = null;
 }
 
 function toggleGrid() {
@@ -421,15 +413,15 @@ onUnmounted(() => {
 	<div
 		ref="root"
 		class="archive"
-		:class="{ revealed, gridview: gridOpen, lit: litIndex >= 0, entering: eyeOpacity > 0.05 && !gridOpen && litIndex < 0 }"
-		:style="{ clipPath: gridOpen || litIndex >= 0 ? 'none' : eyeClip }"
+		:class="{ revealed, gridview: gridOpen, lit: openProduct, entering: eyeOpacity > 0.05 && !gridOpen && !openProduct }"
+		:style="{ clipPath: gridOpen || openProduct ? 'none' : eyeClip }"
 	>
 		<div
 			id="stage"
 			class="stage"
 			:style="{
-				opacity: gridOpen || litIndex >= 0 ? 1 : 1 - eyeOpacity,
-				pointerEvents: eyeOpacity > 0.05 && !gridOpen && litIndex < 0 ? 'none' : 'auto',
+				opacity: gridOpen || openProduct ? 1 : 1 - eyeOpacity,
+				pointerEvents: eyeOpacity > 0.05 && !gridOpen && !openProduct ? 'none' : 'auto',
 			}"
 			@pointerdown="onPointerDown"
 		>
@@ -440,13 +432,12 @@ onUnmounted(() => {
 						v-for="(shot, index) in archiveShots"
 						:key="shot.id"
 						class="card"
-						:class="{ tall: shot.tall }"
 						data-card
-						:data-idx="index"
+						:data-id="shot.id"
 					>
 						<figure>
 							<img
-								:src="thumbUrl(shot.id)"
+								:src="shot.src"
 								:alt="shot.title"
 								draggable="false"
 								@load="onCardReady"
@@ -477,34 +468,37 @@ onUnmounted(() => {
 		<div id="grid" class="grid" :class="{ on: gridOpen }">
 			<div class="rows">
 				<figure
-					v-for="(shot, index) in archiveShots"
+					v-for="shot in productCatalog"
 					:key="`grid-${shot.id}`"
-					@click="openShot(index)"
+					@click="openShot(shot.id)"
 				>
-					<img :src="thumbUrl(shot.id)" :alt="shot.title" />
+					<img :src="shot.src" :alt="shot.title" />
 					<figcaption>{{ shot.title }}</figcaption>
 				</figure>
 			</div>
 		</div>
 
-		<div v-if="litIndex >= 0" id="lit" class="lit">
-			<div class="plate">
+		<div v-if="openProduct" id="lit" class="lit">
+			<article class="plate">
 				<div class="shot">
-					<img :src="litSrc" :alt="archiveShots[litIndex]?.title" />
-					<button type="button" data-close @click="closeShot">Close</button>
+					<span class="shot-index">{{ openProduct.num }}</span>
+					<img :src="openProduct.src" :alt="openProduct.title" />
+					<button type="button" class="shot-x" aria-label="Close" @click="closeShot">×</button>
 				</div>
 				<div class="meta">
-					<div>
-						<h2>{{ archiveShots[litIndex]?.title }}</h2>
-						<p class="where">{{ archiveShots[litIndex]?.place }}</p>
-					</div>
-					<p class="note">{{ archiveShots[litIndex]?.note }}</p>
+					<p class="kicker">{{ openProduct.kicker }}</p>
+					<h2>{{ openProduct.title }}</h2>
+					<p class="note">{{ openProduct.note }}</p>
+					<ul class="tags">
+						<li v-for="tag in openProduct.tags" :key="tag">{{ tag }}</li>
+					</ul>
+					<button type="button" class="close-btn" @click="closeShot">Close</button>
 				</div>
-			</div>
+			</article>
 		</div>
 
 		<div
-			v-show="eyeOpacity > 0.01 && !gridOpen && litIndex < 0"
+			v-show="eyeOpacity > 0.01 && !gridOpen && !openProduct"
 			class="eye-film"
 			:style="{
 				opacity: eyeOpacity,
@@ -539,7 +533,7 @@ onUnmounted(() => {
 		--ink: #f4f2ef;
 		--dim: #8c8783;
 		--pad: clamp(14px, 2.6vw, 34px);
-		--hw: min(56vw, 640px);
+		--hw: min(68vw, 760px);
 		--persp: 1150px;
 		--serif: 'Playfair Display', 'Times New Roman', serif;
 		--sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
@@ -847,8 +841,14 @@ onUnmounted(() => {
 	}
 
 	.plate {
-		width: min(72vw, 860px);
+		width: min(92vw, 720px);
+		max-height: min(88vh, 840px);
+		overflow: auto;
 		pointer-events: auto;
+		background: #14161c;
+		border: 1px solid rgba(255, 255, 255, 0.06);
+		border-radius: 18px;
+		box-shadow: 0 28px 80px rgba(0, 0, 0, 0.55);
 		animation: card-grow 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
 	}
 
@@ -865,71 +865,107 @@ onUnmounted(() => {
 
 	.shot {
 		position: relative;
-		aspect-ratio: 3 / 2;
+		aspect-ratio: 16 / 9;
+		margin: 14px 14px 0;
 		overflow: hidden;
-		border-radius: 2px;
+		border-radius: 12px;
 		background: #0b0b0b;
-		box-shadow: 0 30px 90px rgba(0, 0, 0, 0.75);
 	}
 
 	.shot img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+		object-position: top;
 	}
 
-	.shot button {
+	.shot-index {
 		position: absolute;
 		top: 12px;
-		right: 14px;
-		min-width: 44px;
-		min-height: 44px;
-		padding: 10px 14px;
-		color: #f4f2ef;
-		background: rgba(0, 0, 0, 0.35);
-		border: 1px solid rgba(244, 242, 239, 0.78);
-		border-radius: 6px;
+		left: 14px;
+		z-index: 1;
+		font-size: 14px;
+		font-weight: 600;
+		color: #3ddc84;
+	}
+
+	.shot-x {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		z-index: 1;
+		display: grid;
+		width: 36px;
+		height: 36px;
+		place-items: center;
+		color: #fff;
+		font-size: 22px;
+		line-height: 1;
+		background: rgba(0, 0, 0, 0.45);
+		border: 0;
+		border-radius: 999px;
 		cursor: var(--cursor-site-pointer);
 	}
 
 	.meta {
-		display: grid;
-		grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
-		gap: clamp(22px, 3.2vw, 48px);
-		align-items: start;
-		padding: 18px 20px 20px;
-		color: #f7f4ef;
-		background: #141414;
-		border-radius: 2px;
+		display: block;
+		padding: 18px 22px 22px;
+		color: #f4f6f8;
+		background: transparent;
+	}
+
+	.kicker {
+		margin: 0 0 8px;
+		font-size: 13px;
+		color: #9aa3b2;
 	}
 
 	.meta h2 {
-		margin: 0 0 6px;
-		font-family: var(--serif);
-		font-weight: 400;
-		font-size: clamp(22px, 2.15vw, 32px);
-		line-height: 1.08;
+		margin: 0 0 10px;
+		font-family: var(--sans);
+		font-weight: 600;
+		font-size: clamp(28px, 3vw, 40px);
+		line-height: 1.05;
 		color: #fff;
 	}
 
-	.where,
 	.note {
 		margin: 0;
-		font-size: 13.5px;
+		max-width: 62ch;
+		font-size: 15px;
 		line-height: 1.55;
-		color: #f7f4ef;
+		color: #d5dbe3;
 	}
 
-	.where {
-		color: rgba(247, 244, 239, 0.82);
+	.tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin: 16px 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.tags li {
+		padding: 6px 12px;
+		font-size: 13px;
+		color: #3ddc84;
+		border: 1px solid #3ddc84;
+		border-radius: 999px;
+	}
+
+	.close-btn {
+		margin-top: 18px;
+		min-height: 44px;
+		padding: 10px 22px;
+		color: #fff;
+		background: transparent;
+		border: 1px solid rgba(255, 255, 255, 0.22);
+		border-radius: 999px;
+		cursor: var(--cursor-site-pointer);
 	}
 
 	@media (max-width: 900px) {
-		.meta {
-			grid-template-columns: 1fr;
-			gap: 10px;
-		}
-
 		.rows {
 			grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 		}

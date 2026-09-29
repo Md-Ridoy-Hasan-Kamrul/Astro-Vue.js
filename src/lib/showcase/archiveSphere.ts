@@ -1,7 +1,10 @@
 /**
- * Ethan Vale archive — Fibonacci sphere, camera, and headline math.
+ * Photo sphere camera and headline math.
  * Pure functions only. The Vue island applies the results.
  */
+import { sphereProducts } from './products';
+
+export type { Product } from './products';
 
 export const SPHERE_COUNT = 21;
 export const ARCHIVE_CDN =
@@ -10,8 +13,8 @@ export const ARCHIVE_FILM_URL =
 	'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260922_195107_ed3f055a-3a13-4a71-b743-e10310454246.mp4';
 export const ARCHIVE_FONT_URL =
 	'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap';
-export const HEADLINE_COPY = 'I See Through the Wild';
-export const HEADLINE_WORDS = ['I', 'See', 'Through', 'the', 'Wild'] as const;
+export const HEADLINE_COPY = 'Web Application Design';
+export const HEADLINE_WORDS = ['Web', 'Application', 'Design'] as const;
 
 export const TILT_DEG = -4;
 export const PITCH_LIMIT_DEG = 32;
@@ -62,151 +65,7 @@ const OPEN_DIM_BOOST = 0.78;
 const NEAR_RATIO = 0.66;
 const FADE_SPAN = 190;
 
-export type Shot = {
-	id: string;
-	title: string;
-	place: string;
-	note: string;
-	tall?: boolean;
-};
-
-export type SpherePoint = {
-	x: number;
-	y: number;
-	z: number;
-	lat: number;
-	lon: number;
-};
-
-export const archiveShots: readonly Shot[] = [
-	{
-		id: 'hf_20260922_194349_26ffdbfd-ac5e-49e9-a07d-c06d3f7cb4cb',
-		title: 'Before the Dust Settled',
-		place: 'South Africa · Limpopo Province',
-		note: 'Wildlife photography is rarely about pressing the shutter. Most of the work happens earlier — waiting, staying still, and accepting that nature decides if the frame exists. This encounter lasted less than a minute.',
-	},
-	{
-		id: 'hf_20260922_194350_5546ea3d-6336-42c7-a59f-06165c5802be',
-		title: 'The Long Walk Home',
-		place: 'Kenya · Maasai Mara',
-		note: 'A matriarch leading her herd across open grass at the end of the day. I stayed low and let them close the distance on their own terms.',
-	},
-	{
-		id: 'hf_20260922_194349_b4533691-cb49-41d4-b56c-51f0fdcbe250',
-		title: 'Something Understood',
-		place: 'Botswana · Okavango Delta',
-		note: 'He held the look for about four seconds. Long enough to be certain neither of us intended to move first.',
-	},
-	{
-		id: 'hf_20260922_194349_e588abd3-1bfa-4918-894f-05632cc51ccc',
-		title: 'Nine Hours of Nothing',
-		place: 'Finland · Lapland',
-		note: 'A full day in a hide for a single turn of the head. That ratio is normal and I have stopped resenting it.',
-	},
-	{
-		id: 'hf_20260922_194350_28d92c80-de66-41cb-911e-b3b44aebe1f5',
-		title: 'Borrowed Trust',
-		place: 'Scotland · Cairngorms',
-		note: 'She had learned the shape of a person and decided it was uninteresting. That indifference is the rarest thing in this work.',
-	},
-	{
-		id: 'hf_20260922_194349_04e89718-4214-4aff-bac5-490462bbfe2f',
-		title: 'Small Weather',
-		place: 'Costa Rica · Osa Peninsula',
-		note: 'Rain had just stopped. Everything on that branch was the size of a thumbnail and lit like a stage.',
-	},
-	{
-		id: 'hf_20260922_194417_2c031e22-2fad-4c81-a544-83cd6bba1c33',
-		title: 'Against the Weather',
-		place: 'Alaska · Chilkat Valley',
-		note: 'Shot at a thousandth of a second into a rising storm. The light lasted eleven minutes.',
-	},
-	{
-		id: 'hf_20260922_194349_a39c3226-7848-4b15-b840-98ad8aec467b',
-		title: 'The Pale Edge',
-		place: 'India · Bandhavgarh',
-		note: 'Almost entirely hidden. I only found the frame because the foliage stopped moving in the wrong place.',
-	},
-	{
-		id: 'hf_20260922_194417_555e4d90-f35f-4a1a-8c75-def1e8b71988',
-		title: 'Perfect Arithmetic',
-		place: 'Indonesia · Raja Ampat',
-		note: 'Coiled with a precision that looks designed. Nothing about it is — it is just the cheapest way to hold heat.',
-	},
-	{
-		id: 'hf_20260922_194417_e525a243-03c8-454b-83b4-60f541baf70a',
-		title: 'Shallow Water',
-		place: 'French Polynesia · Fakarava',
-		note: 'Three metres down on a single breath. It passed close enough that I stopped composing and simply held the camera still.',
-	},
-	{
-		id: 'hf_20260922_194349_ec830e6f-b8e6-4569-8540-ee7f33902c53',
-		title: 'Two of Nine',
-		place: 'India · Ranthambore',
-		note: 'Siblings resting out the afternoon heat. The second one never opened its eyes.',
-	},
-	{
-		id: 'hf_20260922_194417_35a9af5f-bd07-45a7-bb73-08b47d19d530',
-		title: 'Low Ground',
-		place: 'Nepal · Chitwan',
-		note: 'Flat on the ground at her eye level, which is the only honest angle for an animal that hunts from there.',
-	},
-	{
-		id: 'hf_20260922_194416_30e307a9-1265-45c3-a1a0-5c6fa5bb9f8d',
-		title: 'Everything at Once',
-		place: 'Iceland · Southern Coast',
-		note: 'Free horses on a black beach at dusk. I panned and accepted whatever the frame gave back.',
-	},
-	{
-		id: 'hf_20260922_194417_ff5cb9f8-8eed-4bfb-bb08-11256da92eae',
-		title: 'White on White',
-		place: 'Canada · Ellesmere Island',
-		note: 'Snow removes every reference for exposure. The only reliable meter left is the eyes.',
-	},
-	{
-		id: 'hf_20260922_194418_1d9bff4a-4971-4944-9e49-d72e755ceeb0',
-		title: 'Census',
-		place: 'Namibia · Etosha',
-		note: 'Two of roughly sixteen thousand left. The number is the reason the frame exists.',
-	},
-	{
-		id: 'hf_20260922_194349_75e53821-0807-4ebc-992d-34bae0ec2ce6',
-		title: 'The Whole Field',
-		place: 'France · Provence',
-		note: 'Four millimetres of animal. At this magnification a breath of wind is an earthquake.',
-	},
-	{
-		id: 'hf_20260922_194417_5a227847-3796-4438-805d-7e66e9538205',
-		title: 'First Season',
-		place: 'Germany · Bavarian Forest',
-		note: 'Days old and already still enough to disappear. Stillness is the first thing anything here learns.',
-	},
-	{
-		id: 'hf_20260922_194350_b49aa67e-0401-4029-af4f-f6ac3ee83398',
-		title: 'Listening Posture',
-		place: 'Tanzania · Serengeti',
-		note: 'Ears forward, weight on the back legs. She heard something I never did.',
-	},
-	{
-		id: 'hf_20260922_194349_89b82779-3a46-4c55-b7c5-f4a0fd955874',
-		title: 'A Line of Red',
-		place: 'Spain · Fuente de Piedra',
-		note: 'Underexposed by two stops until only the shape survived.',
-	},
-	{
-		id: 'hf_20260922_194416_47e18c62-253a-42e1-97a9-9e5f6a6b8d59',
-		title: 'Left Behind',
-		place: 'Studio · Reykjavík',
-		note: 'Found beneath a roost at first light. The only frame in this archive an animal agreed to in advance.',
-		tall: true,
-	},
-	{
-		id: 'hf_20260922_194417_a455843c-d8db-461c-8ef6-74a325d2472c',
-		title: 'The Other Side',
-		place: 'Uganda · Kibale Forest',
-		note: 'Taken by a colleague between two long waits. Proof, mostly, that someone is holding the camera.',
-	},
-] as const;
+export const archiveShots = sphereProducts;
 
 export function thumbUrl(id: string): string {
 	return `${ARCHIVE_CDN}${id}_min.webp`;
@@ -289,8 +148,8 @@ export function distributeSphere(count: number): SpherePoint[] {
 export function sphereRadius(width: number, height: number): number {
 	const phone = width <= PHONE_MAX;
 	const tablet = width <= TABLET_MAX;
-	const heightRatio = phone ? 0.38 : tablet ? 0.42 : 0.46;
-	const widthRatio = phone ? 0.48 : tablet ? 0.52 : 0.58;
+	const heightRatio = phone ? 0.33 : tablet ? 0.36 : 0.4;
+	const widthRatio = phone ? 0.42 : tablet ? 0.46 : 0.5;
 	const floor = phone ? RADIUS_FLOOR_PHONE : tablet ? RADIUS_FLOOR_TABLET : RADIUS_FLOOR_DESKTOP;
 	return Math.max(floor, Math.min(RADIUS_CAP, height * heightRatio, width * widthRatio));
 }

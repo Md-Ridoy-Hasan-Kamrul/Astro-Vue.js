@@ -34,19 +34,17 @@ import {
 } from './archiveSphere';
 
 describe('archive catalog', () => {
-	it('lists 21 stills and marks only Left Behind as tall', () => {
+	it('lists the newest 21 product shots on the circle', () => {
 		expect(archiveShots).toHaveLength(SPHERE_COUNT);
-		expect(archiveShots.filter((shot) => shot.tall).map((shot) => shot.title)).toEqual([
-			'Left Behind',
-		]);
-		expect(archiveShots[0]?.title).toBe('Before the Dust Settled');
-		expect(archiveShots[20]?.title).toBe('The Other Side');
+		expect(archiveShots[0]?.title).toBe('Foundry');
+		expect(archiveShots[20]?.title).toBe('Flowform');
+		expect(archiveShots.every((shot) => shot.src.startsWith('/products/'))).toBe(true);
 	});
 
 	it('builds CloudFront thumb and film URLs exactly', () => {
-		expect(thumbUrl(archiveShots[0]!.id)).toBe(`${ARCHIVE_CDN}${archiveShots[0]!.id}_min.webp`);
+		expect(thumbUrl('still')).toBe(`${ARCHIVE_CDN}still_min.webp`);
 		expect(ARCHIVE_FILM_URL).toContain('cloudfront.net');
-		expect(HEADLINE_COPY).toBe('I See Through the Wild');
+		expect(HEADLINE_COPY).toBe('Web Application Design');
 	});
 
 	it('opens the eye with scroll, zooms in, then shows the circle', () => {
