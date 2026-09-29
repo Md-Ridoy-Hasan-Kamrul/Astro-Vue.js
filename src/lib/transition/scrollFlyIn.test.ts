@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+	CIRCLE_BALL_PX,
 	CONTENT_Y_END_PX,
 	CONTENT_Y_START_PX,
 	FALLBACK_FLY_IMAGE,
@@ -15,6 +16,7 @@ import {
 	NARROW_LAYOUT_MAX_PX,
 	NARROW_RELEASE_PROGRESS,
 	SCROLL_TRACK_VH,
+	circleOpenState,
 	clamp01,
 	contentTranslateYPx,
 	insetClipPath,
@@ -40,6 +42,22 @@ describe('scrollFlyIn tokens', () => {
 	it('exposes local fly image + fallback URL', () => {
 		expect(FLY_IMAGE_PATH).toBe('/transition/jet.webp');
 		expect(FALLBACK_FLY_IMAGE).toContain('cdn.21st.dev');
+	});
+});
+
+describe('circle opening', () => {
+	it('rises to center, then expands, and the same scroll position is the reverse', () => {
+		const closed = circleOpenState(0, 1000, 800);
+		expect(closed.size).toBe(CIRCLE_BALL_PX);
+		expect(closed.yOffset).toBeGreaterThan(400);
+		const centered = circleOpenState(800, 1000, 800);
+		expect(centered.yOffset).toBeCloseTo(0);
+		expect(centered.size).toBe(CIRCLE_BALL_PX);
+		const full = circleOpenState(1600, 1000, 800);
+		expect(full.size).toBeCloseTo(Math.max(1000, 800) * 2.8);
+		expect(full.clipPath).toContain('circle(');
+		const mid = circleOpenState(400, 1000, 800);
+		expect(circleOpenState(400, 1000, 800)).toEqual(mid);
 	});
 });
 

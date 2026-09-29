@@ -5,6 +5,9 @@
 
 export const SCROLL_TRACK_VH = 350;
 
+/** Circle opening only — rise, then expand. Scroll position owns both directions. */
+export const CIRCLE_BALL_PX = 380;
+
 export const FLY_IMAGE_PATH = '/transition/jet.webp';
 
 export const FALLBACK_FLY_IMAGE =
@@ -35,6 +38,37 @@ export const PLANE_X_START_VIEWPORTS = -1.2;
 export const PLANE_X_END_VIEWPORTS = 1.4;
 
 export type ProgressKeyframe = { readonly progress: number; readonly value: number };
+
+export function power4InOut(progress: number): number {
+	const t = clamp01(progress);
+	if (t < 0.5) return 8 * t ** 4;
+	return 1 - (-2 * t + 2) ** 4 / 2;
+}
+
+export type CircleOpen = {
+	yOffset: number;
+	size: number;
+	clipPath: string;
+};
+
+/** Phase 1: 380px circle rises to center. Phase 2: it expands until it covers the screen. */
+export function circleOpenState(scrolled: number, viewWidth: number, viewHeight: number): CircleOpen {
+	const height = Math.max(1, viewHeight);
+	const p1 = clamp01(scrolled / height);
+	const p2 = clamp01((scrolled - height) / height);
+	const risen = power4InOut(p1);
+	const grown = p2 * p2;
+	const yOffset = (1 - risen) * (height / 2 + CIRCLE_BALL_PX / 2);
+	const cover = Math.max(viewWidth, height) * 2.8;
+	const size = CIRCLE_BALL_PX + grown * (cover - CIRCLE_BALL_PX);
+	const clipX = viewWidth / 2;
+	const clipY = height / 2 + yOffset;
+	return {
+		yOffset,
+		size,
+		clipPath: `circle(${size / 2}px at ${clipX}px ${clipY}px)`,
+	};
+}
 
 export function clamp01(value: number): number {
 	if (value < 0) return 0;

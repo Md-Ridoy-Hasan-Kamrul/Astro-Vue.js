@@ -9,7 +9,6 @@ import {
 	ARCHIVE_FONT_URL,
 	CAM_Z_EASE,
 	DRAG_DEG_PER_PX,
-	EYE_ZOOM_END,
 	HEADLINE_WORDS,
 	hoverYaw,
 	PITCH_LIMIT_DEG,
@@ -21,23 +20,18 @@ import {
 	cardDim,
 	cardFade,
 	cardTransform,
-	circleDolly,
 	distributeSphere,
-	eyeClipPath,
-	eyeFilmProgress,
-	eyeLayerOpacity,
-	eyeZoomScale,
 	headlineOpacity,
 	headlineTransform,
 	worldTransform,
 	perspectiveForWidth,
-	containerScrollProgress,
 	rotateUnit,
 	sphereRadius,
 	stillUrl,
 	thumbUrl,
 	type SpherePoint,
 } from '../../lib/showcase/archiveSphere';
+import { CIRCLE_BALL_PX, circleOpenState } from '../../lib/transition/scrollFlyIn';
 
 const CLICK_SLOP_FINE = 6;
 const CLICK_SLOP_COARSE = 14;
@@ -60,9 +54,13 @@ const revealed = ref(false);
 const gridOpen = ref(false);
 const litIndex = ref(-1);
 const litSrc = ref('');
-const eyeClip = ref(eyeClipPath(0));
-const eyeZoom = ref(1);
+const eyeClip = ref('none');
+const eyeSize = ref(CIRCLE_BALL_PX);
+const eyeY = ref(0);
 const eyeOpacity = ref(1);
+/** Iris frame only. Past ~2s the film zooms into the pupil and the circle reads as a black screen. */
+const EYE_FILM_START = 0.2;
+const EYE_FILM_END = 0.31;
 
 const motion = {
 	dragX: 0,
@@ -76,6 +74,7 @@ const motion = {
 	dragging: false,
 	inView: false,
 	sequence: 0,
+	film: 0,
 	pointerId: -1,
 	originX: 0,
 	originY: 0,
@@ -137,13 +136,33 @@ function layoutCards() {
 	});
 }
 
-function scrubEyeFilm() {
+let filmSeeking = false;
+
+function syncEyeFilm() {
 	const video = eyeFilmRef.value;
 	if (!video || reducedMotion) return;
-	if (!video.paused) video.pause();
 	if (!Number.isFinite(video.duration) || video.duration <= 0) return;
-	const next = eyeFilmProgress(motion.sequence) * video.duration;
-	if (Math.abs(video.currentTime - next) > 0.04) video.currentTime = next;
+	if (filmSeeking) return;
+	const target = motion.film * video.duration;
+	const drift = target - video.currentTime;
+	if (drift > 0.06) {
+		video.playbackRate = 2;
+		if (video.paused) video.play()?.catch(() => {});
+		return;
+	}
+	if (drift < -0.08) {
+		video.pause();
+		filmSeeking = true;
+		const release = () => {
+			video.removeEventListener('seeked', release);
+			filmSeeking = false;
+			syncEyeFilm();
+		};
+		video.addEventListener('seeked', release);
+		video.currentTime = Math.max(0, target);
+		return;
+	}
+	if (!video.paused) video.pause();
 }
 
 function readZoom() {
@@ -151,18 +170,29 @@ function readZoom() {
 	if (!track) return;
 	const rect = track.getBoundingClientRect();
 	const viewport = window.innerHeight;
-	motion.sequence = reducedMotion ? 1 : containerScrollProgress(rect.top, rect.height, viewport);
-	motion.progress = circleDolly(motion.sequence);
-	eyeClip.value = reducedMotion || motion.sequence >= EYE_ZOOM_END ? 'none' : eyeClipPath(motion.sequence);
-	eyeZoom.value = reducedMotion ? 1 : eyeZoomScale(motion.sequence);
-	eyeOpacity.value = reducedMotion ? 0 : eyeLayerOpacity(motion.sequence);
-	scrubEyeFilm();
+	// Rise while the section comes on screen, so the eye is centered once it is pinned.
+	// Expand over the next viewport. Scroll up runs the same positions backward.
+	const scrolled = Math.max(0, viewport - rect.top);
+	const openSpan = viewport * 2;
+	const opened = reducedMotion || scrolled >= openSpan;
+	const open = circleOpenState(scrolled, window.innerWidth, viewport);
+	const openT = Math.min(1, scrolled / openSpan);
+	motion.film = reducedMotion ? EYE_FILM_END : EYE_FILM_START + (EYE_FILM_END - EYE_FILM_START) * openT;
+	motion.sequence = motion.film;
+	motion.progress = reducedMotion
+		? 1
+		: Math.min(1, Math.max(0, (scrolled - openSpan) / (viewport * 0.16)));
+	eyeSize.value = open.size;
+	eyeY.value = open.yOffset;
+	eyeClip.value = 'none';
+	eyeOpacity.value = opened ? 0 : 1;
+	syncEyeFilm();
 	motion.inView = rect.top < viewport * VIEW_TOP_RATIO && rect.bottom > viewport * VIEW_BOTTOM_RATIO;
 	if (motion.inView) revealed.value = true;
 }
 
 function stepCamera() {
-	const eyeOpen = motion.sequence >= EYE_ZOOM_END;
+	const eyeOpen = eyeOpacity.value === 0;
 	const blocked = gridOpen.value || reducedMotion || !motion.inView || !eyeOpen;
 	if (!motion.dragging && blocked) decayDrag();
 	motion.dragX = hoverYaw(motion.dragX, motion.inView, motion.dragging, blocked);
@@ -318,7 +348,12 @@ onMounted(() => {
 		film.muted = true;
 		film.defaultMuted = true;
 		film.playsInline = true;
-		film.pause();
+		const showIris = () => {
+			if (motion.film < EYE_FILM_START) motion.film = EYE_FILM_START;
+			syncEyeFilm();
+		};
+		if (film.readyState >= 2) showIris();
+		else film.addEventListener('loadeddata', showIris, { once: true });
 	}
 	loadFonts();
 	rootRef.value?.querySelectorAll<HTMLImageElement>('.card img').forEach((image) => {
@@ -438,19 +473,28 @@ onUnmounted(() => {
 		<div
 			v-show="eyeOpacity > 0.01 && !gridOpen && litIndex < 0"
 			class="eye-film"
-			:style="{ opacity: eyeOpacity }"
+			:style="{
+				opacity: eyeOpacity,
+				width: `${eyeSize}px`,
+				height: `${eyeSize}px`,
+				top: '50%',
+				left: '50%',
+				right: 'auto',
+				bottom: 'auto',
+				borderRadius: '50%',
+				transform: `translate(-50%, -50%) translateY(${eyeY}px)`,
+			}"
 			aria-hidden="true"
 		>
 			<video
 				ref="eyeFilm"
 				class="eye-film__video"
 				:src="ARCHIVE_FILM_URL"
-				:style="{ transform: `scale(${eyeZoom})` }"
 				muted
 				playsinline
 				preload="auto"
 				disablepictureinpicture
-				@loadedmetadata="scrubEyeFilm"
+				@loadedmetadata="syncEyeFilm"
 			></video>
 		</div>
 	</div>
@@ -907,18 +951,28 @@ onUnmounted(() => {
 
 	.eye-film {
 		position: absolute;
-		inset: 0;
+		top: 50%;
+		left: 50%;
 		z-index: 30;
 		overflow: hidden;
+		border-radius: 50%;
 		pointer-events: none;
-		background: #000;
+		background: #06110c;
 	}
 
 	.eye-film__video {
+		display: block;
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		transform-origin: 50% 46%;
+		pointer-events: none;
+	}
+
+	.eye-film__video::-webkit-media-controls,
+	.eye-film__video::-webkit-media-controls-enclosure,
+	.eye-film__video::-webkit-media-controls-start-playback-button {
+		display: none !important;
+		opacity: 0;
 	}
 
 	@media (prefers-reduced-motion: reduce) {
