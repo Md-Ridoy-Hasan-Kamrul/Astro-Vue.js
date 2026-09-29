@@ -44,14 +44,44 @@ export function destroySmoothScroll() {
 	lenis = null;
 }
 
+/**
+ * autoToggle stop/start only flips overflow and waits for a transitionend
+ * that never arrives. Dispatch one so Lenis actually stops or starts now,
+ * and reset so a stale target does not lerp the page for a few seconds.
+ */
+function flushOverflowToggle() {
+	if (typeof document === 'undefined') return;
+	document.documentElement.dispatchEvent(
+		new TransitionEvent('transitionend', { propertyName: 'overflow' }),
+	);
+}
+
 export function pauseSmoothScroll() {
-	lenis?.stop();
+	if (!lenis) return;
+	lenis.stop();
+	if (!lenis.isStopped) flushOverflowToggle();
 }
 
 export function resumeSmoothScroll() {
 	if (!lenis) return;
 	if (typeof document !== 'undefined' && document.body.style.overflow === 'hidden') return;
 	lenis.start();
+	if (lenis.isStopped) flushOverflowToggle();
+}
+
+/** Smooth scroll inside one element, separate from the page scroller. */
+export function createAreaScroll(wrapper: HTMLElement, content: HTMLElement) {
+	return new Lenis({
+		wrapper,
+		content,
+		eventsTarget: wrapper,
+		autoRaf: true,
+		smoothWheel: true,
+		lerp: 0.1,
+		autoToggle: false,
+		overscroll: false,
+		anchors: false,
+	});
 }
 
 /** Soft navigations / hash targets */

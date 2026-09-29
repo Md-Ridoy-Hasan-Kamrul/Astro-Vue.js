@@ -28,7 +28,6 @@ const FILES = [
 	'17.png',
 	'18.png',
 	'19.png',
-	'20.png',
 	'21.png',
 	'22.png',
 	'23.png',
@@ -172,12 +171,6 @@ const BRIEFS: readonly { title: string; kicker: string; note: string; tags: read
 		kicker: 'Landing page · Next.js',
 		note: 'A dark product launch page with a video hero and a feature grid. Next.js and Tailwind hold the layout from 320px upward.',
 		tags: ['Next.js', 'Tailwind CSS', 'Framer', 'Responsive Design'],
-	},
-	{
-		title: 'Ticketline',
-		kicker: 'Support SaaS · MERN',
-		note: 'Queues, assignees, and reply threads. MongoDB stores the tickets and a React board is the agent’s home screen.',
-		tags: ['React.js', 'MongoDB', 'Node.js', 'Axios'],
 	},
 	{
 		title: 'Campus',

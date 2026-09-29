@@ -2,8 +2,9 @@
 /**
  * Photo-sphere archive. Camera math lives in lib/showcase/archiveSphere.ts.
  */
-import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue';
-import { getLenis, pauseSmoothScroll, resumeSmoothScroll } from '../../lib/smoothScroll';
+import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue';
+import Lenis from 'lenis';
+import { createAreaScroll, getLenis, pauseSmoothScroll, resumeSmoothScroll } from '../../lib/smoothScroll';
 import {
 	ARCHIVE_FILM_URL,
 	ARCHIVE_FONT_URL,
@@ -363,6 +364,8 @@ function openShot(id: string) {
 function closeShot() {
 	if (!litId.value || leaving.value) return;
 	leaving.value = true;
+	if (!gridOpen.value) setPageLock(false);
+	if (gridOpen.value) gridLenis?.start();
 }
 
 function onShotLeft() {
@@ -376,6 +379,7 @@ function toggleGrid() {
 
 let lockedScroll = 0;
 let holdingScroll = false;
+let pageLocked = false;
 
 function holdPageScroll() {
 	if (holdingScroll) return;
@@ -386,6 +390,8 @@ function holdPageScroll() {
 }
 
 function setPageLock(lock: boolean) {
+	if (lock === pageLocked) return;
+	pageLocked = lock;
 	if (lock) {
 		lockedScroll = window.scrollY;
 		pauseSmoothScroll();
@@ -398,8 +404,31 @@ function setPageLock(lock: boolean) {
 	resumeSmoothScroll();
 }
 
-watch([gridOpen, litId], ([grid, id]) => {
-	setPageLock(Boolean(grid || id));
+let gridLenis: Lenis | null = null;
+
+function mountGridScroll() {
+	const wrapper = rootRef.value?.querySelector<HTMLElement>('#grid');
+	const content = wrapper?.querySelector<HTMLElement>('.rows');
+	if (!wrapper || !content || gridLenis) return;
+	gridLenis = createAreaScroll(wrapper, content);
+}
+
+function destroyGridScroll() {
+	gridLenis?.destroy();
+	gridLenis = null;
+}
+
+watch([gridOpen, litId], ([open, id]) => {
+	setPageLock(Boolean(open || id));
+	if (!open) {
+		destroyGridScroll();
+		return;
+	}
+	nextTick(() => {
+		mountGridScroll();
+		if (id) gridLenis?.stop();
+		else gridLenis?.start();
+	});
 });
 
 onMounted(() => {
@@ -442,6 +471,7 @@ onUnmounted(() => {
 	cancelAnimationFrame(frame);
 	unbindGesture();
 	removeScroll?.();
+	destroyGridScroll();
 	setPageLock(false);
 });
 </script>
@@ -820,7 +850,7 @@ onUnmounted(() => {
 		position: absolute;
 		inset: 0;
 		z-index: 20;
-		overflow: auto;
+		overflow: hidden;
 		padding: calc(var(--pad) * 3.4) var(--pad) calc(var(--pad) * 4);
 		background: #000;
 		opacity: 0;
@@ -889,9 +919,7 @@ onUnmounted(() => {
 		display: grid;
 		place-items: center;
 		padding: clamp(56px, 8vh, 84px) var(--pad);
-		background: rgba(0, 0, 0, 0.42);
-		backdrop-filter: blur(8px);
-		-webkit-backdrop-filter: blur(8px);
+		background: rgba(0, 0, 0, 0.62);
 		pointer-events: auto;
 		cursor: var(--cursor-site-default);
 	}
@@ -900,40 +928,35 @@ onUnmounted(() => {
 		width: min(92vw, 720px);
 		max-height: min(88vh, 840px);
 		overflow: auto;
+		overscroll-behavior: contain;
 		pointer-events: auto;
 		cursor: var(--cursor-site-default);
 		background: #14161c;
 		border: 1px solid rgba(255, 255, 255, 0.06);
 		border-radius: 18px;
 		box-shadow: 0 28px 80px rgba(0, 0, 0, 0.55);
-		will-change: transform, opacity;
 	}
 
 	.shot-enter-active,
 	.shot-leave-active {
-		transition:
-			background-color 0.28s ease,
-			backdrop-filter 0.28s ease,
-			-webkit-backdrop-filter 0.28s ease;
+		transition: background-color 0.16s ease;
 	}
 
 	.shot-enter-active .plate,
 	.shot-leave-active .plate {
 		transition:
-			transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
-			opacity 0.2s ease;
+			transform 0.16s ease,
+			opacity 0.14s ease;
 	}
 
 	.shot-enter-from,
 	.shot-leave-to {
 		background-color: rgba(0, 0, 0, 0);
-		backdrop-filter: blur(0px);
-		-webkit-backdrop-filter: blur(0px);
 	}
 
 	.shot-enter-from .plate,
 	.shot-leave-to .plate {
-		transform: translate3d(0, 8px, 0);
+		transform: translate3d(0, 6px, 0);
 		opacity: 0;
 	}
 
