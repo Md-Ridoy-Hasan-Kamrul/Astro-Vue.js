@@ -2,8 +2,8 @@
 /**
  * Photo-sphere archive. Camera math lives in lib/showcase/archiveSphere.ts.
  */
-import { computed, onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
-import { getLenis } from '../../lib/smoothScroll';
+import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue';
+import { getLenis, pauseSmoothScroll, resumeSmoothScroll } from '../../lib/smoothScroll';
 import {
 	ARCHIVE_FILM_URL,
 	ARCHIVE_FONT_URL,
@@ -366,6 +366,34 @@ function toggleGrid() {
 	gridOpen.value = !gridOpen.value;
 }
 
+let lockedScroll = 0;
+let holdingScroll = false;
+
+function holdPageScroll() {
+	if (holdingScroll) return;
+	if (Math.abs(window.scrollY - lockedScroll) < 1) return;
+	holdingScroll = true;
+	window.scrollTo(0, lockedScroll);
+	holdingScroll = false;
+}
+
+function setPageLock(lock: boolean) {
+	if (lock) {
+		lockedScroll = window.scrollY;
+		pauseSmoothScroll();
+		document.documentElement.style.overflow = 'hidden';
+		window.addEventListener('scroll', holdPageScroll, { passive: true });
+		return;
+	}
+	window.removeEventListener('scroll', holdPageScroll);
+	document.documentElement.style.overflow = '';
+	resumeSmoothScroll();
+}
+
+watch([gridOpen, litId], ([grid, id]) => {
+	setPageLock(Boolean(grid || id));
+});
+
 onMounted(() => {
 	reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 	if (reducedMotion) {
@@ -406,6 +434,7 @@ onUnmounted(() => {
 	cancelAnimationFrame(frame);
 	unbindGesture();
 	removeScroll?.();
+	setPageLock(false);
 });
 </script>
 
@@ -465,7 +494,7 @@ onUnmounted(() => {
 
 		<p class="cue chrome"><s></s>Drag to rotate</p>
 
-		<div id="grid" class="grid" :class="{ on: gridOpen }">
+		<div id="grid" class="grid" :class="{ on: gridOpen }" data-lenis-prevent>
 			<div class="rows">
 				<figure
 					v-for="shot in productCatalog"
@@ -479,7 +508,7 @@ onUnmounted(() => {
 		</div>
 
 		<div v-if="openProduct" id="lit" class="lit">
-			<article class="plate">
+			<article class="plate" data-lenis-prevent>
 				<div class="shot">
 					<span class="shot-index">{{ openProduct.num }}</span>
 					<img :src="openProduct.src" :alt="openProduct.title" />
@@ -789,8 +818,21 @@ onUnmounted(() => {
 	}
 
 	.grid.on {
+		height: 100%;
 		opacity: 1;
+		overflow: auto;
+		overscroll-behavior: contain;
 		pointer-events: auto;
+		scrollbar-color: rgba(255, 255, 255, 0.45) transparent;
+	}
+
+	.grid.on::-webkit-scrollbar {
+		width: 10px;
+	}
+
+	.grid.on::-webkit-scrollbar-thumb {
+		background: rgba(255, 255, 255, 0.4);
+		border-radius: 999px;
 	}
 
 	.rows {
