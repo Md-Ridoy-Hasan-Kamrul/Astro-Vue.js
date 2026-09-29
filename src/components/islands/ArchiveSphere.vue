@@ -468,8 +468,6 @@ onUnmounted(() => {
 
 		<div class="vig" aria-hidden="true"></div>
 
-		<p class="colophon chrome">Field Notes 2026</p>
-
 		<button type="button" class="gridbtn" aria-label="Toggle grid view" @click="toggleGrid">
 			<b></b><b></b><b></b><b></b>
 		</button>
@@ -716,16 +714,6 @@ onUnmounted(() => {
 		pointer-events: none;
 	}
 
-	.colophon {
-		position: absolute;
-		z-index: 55;
-		right: var(--pad);
-		bottom: var(--pad);
-		margin: 0;
-		font-size: 12.5px;
-		color: rgba(244, 242, 239, 0.72);
-	}
-
 	.gridbtn {
 		position: absolute;
 		z-index: 56;
@@ -908,7 +896,11 @@ onUnmounted(() => {
 		display: grid;
 		grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
 		gap: clamp(22px, 3.2vw, 48px);
-		padding-top: 16px;
+		align-items: start;
+		padding: 18px 20px 20px;
+		color: #f7f4ef;
+		background: #141414;
+		border-radius: 2px;
 	}
 
 	.meta h2 {
@@ -917,6 +909,7 @@ onUnmounted(() => {
 		font-weight: 400;
 		font-size: clamp(22px, 2.15vw, 32px);
 		line-height: 1.08;
+		color: #fff;
 	}
 
 	.where,
@@ -924,10 +917,11 @@ onUnmounted(() => {
 		margin: 0;
 		font-size: 13.5px;
 		line-height: 1.55;
+		color: #f7f4ef;
 	}
 
 	.where {
-		color: rgba(244, 242, 239, 0.62);
+		color: rgba(247, 244, 239, 0.82);
 	}
 
 	@media (max-width: 900px) {
@@ -942,10 +936,6 @@ onUnmounted(() => {
 	}
 
 	@media (max-width: 768px) {
-		.colophon {
-			display: none;
-		}
-
 		.headline {
 			font-size: clamp(22px, 6.4vw, 34px);
 		}
