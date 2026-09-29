@@ -54,6 +54,7 @@ const points: SpherePoint[] = distributeSphere(archiveShots.length);
 const revealed = ref(false);
 const gridOpen = ref(false);
 const litId = ref<string | null>(null);
+const leaving = ref(false);
 const openProduct = computed(() => productCatalog.find((item) => item.id === litId.value) ?? null);
 const eyeClip = ref('none');
 const eyeSize = ref(CIRCLE_BALL_PX);
@@ -355,11 +356,18 @@ function onPointerUp() {
 
 function openShot(id: string) {
 	if (!productCatalog.some((item) => item.id === id)) return;
+	leaving.value = false;
 	litId.value = id;
 }
 
 function closeShot() {
+	if (!litId.value || leaving.value) return;
+	leaving.value = true;
+}
+
+function onShotLeft() {
 	litId.value = null;
+	leaving.value = false;
 }
 
 function toggleGrid() {
@@ -442,7 +450,7 @@ onUnmounted(() => {
 	<div
 		ref="root"
 		class="archive"
-		:class="{ revealed, gridview: gridOpen, lit: openProduct, entering: eyeOpacity > 0.05 && !gridOpen && !openProduct }"
+		:class="{ revealed, gridview: gridOpen, lit: openProduct, dim: Boolean(openProduct) && !leaving, entering: eyeOpacity > 0.05 && !gridOpen && !openProduct }"
 		:style="{ clipPath: gridOpen || openProduct ? 'none' : eyeClip }"
 	>
 		<div
@@ -507,24 +515,26 @@ onUnmounted(() => {
 			</div>
 		</div>
 
-		<div v-if="openProduct" id="lit" class="lit">
-			<article class="plate" data-lenis-prevent>
-				<div class="shot">
-					<span class="shot-index">{{ openProduct.num }}</span>
-					<img :src="openProduct.src" :alt="openProduct.title" />
-					<button type="button" class="shot-x" aria-label="Close" @click="closeShot">×</button>
-				</div>
-				<div class="meta">
-					<p class="kicker">{{ openProduct.kicker }}</p>
-					<h2>{{ openProduct.title }}</h2>
-					<p class="note">{{ openProduct.note }}</p>
-					<ul class="tags">
-						<li v-for="tag in openProduct.tags" :key="tag">{{ tag }}</li>
-					</ul>
-					<button type="button" class="close-btn" @click="closeShot">Close</button>
-				</div>
-			</article>
-		</div>
+		<Transition name="shot" @after-leave="onShotLeft">
+			<div v-if="openProduct && !leaving" id="lit" class="lit" @click.self="closeShot">
+				<article class="plate" data-lenis-prevent>
+					<div class="shot">
+						<span class="shot-index">{{ openProduct.num }}</span>
+						<img :src="openProduct.src" :alt="openProduct.title" />
+						<button type="button" class="shot-x" aria-label="Close" @click.stop="closeShot">×</button>
+					</div>
+					<div class="meta">
+						<p class="kicker">{{ openProduct.kicker }}</p>
+						<h2>{{ openProduct.title }}</h2>
+						<p class="note">{{ openProduct.note }}</p>
+						<ul class="tags">
+							<li v-for="tag in openProduct.tags" :key="tag">{{ tag }}</li>
+						</ul>
+						<button type="button" class="close-btn" @click.stop="closeShot">Close</button>
+					</div>
+				</article>
+			</div>
+		</Transition>
 
 		<div
 			v-show="eyeOpacity > 0.01 && !gridOpen && !openProduct"
@@ -871,6 +881,20 @@ onUnmounted(() => {
 		background: linear-gradient(transparent, rgba(0, 0, 0, 0.82));
 	}
 
+	.stage,
+	.grid,
+	.vig,
+	.gridbtn {
+		transition: filter 0.45s ease;
+	}
+
+	.archive.dim .stage,
+	.archive.dim .grid,
+	.archive.dim .vig,
+	.archive.dim .gridbtn {
+		filter: blur(8px);
+	}
+
 	.lit {
 		position: absolute;
 		inset: 0;
@@ -878,8 +902,8 @@ onUnmounted(() => {
 		display: grid;
 		place-items: center;
 		padding: clamp(56px, 8vh, 84px) var(--pad);
-		background: transparent;
-		pointer-events: none;
+		background: rgba(0, 0, 0, 0.28);
+		pointer-events: auto;
 	}
 
 	.plate {
@@ -891,18 +915,29 @@ onUnmounted(() => {
 		border: 1px solid rgba(255, 255, 255, 0.06);
 		border-radius: 18px;
 		box-shadow: 0 28px 80px rgba(0, 0, 0, 0.55);
-		animation: card-grow 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
 	}
 
-	@keyframes card-grow {
-		from {
-			transform: scale(0.28);
-			opacity: 0.35;
-		}
-		to {
-			transform: none;
-			opacity: 1;
-		}
+	.shot-enter-active,
+	.shot-leave-active {
+		transition: background-color 0.45s ease;
+	}
+
+	.shot-enter-active .plate,
+	.shot-leave-active .plate {
+		transition:
+			transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+			opacity 0.4s ease;
+	}
+
+	.shot-enter-from,
+	.shot-leave-to {
+		background-color: rgba(0, 0, 0, 0);
+	}
+
+	.shot-enter-from .plate,
+	.shot-leave-to .plate {
+		transform: translateY(18px) scale(0.96);
+		opacity: 0;
 	}
 
 	.shot {
