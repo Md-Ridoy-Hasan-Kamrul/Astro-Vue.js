@@ -129,6 +129,7 @@ Learning project: **Astro** pages + **Vue** islands, with Tailwind, Zustand, Tan
 - [x] Migrated interactive islands from Svelte → Vue 3
 - [x] Hero → partner page-transition (scroll fly-in) + PartnerAbout section
 - [x] Project showcase — Ethan Vale photo sphere after the partner section
+- [x] Orbit projects — Framer OrbitProject port before How it works (desktop scroll orbit, compact grid below 1024px)
 - [ ] (Add next goals here when the owner shares them)
 
 ---
