@@ -703,12 +703,15 @@ onUnmounted(() => {
 		top: 0;
 		left: 0;
 		width: var(--hw);
+		height: 2.8em;
+		margin-top: -1.4em;
 		margin-left: calc(var(--hw) / -2);
+		overflow: visible;
 		text-align: center;
 		font-family: var(--serif);
 		font-weight: 400;
 		font-size: clamp(25px, 3.7vw, 55px);
-		line-height: 1.06;
+		line-height: 1.25;
 		letter-spacing: -0.005em;
 		color: #fff;
 		text-shadow: 0 2px 34px rgba(0, 0, 0, 0.55);
@@ -718,7 +721,7 @@ onUnmounted(() => {
 
 	.headline .inner {
 		position: absolute;
-		top: 0;
+		top: 50%;
 		left: 0;
 		width: 100%;
 		transform: translateY(-50%);
@@ -726,6 +729,8 @@ onUnmounted(() => {
 
 	.word {
 		display: inline-block;
+		padding: 0.28em 0.06em 0.12em;
+		margin: -0.28em -0.06em -0.12em;
 		opacity: 0;
 		transform: translateY(0.42em);
 		filter: blur(7px);
@@ -734,7 +739,7 @@ onUnmounted(() => {
 	.revealed .word {
 		opacity: 1;
 		transform: none;
-		filter: blur(0);
+		filter: none;
 		transition:
 			opacity 1.05s,
 			transform 1.15s,
