@@ -6,7 +6,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch 
 import Lenis from 'lenis';
 import { createAreaScroll, getLenis, pauseSmoothScroll, resumeSmoothScroll } from '../../lib/smoothScroll';
 import {
-	ARCHIVE_FILM_URL,
+	EYE_FILM_SRC,
 	ARCHIVE_FONT_URL,
 	CAM_Z_EASE,
 	HEADLINE_WORDS,
@@ -577,15 +577,16 @@ onUnmounted(() => {
 				left: '50%',
 				right: 'auto',
 				bottom: 'auto',
+				marginLeft: `${-eyeSize / 2}px`,
+				marginTop: `${eyeY - eyeSize / 2}px`,
 				borderRadius: '50%',
-				transform: `translate(-50%, -50%) translateY(${eyeY}px)`,
 			}"
 			aria-hidden="true"
 		>
 			<video
 				ref="eyeFilm"
 				class="eye-film__video"
-				:src="ARCHIVE_FILM_URL"
+				:src="EYE_FILM_SRC"
 				muted
 				playsinline
 				preload="auto"
@@ -1123,6 +1124,7 @@ onUnmounted(() => {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+		transform: translateZ(0);
 		pointer-events: none;
 	}
 

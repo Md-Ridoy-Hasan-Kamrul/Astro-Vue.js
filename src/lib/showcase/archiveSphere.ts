@@ -11,6 +11,11 @@ export const ARCHIVE_CDN =
 	'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/';
 export const ARCHIVE_FILM_URL =
 	'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260922_195107_ed3f055a-3a13-4a71-b743-e10310454246.mp4';
+/**
+ * Same iris film as ARCHIVE_FILM_URL. The CloudFront file is HEVC Main 10,
+ * which many browsers leave as a black circle. This H.264 copy is what plays.
+ */
+export const EYE_FILM_SRC = '/films/eye.mp4';
 export const ARCHIVE_FONT_URL =
 	'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap';
 export const HEADLINE_COPY = 'Web Application Design';
