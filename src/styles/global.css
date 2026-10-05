@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* Hover reveal from 640px only. Class names stay literal so Tailwind can see them. */
+@custom-variant fine {
+	@media (min-width: 640px) and (hover: hover) {
+		@slot;
+	}
+}
+
 @theme {
 	--font-display: "Syne", system-ui, sans-serif;
 	--font-body: "Figtree Variable", "Figtree", system-ui, sans-serif;

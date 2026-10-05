@@ -13,7 +13,7 @@ import { ORBIT_COPY, ORBIT_ITEMS, ORBIT_MEDIA_QUERY, orbitCssVars } from '../../
 
 <section
 	id="orbit-projects"
-	class="orbit-section relative w-full"
+	class="orbit-section relative w-full bg-(--orbit-bg) font-['Inter',system-ui,-apple-system,'Segoe_UI',sans-serif] text-(--orbit-ink)"
 	aria-label={ORBIT_COPY.sectionLabel}
 	style={orbitCssVars()}
 >
@@ -21,18 +21,18 @@ import { ORBIT_COPY, ORBIT_ITEMS, ORBIT_MEDIA_QUERY, orbitCssVars } from '../../
 		<OrbitProjectsStage items={ORBIT_ITEMS} client:media={ORBIT_MEDIA_QUERY} />
 	</div>
 
-	<div data-orbit-compact class="orbit-compact min-[1024px]:hidden">
-		<header class="orbit-compact__header">
-			<h2 class="orbit-compact__title">
+	<div data-orbit-compact class="orbit-compact box-border w-full px-(--orbit-pad-x) py-(--orbit-pad-y) min-[1024px]:hidden">
+		<header class="orbit-compact__header mb-(--orbit-header-gap)">
+			<h2 class="orbit-compact__title m-0 text-left text-(length:--orbit-compact-title) leading-[0.9] font-normal tracking-[-0.065em]">
 				<span class="block">{ORBIT_COPY.leftTitle}</span>
 				<span class="block">{ORBIT_COPY.rightTitle}</span>
 			</h2>
-			<p class="orbit-compact__copy">{ORBIT_COPY.centerText}</p>
+			<p class="orbit-compact__copy mt-(--orbit-copy-gap) max-w-(--orbit-copy-width) text-left text-[12px] leading-[1.05] font-medium tracking-[-0.035em]">{ORBIT_COPY.centerText}</p>
 		</header>
-		<div data-orbit-grid class="orbit-compact__grid">
+		<div data-orbit-grid class="orbit-compact__grid grid grid-cols-1 gap-(--orbit-grid-gap) min-[640px]:grid-cols-2">
 			{
 				ORBIT_ITEMS.map((item) => (
-					<div class="orbit-compact__card">
+					<div class="orbit-compact__card relative aspect-(--orbit-card-aspect) w-full">
 						<OrbitFlipCard item={item} client:visible />
 					</div>
 				))
@@ -40,59 +40,3 @@ import { ORBIT_COPY, ORBIT_ITEMS, ORBIT_MEDIA_QUERY, orbitCssVars } from '../../
 		</div>
 	</div>
 </section>
-
-<style>
-	.orbit-section {
-		background: var(--orbit-bg);
-		color: var(--orbit-ink);
-		font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-	}
-
-	.orbit-compact {
-		box-sizing: border-box;
-		width: 100%;
-		padding: var(--orbit-pad-y) var(--orbit-pad-x);
-	}
-
-	.orbit-compact__header {
-		margin-bottom: var(--orbit-header-gap);
-	}
-
-	.orbit-compact__title {
-		margin: 0;
-		font-size: var(--orbit-compact-title);
-		font-weight: 400;
-		line-height: 0.9;
-		letter-spacing: -0.065em;
-		text-align: left;
-	}
-
-	.orbit-compact__copy {
-		max-width: var(--orbit-copy-width);
-		margin: var(--orbit-copy-gap) 0 0;
-		font-size: 12px;
-		font-weight: 500;
-		line-height: 1.05;
-		letter-spacing: -0.035em;
-		text-align: left;
-	}
-
-	.orbit-compact__grid {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		gap: var(--orbit-grid-gap);
-	}
-
-	/* Media queries cannot read custom properties: 640px = ORBIT_LAYOUT.mobileMaxPx. */
-	@media (min-width: 640px) {
-		.orbit-compact__grid {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-	}
-
-	.orbit-compact__card {
-		position: relative;
-		width: 100%;
-		aspect-ratio: var(--orbit-card-aspect);
-	}
-</style>

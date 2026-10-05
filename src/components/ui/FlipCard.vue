@@ -91,7 +91,7 @@ const glareStyle = computed<CSSProperties>(() => ({
 	<div
 		ref="rootRef"
 		data-flip-card
-		class="flip-card"
+		class="flip-card relative cursor-[var(--cursor-site-pointer,pointer)] [-webkit-tap-highlight-color:transparent] select-none outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-solid focus-visible:outline-current"
 		role="button"
 		tabindex="0"
 		:aria-label="label"
@@ -104,56 +104,16 @@ const glareStyle = computed<CSSProperties>(() => ({
 		@pointerleave="handlers.onPointerLeave"
 		@keydown="handlers.onKeydown"
 	>
-		<div class="flip-card__tilt" :style="tiltStyle">
-			<div class="flip-card__flipper" :style="flipperStyle">
-				<div class="flip-card__face" :aria-hidden="flipped" :style="faceStyle">
+		<div class="flip-card__tilt relative size-full [transform-style:preserve-3d]" :style="tiltStyle">
+			<div class="flip-card__flipper relative size-full [transform-style:preserve-3d]" :style="flipperStyle">
+				<div class="flip-card__face absolute inset-0 overflow-hidden backface-hidden [-webkit-backface-visibility:hidden]" :aria-hidden="flipped" :style="faceStyle">
 					<slot name="front" />
 				</div>
-				<div class="flip-card__face" :aria-hidden="!flipped" :style="backStyle">
+				<div class="flip-card__face absolute inset-0 overflow-hidden backface-hidden [-webkit-backface-visibility:hidden]" :aria-hidden="!flipped" :style="backStyle">
 					<slot name="back" />
 				</div>
 			</div>
-			<div v-if="glare" class="flip-card__glare" aria-hidden="true" :style="glareStyle"></div>
+			<div v-if="glare" class="flip-card__glare pointer-events-none absolute inset-0 [transform:translateZ(1px)] mix-blend-screen transition-opacity duration-[0.25s] ease-[ease]" aria-hidden="true" :style="glareStyle"></div>
 		</div>
 	</div>
 </template>
-
-<style scoped>
-	.flip-card {
-		position: relative;
-		cursor: var(--cursor-site-pointer, pointer);
-		user-select: none;
-		-webkit-tap-highlight-color: transparent;
-		outline: none;
-	}
-
-	.flip-card:focus-visible {
-		outline: 2px solid currentColor;
-		outline-offset: 4px;
-	}
-
-	.flip-card__tilt,
-	.flip-card__flipper {
-		position: relative;
-		width: 100%;
-		height: 100%;
-		transform-style: preserve-3d;
-	}
-
-	.flip-card__face {
-		position: absolute;
-		inset: 0;
-		overflow: hidden;
-		backface-visibility: hidden;
-		-webkit-backface-visibility: hidden;
-	}
-
-	.flip-card__glare {
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-		transform: translateZ(1px);
-		transition: opacity 0.25s ease;
-		mix-blend-mode: screen;
-	}
-</style>

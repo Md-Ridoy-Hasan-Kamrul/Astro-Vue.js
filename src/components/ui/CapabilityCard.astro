@@ -12,188 +12,79 @@ interface Props {
 const { item } = Astro.props;
 ---
 
-<article data-capability-card class="cap-card">
-	<div class="cap-card__media">
-		<img src={item.image} alt="" width="1200" height="800" loading="lazy" decoding="async" />
+<article
+	data-capability-card
+	class:list={[
+		'group relative flex flex-col overflow-hidden rounded-[1.75rem] border border-[rgb(255_255_255/0.72)] bg-[rgb(255_255_255/0.58)] text-ink shadow-[inset_0_1px_1px_rgb(255_255_255/0.9),0_18px_40px_rgb(20_33_43/0.06)] backdrop-blur-[16px]',
+		'fine:min-h-[28rem] fine:transition-[background-color,color,border-color] fine:duration-[240ms] fine:ease-[ease]',
+		'fine:hover:border-transparent fine:hover:bg-sea-deep fine:hover:text-paper',
+		'fine:focus-within:border-transparent fine:focus-within:bg-sea-deep fine:focus-within:text-paper',
+	]}
+>
+	<div
+		class:list={[
+			'mt-[0.85rem] mx-[0.85rem] h-[13rem] overflow-hidden rounded-[1.15rem] bg-[#e7eef1]',
+			'fine:absolute fine:inset-x-[0.85rem] fine:bottom-[0.85rem] fine:m-0 fine:h-[58%]',
+			'fine:transition-[opacity,transform] fine:duration-[240ms] fine:ease-[ease]',
+			'fine:group-hover:scale-[0.97] fine:group-hover:opacity-0',
+			'fine:group-focus-within:scale-[0.97] fine:group-focus-within:opacity-0',
+		]}
+	>
+		<img
+			src={item.image}
+			alt=""
+			width="1200"
+			height="800"
+			loading="lazy"
+			decoding="async"
+			class="size-full object-cover object-center"
+		/>
 	</div>
-	<div class="cap-card__copy">
-		<p class="cap-card__index">{item.index}</p>
-		<h3 class="cap-card__title">{item.title}</h3>
-		<div class="cap-card__detail">
-			<p class="cap-card__body">{item.body}</p>
-			<a class="cap-card__explore" href={CAPABILITY_COPY.exploreHref}>{CAPABILITY_COPY.exploreLabel}</a>
+	<div
+		class:list={[
+			'relative z-[1] flex flex-1 flex-col px-[1.35rem] pt-[1.1rem] pb-[1.25rem]',
+			'fine:px-[1.35rem] fine:pt-[1.35rem] fine:pb-[1.15rem]',
+		]}
+	>
+		<p
+			class:list={[
+				'm-0 font-mono text-[0.75rem] font-bold tracking-[0.14em] text-sea',
+				'fine:transition-colors fine:duration-[240ms] fine:ease-[ease]',
+				'fine:group-hover:text-foam fine:group-focus-within:text-foam',
+			]}
+		>
+			{item.index}
+		</p>
+		<h3 class="mt-[0.7rem] mb-0 max-w-[16rem] font-display text-[clamp(1.45rem,2vw,1.85rem)] leading-[1.05] font-bold tracking-[-0.03em]">
+			{item.title}
+		</h3>
+		<div
+			class:list={[
+				'mt-auto flex flex-col gap-[1.15rem] pt-[1.25rem]',
+				'fine:pointer-events-none fine:absolute fine:inset-x-[1.35rem] fine:bottom-[1.25rem] fine:mt-0 fine:pt-0 fine:translate-y-[0.65rem] fine:opacity-0',
+				'fine:transition-[opacity,transform] fine:duration-[240ms] fine:ease-[ease]',
+				'fine:group-hover:pointer-events-auto fine:group-hover:translate-y-0 fine:group-hover:opacity-100',
+				'fine:group-focus-within:pointer-events-auto fine:group-focus-within:translate-y-0 fine:group-focus-within:opacity-100',
+			]}
+		>
+			<p
+				class:list={[
+					'm-0 text-[0.95rem] leading-[1.45] text-ink-soft',
+					'fine:group-hover:text-[rgb(247_250_251/0.86)] fine:group-focus-within:text-[rgb(247_250_251/0.86)]',
+				]}
+			>
+				{item.body}
+			</p>
+			<a
+				class:list={[
+					'self-start rounded-full bg-ink px-[1.15rem] py-[0.7rem] text-[0.9rem] leading-none font-semibold text-paper no-underline',
+					'focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-solid focus-visible:outline-sea',
+					'fine:transition-[background-color,color] fine:duration-[240ms] fine:ease-[ease]',
+					'fine:group-hover:bg-paper fine:group-hover:text-ink',
+					'fine:group-focus-within:bg-paper fine:group-focus-within:text-ink',
+				]}
+				href={CAPABILITY_COPY.exploreHref}
+			>{CAPABILITY_COPY.exploreLabel}</a>
 		</div>
 	</div>
 </article>
-
-<style>
-	.cap-card {
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		overflow: hidden;
-		border: 1px solid rgb(255 255 255 / 0.72);
-		border-radius: 1.75rem;
-		background: rgb(255 255 255 / 0.58);
-		color: var(--color-ink);
-		box-shadow:
-			inset 0 1px 1px rgb(255 255 255 / 0.9),
-			0 18px 40px rgb(20 33 43 / 0.06);
-		backdrop-filter: blur(16px);
-	}
-
-	.cap-card__media {
-		height: 13rem;
-		margin: 0.85rem 0.85rem 0;
-		overflow: hidden;
-		border-radius: 1.15rem;
-		background: #e7eef1;
-	}
-
-	.cap-card__media img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		object-position: center;
-	}
-
-	.cap-card__copy {
-		position: relative;
-		z-index: 1;
-		display: flex;
-		flex: 1;
-		flex-direction: column;
-		padding: 1.1rem 1.35rem 1.25rem;
-	}
-
-	.cap-card__index {
-		margin: 0;
-		color: var(--color-sea);
-		font-family: var(--font-mono);
-		font-size: 0.75rem;
-		font-weight: 700;
-		letter-spacing: 0.14em;
-	}
-
-	.cap-card__title {
-		max-width: 16rem;
-		margin: 0.7rem 0 0;
-		font-family: var(--font-display);
-		font-size: clamp(1.45rem, 2vw, 1.85rem);
-		font-weight: 700;
-		line-height: 1.05;
-		letter-spacing: -0.03em;
-	}
-
-	.cap-card__detail {
-		display: flex;
-		flex-direction: column;
-		gap: 1.15rem;
-		margin-top: auto;
-		padding-top: 1.25rem;
-	}
-
-	.cap-card__body {
-		margin: 0;
-		color: var(--color-ink-soft);
-		font-size: 0.95rem;
-		line-height: 1.45;
-	}
-
-	.cap-card__explore {
-		align-self: flex-start;
-		border-radius: 999px;
-		background: var(--color-ink);
-		padding: 0.7rem 1.15rem;
-		color: var(--color-paper);
-		font-size: 0.9rem;
-		font-weight: 600;
-		line-height: 1;
-		text-decoration: none;
-	}
-
-	.cap-card__explore:focus-visible {
-		outline: 2px solid var(--color-sea);
-		outline-offset: 3px;
-	}
-
-	@media (min-width: 640px) and (hover: hover) {
-		.cap-card {
-			min-height: 28rem;
-		}
-
-		.cap-card__media {
-			position: absolute;
-			right: 0.85rem;
-			bottom: 0.85rem;
-			left: 0.85rem;
-			height: 58%;
-			margin: 0;
-		}
-
-		.cap-card__copy {
-			padding: 1.35rem 1.35rem 1.15rem;
-		}
-
-		.cap-card,
-		.cap-card__media,
-		.cap-card__detail,
-		.cap-card__index,
-		.cap-card__explore {
-			transition:
-				background-color 240ms ease,
-				color 240ms ease,
-				border-color 240ms ease,
-				opacity 240ms ease,
-				transform 240ms ease;
-		}
-
-		.cap-card__detail {
-			position: absolute;
-			right: 1.35rem;
-			bottom: 1.25rem;
-			left: 1.35rem;
-			margin-top: 0;
-			padding-top: 0;
-			opacity: 0;
-			transform: translateY(0.65rem);
-			pointer-events: none;
-		}
-
-		.cap-card:hover,
-		.cap-card:focus-within {
-			border-color: transparent;
-			background: var(--color-sea-deep);
-			color: var(--color-paper);
-		}
-
-		.cap-card:hover .cap-card__media,
-		.cap-card:focus-within .cap-card__media {
-			opacity: 0;
-			transform: scale(0.97);
-		}
-
-		.cap-card:hover .cap-card__index,
-		.cap-card:focus-within .cap-card__index {
-			color: var(--color-foam);
-		}
-
-		.cap-card:hover .cap-card__detail,
-		.cap-card:focus-within .cap-card__detail {
-			opacity: 1;
-			transform: none;
-			pointer-events: auto;
-		}
-
-		.cap-card:hover .cap-card__body,
-		.cap-card:focus-within .cap-card__body {
-			color: rgb(247 250 251 / 0.86);
-		}
-
-		.cap-card:hover .cap-card__explore,
-		.cap-card:focus-within .cap-card__explore {
-			background: var(--color-paper);
-			color: var(--color-ink);
-		}
-	}
-</style>

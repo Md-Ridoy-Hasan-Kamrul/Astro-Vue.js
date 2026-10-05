@@ -10,9 +10,12 @@ import {
 } from '../../lib/hero/glassyOrb';
 ---
 
-<div class="hero-orb" aria-hidden="true">
+<div
+	class="hero-orb pointer-events-none absolute inset-0 grid place-items-[center_end] overflow-visible max-[320px]:place-items-center max-[320px]:overflow-hidden"
+	aria-hidden="true"
+>
 	<video
-		class="hero-orb__video"
+		class="hero-orb__video block aspect-square h-auto w-[min(96%,21.5rem)] max-w-none origin-[center_right] translate-x-[6%] object-cover mix-blend-screen [filter:var(--orbFilter)] [transform:scale(var(--orbScale))] max-[320px]:mx-auto max-[320px]:w-64 max-[320px]:origin-center max-[320px]:translate-x-0 max-[320px]:[transform:scale(1)] min-[40rem]:w-[min(92%,25rem)] min-[40rem]:translate-x-[8%] min-[64rem]:w-[min(100%,28.5rem)] min-[64rem]:translate-x-[18%] min-[90rem]:w-[min(100%,30rem)] min-[90rem]:translate-x-[20%]"
 		data-hero-orb
 		src={ORB_SOURCE_PATH}
 		autoplay
@@ -20,70 +23,10 @@ import {
 		muted
 		playsinline
 		preload="auto"
+		style={`--orbFilter: ${ORB_COLOR_GRADE}; --orbScale: ${ORB_SCALE}`}
 	>
 	</video>
 </div>
-
-<style define:vars={{ orbFilter: ORB_COLOR_GRADE, orbScale: ORB_SCALE }}>
-	.hero-orb {
-		position: absolute;
-		inset: 0;
-		display: grid;
-		place-items: center end;
-		pointer-events: none;
-		overflow: visible;
-	}
-
-	.hero-orb__video {
-		display: block;
-		width: min(96%, 21.5rem);
-		max-width: none;
-		height: auto;
-		aspect-ratio: 1;
-		object-fit: cover;
-		mix-blend-mode: screen;
-		transform: scale(var(--orbScale));
-		transform-origin: center right;
-		filter: var(--orbFilter);
-		translate: 6% 0;
-	}
-
-	@media (max-width: 320px) {
-		.hero-orb {
-			place-items: center;
-			overflow: hidden;
-		}
-
-		.hero-orb__video {
-			width: 16rem;
-			margin-inline: auto;
-			translate: 0 0;
-			transform: scale(1);
-			transform-origin: center center;
-		}
-	}
-
-	@media (min-width: 40rem) {
-		.hero-orb__video {
-			width: min(92%, 25rem);
-			translate: 8% 0;
-		}
-	}
-
-	@media (min-width: 64rem) {
-		.hero-orb__video {
-			width: min(100%, 28.5rem);
-			translate: 18% 0;
-		}
-	}
-
-	@media (min-width: 90rem) {
-		.hero-orb__video {
-			width: min(100%, 30rem);
-			translate: 20% 0;
-		}
-	}
-</style>
 
 <script>
 	const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
