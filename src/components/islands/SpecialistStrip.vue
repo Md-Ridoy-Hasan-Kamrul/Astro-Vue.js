@@ -56,12 +56,12 @@ function width(index: number) {
 							:class="tilt(index)"
 						>
 							<span
-								class="absolute -top-7 left-1/2 z-[2] h-[2.1rem] w-[1.35rem] -translate-x-1/2 rounded-[4px_4px_5px_5px] border border-black/15 bg-[#12b83a] shadow-[0_3px_4px_rgb(0_0_0/0.14)]"
+								class="absolute -top-7 left-1/2 z-2 h-[2.1rem] w-[1.35rem] -translate-x-1/2 rounded-[4px_4px_5px_5px] border border-black/15 bg-[#12b83a] shadow-[0_3px_4px_rgb(0_0_0/0.14)]"
 								aria-hidden="true"
 							>
 								<span class="mx-auto mt-1.5 block size-1.5 rounded-full bg-[#f7f4e9]" />
 							</span>
-							<div class="aspect-[7/5] overflow-hidden rounded-[1.125rem] bg-mist">
+							<div class="aspect-7/5 overflow-hidden rounded-[1.125rem] bg-mist">
 								<img
 									:src="shot.src"
 									:alt="copy === 1 ? shot.alt : ''"
