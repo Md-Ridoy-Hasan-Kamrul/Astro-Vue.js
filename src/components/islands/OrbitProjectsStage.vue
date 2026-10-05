@@ -107,7 +107,7 @@ function cardStyle(frame: CardFrame): CSSProperties {
 				{{ ORBIT_COPY.rightTitle }}
 			</div>
 			<p
-				class="orbit-copy pointer-events-none absolute left-1/2 top-1/2 z-[2] m-0 box-border max-w-[80vw] p-4"
+				class="orbit-copy pointer-events-none absolute left-1/2 top-1/2 z-2 m-0 box-border max-w-[80vw] p-4"
 				:style="copyStyle"
 			>
 				{{ ORBIT_COPY.centerText }}
