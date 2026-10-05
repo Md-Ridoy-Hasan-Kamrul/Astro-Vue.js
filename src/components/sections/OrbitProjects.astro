@@ -7,13 +7,8 @@
  * static HTML. The scroll-driven orbit only hydrates on desktop.
  */
 import OrbitProjectsStage from '../islands/OrbitProjectsStage.vue';
-import {
-	ORBIT_COPY,
-	ORBIT_IMAGE,
-	ORBIT_ITEMS,
-	ORBIT_MEDIA_QUERY,
-	orbitCssVars,
-} from '../../lib/orbit/orbitProjects';
+import OrbitStatCard from '../ui/OrbitStatCard.vue';
+import { ORBIT_COPY, ORBIT_ITEMS, ORBIT_MEDIA_QUERY, orbitCssVars } from '../../lib/orbit/orbitProjects';
 ---
 
 <section
@@ -38,15 +33,7 @@ import {
 			{
 				ORBIT_ITEMS.map((item) => (
 					<div class="orbit-compact__card">
-						<img
-							src={item.src}
-							alt={item.label}
-							width={ORBIT_IMAGE.widthPx}
-							height={ORBIT_IMAGE.heightPx}
-							loading="lazy"
-							decoding="async"
-							draggable="false"
-						/>
+						<OrbitStatCard item={item} />
 					</div>
 				))
 			}
@@ -109,17 +96,7 @@ import {
 		aspect-ratio: var(--orbit-card-aspect);
 		overflow: hidden;
 		border-radius: var(--orbit-card-radius);
-		background: var(--orbit-card);
+		background: var(--orbit-stat-bg);
 		box-shadow: var(--orbit-card-shadow);
-	}
-
-	.orbit-compact__card img {
-		display: block;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		background: var(--orbit-card);
-		user-select: none;
-		pointer-events: none;
 	}
 </style>

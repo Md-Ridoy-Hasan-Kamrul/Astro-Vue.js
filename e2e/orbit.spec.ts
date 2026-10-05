@@ -63,8 +63,8 @@ test.describe('Orbit projects', () => {
 			await grid.scrollIntoViewIfNeeded();
 			await expect(page.locator('[data-orbit-desktop]')).toBeHidden();
 			const lefts = await grid
-				.locator('img')
-				.evaluateAll((imgs) => imgs.map((img) => Math.round(img.getBoundingClientRect().left)));
+				.locator('[data-orbit-stat]')
+				.evaluateAll((cards) => cards.map((card) => Math.round(card.getBoundingClientRect().left)));
 			expect(new Set(lefts).size).toBe(columns);
 			const overflow = await page
 				.locator('[data-orbit-compact]')

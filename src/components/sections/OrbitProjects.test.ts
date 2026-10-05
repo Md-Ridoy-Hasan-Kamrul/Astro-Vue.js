@@ -23,13 +23,16 @@ describe('Orbit projects section', () => {
 		expect(html).toContain('Exploring ideas through daily design practice.');
 	});
 
-	test('renders every project image in both layouts', async () => {
+	test('renders every stat card in both layouts', async () => {
 		const html = await render();
+		const occurrences = (text: string) => html.split(text).length - 1;
+		expect(occurrences('data-orbit-stat')).toBe(ORBIT_ITEMS.length * 2);
 		for (const item of ORBIT_ITEMS) {
-			const count = html.split(`src="${item.src}"`).length - 1;
-			expect(count).toBe(2);
-			expect(html).toContain(`alt="${item.label}"`);
+			expect(occurrences(`>${item.index}</p>`)).toBe(2);
+			expect(occurrences(`>${item.label}</p>`)).toBe(2);
+			expect(occurrences(`>${item.value}</p>`)).toBe(2);
 		}
+		expect(html).not.toContain('<img');
 	});
 
 	test('hydrates the desktop orbit only at 1024px and up', async () => {

@@ -1,5 +1,3 @@
-import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
 	ORBIT_CARD,
@@ -115,7 +113,7 @@ describe('stage geometry', () => {
 		const geometry = stageGeometry(DESKTOP, ORBIT_ITEMS.length);
 		const cardWidth = (ORBIT_GRID.maxWidthPx - ORBIT_GRID.gapPx * 2) / 3;
 		expect(geometry.columns).toBe(3);
-		expect(geometry.rows).toBe(2);
+		expect(geometry.rows).toBe(Math.ceil(ORBIT_ITEMS.length / 3));
 		expect(geometry.gridWidth).toBe(ORBIT_GRID.maxWidthPx);
 		expect(geometry.cardWidth).toBeCloseTo(cardWidth);
 		expect(geometry.cardHeight).toBeCloseTo(cardWidth / ORBIT_CARD.aspect);
@@ -207,13 +205,15 @@ describe('content', () => {
 		expect(ORBIT_COPY.centerText).toBe('Exploring ideas through daily design practice.');
 	});
 
-	it('lists six projects with optimized local images', () => {
-		expect(ORBIT_ITEMS).toHaveLength(6);
-		for (const item of ORBIT_ITEMS) {
-			expect(item.src).toMatch(/^\/orbit\/\d+\.webp$/);
-			expect(item.label.length).toBeGreaterThan(0);
-			expect(existsSync(resolve('public', item.src.slice(1)))).toBe(true);
-		}
+	it('lists the five company stats in order, numbered 001 to 005', () => {
+		expect(ORBIT_ITEMS.map(({ index, label, value }) => [index, label, value])).toEqual([
+			['001', 'Total Awards', '16'],
+			['002', 'Years of Services', '5+'],
+			['003', 'Location', '6'],
+			['004', 'Team Members', '80+'],
+			['005', 'Happy Clients', '350+'],
+		]);
+		expect(new Set(ORBIT_ITEMS.map((item) => item.id)).size).toBe(ORBIT_ITEMS.length);
 	});
 });
 

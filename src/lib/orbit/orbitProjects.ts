@@ -5,11 +5,9 @@
  * Pure math only. The Vue island and composable apply the results.
  * Every constant below is a Framer default for this component.
  */
-import { productCatalog } from '../showcase/products';
-
 export type Viewport = { width: number; height: number };
 
-export type OrbitItem = { id: string; src: string; label: string };
+export type OrbitItem = { id: string; index: string; label: string; value: string };
 
 export type StageGeometry = {
 	columns: number;
@@ -63,6 +61,9 @@ export const ORBIT_COLORS = {
 	background: '#D4D4D4',
 	text: '#242424',
 	card: '#E8E8E8',
+	statCard: '#FFFFFF',
+	statInk: '#111111',
+	statDivider: '#EDEDED',
 } as const;
 
 export const ORBIT_LAYOUT = {
@@ -181,17 +182,34 @@ const MS_PER_SECOND = 1000;
 const PX_DECIMALS = 2;
 const ALPHA_DECIMALS = 3;
 
-/** Product ids picked from the catalog for the six orbit cards. */
-const ORBIT_PRODUCT_IDS = ['2', '4', '11', '13', '17', '27'] as const;
+const ORBIT_STATS = [
+	{ id: 'awards', label: 'Total Awards', value: '16' },
+	{ id: 'years', label: 'Years of Services', value: '5+' },
+	{ id: 'locations', label: 'Location', value: '6' },
+	{ id: 'team', label: 'Team Members', value: '80+' },
+	{ id: 'clients', label: 'Happy Clients', value: '350+' },
+] as const;
 
-export const ORBIT_ITEMS: readonly OrbitItem[] = ORBIT_PRODUCT_IDS.map((id) => ({
-	id,
-	src: `/orbit/${id}.webp`,
-	label: productCatalog.find((product) => product.id === id)?.title ?? `Project ${id}`,
+/** Card numbers read "001", "002", … */
+const STAT_INDEX_DIGITS = 3;
+
+export const ORBIT_ITEMS: readonly OrbitItem[] = ORBIT_STATS.map((stat, position) => ({
+	...stat,
+	index: String(position + 1).padStart(STAT_INDEX_DIGITS, '0'),
 }));
 
-/** Intrinsic size of the /orbit/*.webp files (4:3), so img tags reserve space. */
-export const ORBIT_IMAGE = { widthPx: 1600, heightPx: 1200 } as const;
+/**
+ * Stat card type, in % of the card width (cqw), so the same card reads the
+ * same in the 3D orbit (rendered at 2x then scaled) and in the compact grid.
+ */
+export const ORBIT_STAT_TYPE = {
+	paddingCqw: 6,
+	bottomPaddingTopCqw: 4.5,
+	bottomPaddingEndCqw: 5,
+	indexSizeCqw: 3.4,
+	labelSizeCqw: 4.2,
+	valueSizeCqw: 12,
+} as const;
 
 export const ORBIT_MEDIA_QUERY = `(min-width: ${ORBIT_LAYOUT.desktopMinPx}px)`;
 
@@ -450,6 +468,14 @@ export function orbitCssVars(): string {
 		'--orbit-compact-title': `min(${ORBIT_COMPACT.titleSizePx}px, ${ORBIT_COMPACT.titleFitVw}vw)`,
 		'--orbit-desktop-title': `min(${ORBIT_TITLE.sizePx}px, ${ORBIT_TITLE.fitVw}vw)`,
 		'--orbit-copy-width': `${ORBIT_TITLE.centerTextWidthPx}px`,
+		'--orbit-stat-bg': ORBIT_COLORS.statCard,
+		'--orbit-stat-ink': ORBIT_COLORS.statInk,
+		'--orbit-stat-divider': ORBIT_COLORS.statDivider,
+		'--orbit-stat-pad': `${ORBIT_STAT_TYPE.paddingCqw}cqw`,
+		'--orbit-stat-bottom-pad': `${ORBIT_STAT_TYPE.bottomPaddingTopCqw}cqw ${ORBIT_STAT_TYPE.paddingCqw}cqw ${ORBIT_STAT_TYPE.bottomPaddingEndCqw}cqw`,
+		'--orbit-stat-index': `${ORBIT_STAT_TYPE.indexSizeCqw}cqw`,
+		'--orbit-stat-label': `${ORBIT_STAT_TYPE.labelSizeCqw}cqw`,
+		'--orbit-stat-value': `${ORBIT_STAT_TYPE.valueSizeCqw}cqw`,
 	};
 	return Object.entries(vars)
 		.map(([name, value]) => `${name}: ${value};`)
