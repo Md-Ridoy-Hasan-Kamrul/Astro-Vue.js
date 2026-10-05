@@ -57,11 +57,11 @@ describe('Orbit projects section', () => {
 	});
 });
 
-test('home page places the orbit section right before How it works', () => {
+test('home page places the orbit section after the showcase and before capabilities', () => {
 	const page = readFileSync(resolve('src/pages/index.astro'), 'utf8');
 	const orbit = page.indexOf('<OrbitProjects />');
-	const how = page.indexOf('<HowItWorks />');
+	const capabilities = page.indexOf('<Capabilities />');
 	const showcase = page.indexOf('<ProjectShowcase />');
 	expect(orbit).toBeGreaterThan(showcase);
-	expect(orbit).toBeLessThan(how);
+	expect(capabilities).toBeGreaterThan(orbit);
 });

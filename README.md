@@ -131,6 +131,7 @@ Learning project: **Astro** pages + **Vue** islands, with Tailwind, Zustand, Tan
 - [x] Project showcase — Ethan Vale photo sphere after the partner section
 - [x] Orbit projects — Framer OrbitProject port before How it works (desktop scroll orbit, compact grid below 1024px)
 - [x] Orbit cards are FlipCards (Vue port): company stat over dimmed public-domain artwork front, artwork back; click / drag / Enter to flip
+- [x] Capabilities — six services after Motion Design; hover reveals the description and Explore Now
 - [ ] (Add next goals here when the owner shares them)
 
 ---
