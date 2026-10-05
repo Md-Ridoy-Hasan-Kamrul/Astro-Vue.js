@@ -18,14 +18,14 @@ defineProps<{
 			<ul
 				v-for="copy in 2"
 				:key="copy"
-				class="m-0 flex h-full shrink-0 list-none items-center gap-3 p-0 pr-3"
+				class="m-0 flex h-full shrink-0 list-none items-center gap-12 p-0 pr-12"
 				:aria-hidden="copy === 2 ? 'true' : undefined"
 			>
 				<li
 					v-for="(shot, index) in shots"
 					:key="`${copy}-${shot.src}`"
 					class="shrink-0 overflow-hidden rounded-[1.5rem]"
-					:class="index % 2 === 0 ? 'aspect-[3/4] h-[clamp(13.5rem,30vh,18rem)]' : 'aspect-[2/3] h-[clamp(10rem,22vh,13.25rem)]'"
+					:class="index % 2 === 0 ? 'aspect-square h-[clamp(19rem,46vh,26rem)]' : 'aspect-[15/16] h-[clamp(14.5rem,35vh,20rem)]'"
 				>
 					<img
 						:src="shot.src"
