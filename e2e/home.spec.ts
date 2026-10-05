@@ -29,10 +29,13 @@ test.describe('Home landing page', () => {
 
   test('navbar navigates to the about route', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page
+    const about = page
       .getByRole('navigation', { name: 'Primary' })
-      .getByRole('link', { name: 'About' })
-      .click();
+      .getByRole('link', { name: 'About Us', exact: true });
+    if (!(await about.isVisible())) {
+      await page.getByRole('button', { name: 'Menu' }).click();
+    }
+    await about.click();
     await expect(page).toHaveURL(/\/about\/?$/);
     await expect(page.getByRole('button', { name: /Astro pages/i })).toBeVisible();
   });

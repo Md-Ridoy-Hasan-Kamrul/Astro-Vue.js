@@ -13,6 +13,7 @@ export default defineConfig({
 	reporter: 'list',
 	// The home page is heavy (WebGL, video); with UI-mode tracing a test can pass 30s on `astro dev`.
 	timeout: 60_000,
+	expect: { timeout: 15_000 },
 	use: {
 		baseURL: 'http://127.0.0.1:4321',
 		trace: 'on-first-retry',
