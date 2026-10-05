@@ -14,6 +14,7 @@ test.describe('Home landing page', () => {
     ).toBeVisible();
     await expect(page.locator('#orbit-projects')).toBeAttached();
     await expect(page.locator('#capabilities')).toBeAttached();
+    await expect(page.locator('#specialists')).toBeAttached();
     await expect(page.locator('#how')).toBeVisible();
     await expect(page.locator('#stack')).toBeVisible();
     await expect(page.getByRole('contentinfo')).toBeVisible();
