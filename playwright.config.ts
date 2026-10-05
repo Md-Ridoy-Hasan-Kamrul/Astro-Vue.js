@@ -11,6 +11,8 @@ export default defineConfig({
 	retries: process.env.CI ? 2 : 0,
 	workers: process.env.CI ? 2 : undefined,
 	reporter: 'list',
+	// The home page is heavy (WebGL, video); with UI-mode tracing a test can pass 30s on `astro dev`.
+	timeout: 60_000,
 	use: {
 		baseURL: 'http://127.0.0.1:4321',
 		trace: 'on-first-retry',
