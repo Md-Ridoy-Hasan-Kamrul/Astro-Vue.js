@@ -91,7 +91,7 @@ const glareStyle = computed<CSSProperties>(() => ({
 	<div
 		ref="rootRef"
 		data-flip-card
-		class="flip-card relative cursor-[var(--cursor-site-pointer,pointer)] [-webkit-tap-highlight-color:transparent] select-none outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-solid focus-visible:outline-current"
+		class="flip-card relative cursor-(--cursor-site-pointer,pointer) [-webkit-tap-highlight-color:transparent] select-none outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-solid focus-visible:outline-current"
 		role="button"
 		tabindex="0"
 		:aria-label="label"
@@ -104,8 +104,8 @@ const glareStyle = computed<CSSProperties>(() => ({
 		@pointerleave="handlers.onPointerLeave"
 		@keydown="handlers.onKeydown"
 	>
-		<div class="flip-card__tilt relative size-full [transform-style:preserve-3d]" :style="tiltStyle">
-			<div class="flip-card__flipper relative size-full [transform-style:preserve-3d]" :style="flipperStyle">
+		<div class="flip-card__tilt relative size-full transform-3d" :style="tiltStyle">
+			<div class="flip-card__flipper relative size-full transform-3d" :style="flipperStyle">
 				<div class="flip-card__face absolute inset-0 overflow-hidden backface-hidden [-webkit-backface-visibility:hidden]" :aria-hidden="flipped" :style="faceStyle">
 					<slot name="front" />
 				</div>
@@ -113,7 +113,7 @@ const glareStyle = computed<CSSProperties>(() => ({
 					<slot name="back" />
 				</div>
 			</div>
-			<div v-if="glare" class="flip-card__glare pointer-events-none absolute inset-0 [transform:translateZ(1px)] mix-blend-screen transition-opacity duration-[0.25s] ease-[ease]" aria-hidden="true" :style="glareStyle"></div>
+			<div v-if="glare" class="flip-card__glare pointer-events-none absolute inset-0 transform-[translateZ(1px)] mix-blend-screen transition-opacity duration-[0.25s] ease-[ease]" aria-hidden="true" :style="glareStyle"></div>
 		</div>
 	</div>
 </template>

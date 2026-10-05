@@ -77,24 +77,24 @@ const glyph =
 <template>
 	<span
 		ref="rootRef"
-		class="depth-text isolate max-w-full [perspective:var(--depth-text-perspective)] [perspective-origin:50%_48%] [@media(hover:hover)_and_(pointer:fine)]:cursor-[var(--cursor-site-default,default)]"
+		class="depth-text isolate max-w-full perspective-(--depth-text-perspective) perspective-origin-[50%_48%] [@media(hover:hover)_and_(pointer:fine)]:cursor-(--cursor-site-default,default)"
 		:class="wrap ? 'block w-full' : 'inline-block'"
 		:style="rootStyle"
 	>
 		<span
 			ref="stageRef"
-			class="depth-text__stage relative place-items-center [transform-style:preserve-3d] [transform:rotateX(-2.4deg)_rotateY(3.15deg)] origin-center will-change-transform motion-reduce:will-change-auto"
+			class="depth-text__stage relative place-items-center transform-3d transform-[rotateX(-2.4deg)_rotateY(3.15deg)] origin-center will-change-transform motion-reduce:will-change-auto"
 			:class="wrap ? 'grid w-full justify-items-start' : 'inline-grid'"
 		>
 			<span
 				v-for="layer in layers"
 				:key="layer.index"
-				:class="[glyph, 'pointer-events-none absolute inset-0 z-0 [filter:saturate(0.95)_brightness(0.92)]', wrap ? 'w-full text-left whitespace-normal' : 'whitespace-nowrap']"
+				:class="[glyph, 'pointer-events-none absolute inset-0 z-0 filter-[saturate(0.95)_brightness(0.92)]', wrap ? 'w-full text-left whitespace-normal' : 'whitespace-nowrap']"
 				aria-hidden="true"
 				:style="{ color: layer.color, transform: layer.transform }"
 			>{{ text }}</span>
 			<span
-				:class="[glyph, 'relative z-[1] [color:var(--depth-text-face-color)] [text-shadow:var(--depth-text-shadow)] [transform:translateZ(0.6px)]', wrap ? 'w-full text-left whitespace-normal' : 'whitespace-nowrap']"
+				:class="[glyph, 'relative z-1 text-(--depth-text-face-color) text-shadow-(--depth-text-shadow) transform-[translateZ(0.6px)]', wrap ? 'w-full text-left whitespace-normal' : 'whitespace-nowrap']"
 			>{{ text }}</span>
 		</span>
 	</span>

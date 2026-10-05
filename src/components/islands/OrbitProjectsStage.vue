@@ -85,7 +85,7 @@ function cardStyle(frame: CardFrame): CSSProperties {
 		<div
 			ref="stageRef"
 			data-orbit-stage
-			class="orbit-stage sticky top-0 isolate h-svh w-full overflow-hidden [transform-style:preserve-3d] [perspective-origin:50%_50%] font-['Inter',system-ui,-apple-system,'Segoe_UI',sans-serif]"
+			class="orbit-stage sticky top-0 isolate h-svh w-full overflow-hidden transform-3d perspective-origin-[50%_50%] font-['Inter',system-ui,-apple-system,'Segoe_UI',sans-serif]"
 			:style="stageStyle"
 		>
 			<h2 class="sr-only">{{ ORBIT_COPY.leftTitle }} {{ ORBIT_COPY.rightTitle }}</h2>
@@ -107,18 +107,18 @@ function cardStyle(frame: CardFrame): CSSProperties {
 				{{ ORBIT_COPY.rightTitle }}
 			</div>
 			<p
-				class="orbit-copy pointer-events-none absolute top-1/2 left-1/2 z-2 m-0 box-border max-w-[80vw] [transform:translate3d(-50%,-50%,0)] p-4 text-center text-[12px] leading-[1.05] font-medium tracking-[-0.035em]"
+				class="orbit-copy pointer-events-none absolute top-1/2 left-1/2 z-2 m-0 box-border max-w-[80vw] transform-[translate3d(-50%,-50%,0)] p-4 text-center text-[12px] leading-[1.05] font-medium tracking-[-0.035em]"
 				:style="copyStyle"
 			>
 				{{ ORBIT_COPY.centerText }}
 			</p>
 
-			<div class="orbit-ring absolute inset-0 z-10 [transform-style:preserve-3d]">
+			<div class="orbit-ring absolute inset-0 z-10 transform-3d">
 				<div
 					v-for="{ item, frame } in cards"
 					:key="item.id"
 					data-orbit-card
-					class="orbit-card absolute top-1/2 left-1/2 origin-center [transform-style:preserve-3d] backface-hidden"
+					class="orbit-card absolute top-1/2 left-1/2 origin-center transform-3d backface-hidden"
 					:style="cardStyle(frame)"
 				>
 					<OrbitFlipCard :item="item" :pixel-scale="ORBIT_CARD.renderQuality" />
