@@ -11,9 +11,8 @@ test('Hero keeps existing copy and mounts the glassy orb island', async () => {
 
 	expect(result).toContain('id="top"');
 	expect(result).toContain('id="hero-heading"');
-	expect(result).toContain('class="depth-text');
-	expect(result).toContain('Digital Product Design');
-	expect(result).toContain('client="load"');
+	expect(result).not.toContain('depth-text');
+	expect(result).toContain('Digital Product Design & Development Company');
 	expect(result).toContain('Contact Us');
 	expect(result).toContain('Based on 48 Clutch reviews');
 	expect(result).toContain('hero-orb');
