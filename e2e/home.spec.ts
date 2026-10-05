@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 test.describe('Home landing page', () => {
   test('has brand title and main sections', async ({ page }) => {
@@ -9,22 +9,22 @@ test.describe('Home landing page', () => {
     await expect(page.getByText('Astro Vue').first()).toBeVisible();
     await expect(
       page.getByRole('heading', {
-        name: /Static\s+speed\.\s+Interactive\s+islands\./i,
+        name: /Digital Product Design & Development Company/i,
       }),
     ).toBeVisible();
-    await expect(page.locator('#features')).toBeVisible();
+    await expect(page.locator('#orbit-projects')).toBeAttached();
     await expect(page.locator('#how')).toBeVisible();
     await expect(page.locator('#stack')).toBeVisible();
     await expect(page.getByRole('contentinfo')).toBeVisible();
   });
 
-  test('navbar links to features on the home page', async ({ page }) => {
+  test('navbar links to a home page section', async ({ page }) => {
     await page.goto('/');
     await page
       .getByRole('navigation', { name: 'Primary' })
-      .getByRole('link', { name: 'Features' })
+      .getByRole('link', { name: 'Blog' })
       .click();
-    await expect(page).toHaveURL(/\/#features/);
+    await expect(page).toHaveURL(/\/#how/);
   });
 
   test('navbar navigates to the about route', async ({ page }) => {
@@ -38,11 +38,20 @@ test.describe('Home landing page', () => {
   });
 });
 
+/** The button is server-rendered; clicking before Vue hydrates does a native submit. */
+async function openHydratedFeedback(page: Page) {
+  await page.goto('/about');
+  await page.waitForFunction(() => {
+    const island = document.querySelector('#feedback form')?.closest('astro-island');
+    return island !== null && island !== undefined && !island.hasAttribute('ssr');
+  });
+}
+
 test.describe('About feedback form', () => {
   test.describe.configure({ mode: 'serial' });
 
   test('shows validation errors for invalid input', async ({ page }) => {
-    await page.goto('/about');
+    await openHydratedFeedback(page);
 
     const form = page.locator('#feedback form');
     await expect(
@@ -59,7 +68,7 @@ test.describe('About feedback form', () => {
   });
 
   test('submits feedback and shows a success toast', async ({ page }) => {
-    await page.goto('/about');
+    await openHydratedFeedback(page);
 
     const form = page.locator('#feedback form');
     await form.getByLabel('Name').fill('Ada Lovelace');
@@ -69,7 +78,9 @@ test.describe('About feedback form', () => {
       .fill('Routing plus mutation toast feels solid for learning.');
     await form.getByRole('button', { name: 'Send feedback' }).click();
 
-    await expect(page.getByText('Feedback sent')).toBeVisible();
+    await expect(
+      page.getByRole('region', { name: /Notifications/ }).getByText('Feedback sent'),
+    ).toBeVisible();
     await expect(form.getByLabel('Name')).toHaveValue('');
   });
 });

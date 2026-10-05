@@ -1,5 +1,5 @@
 import { loadRenderers } from 'astro:container';
-import { getContainerRenderer } from '@astrojs/vue';
+import { getContainerRenderer } from '@astrojs/vue/container-renderer';
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { expect, test } from 'vitest';
 import ProjectShowcase from './ProjectShowcase.astro';

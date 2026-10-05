@@ -49,13 +49,13 @@ const feedbackMutation = useMutation({
 
 const mutationView = computed(() =>
   getMutationViewState({
-    isPending: feedbackMutation.isPending,
-    isError: Boolean(formError.value) || feedbackMutation.isError,
-    isSuccess: justSent.value && !feedbackMutation.isPending,
+    isPending: feedbackMutation.isPending.value,
+    isError: Boolean(formError.value) || feedbackMutation.isError.value,
+    isSuccess: justSent.value && !feedbackMutation.isPending.value,
   }),
 );
 
-const isBusy = computed(() => feedbackMutation.isPending);
+const isBusy = computed(() => feedbackMutation.isPending.value);
 
 function onSubmit(event: Event) {
   event.preventDefault();

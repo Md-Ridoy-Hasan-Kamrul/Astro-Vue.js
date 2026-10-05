@@ -1,5 +1,5 @@
 import { loadRenderers } from 'astro:container';
-import { getContainerRenderer } from '@astrojs/vue';
+import { getContainerRenderer } from '@astrojs/vue/container-renderer';
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { describe, expect, it } from 'vitest';
 import DashboardBoard from './DashboardBoard.astro';

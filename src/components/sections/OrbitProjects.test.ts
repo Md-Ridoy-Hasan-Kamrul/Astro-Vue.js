@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { loadRenderers } from 'astro:container';
-import { getContainerRenderer } from '@astrojs/vue';
+import { getContainerRenderer } from '@astrojs/vue/container-renderer';
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { describe, expect, test } from 'vitest';
 import OrbitProjects from './OrbitProjects.astro';
