@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
- * One company stat over its dimmed artwork: label on top, number and value at
- * the bottom. Sizes come from --orbit-stat-* / --orbit-art-* (OrbitProjects.astro).
+ * One company stat over its dimmed artwork: number and label on top, divider,
+ * big value below. Sizes come from --orbit-stat-* / --orbit-art-* (OrbitProjects.astro).
  */
 import { ORBIT_IMAGE, type OrbitItem } from '../../lib/orbit/orbitProjects';
 
@@ -20,10 +20,12 @@ defineProps<{ item: OrbitItem }>();
 			draggable="false"
 			class="orbit-stat__art"
 		/>
-		<p class="orbit-stat__label">{{ item.label }}</p>
-		<div class="orbit-stat__meta">
-			<p aria-hidden="true">{{ item.index }}</p>
-			<p>{{ item.value }}</p>
+		<div class="orbit-stat__top">
+			<p class="orbit-stat__index" aria-hidden="true">{{ item.index }}</p>
+			<p class="orbit-stat__label">{{ item.label }}</p>
+		</div>
+		<div class="orbit-stat__bottom">
+			<p class="orbit-stat__value">{{ item.value }}</p>
 		</div>
 	</div>
 </template>
@@ -34,17 +36,27 @@ defineProps<{ item: OrbitItem }>();
 		position: relative;
 		display: flex;
 		flex-direction: column;
-		justify-content: space-between;
 		width: 100%;
 		height: 100%;
-		padding: var(--orbit-stat-pad);
-		color: inherit;
+		color: #fff;
 		font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+		font-variant-numeric: tabular-nums;
+		-webkit-font-smoothing: antialiased;
+		text-shadow: 0 1px 10px rgb(0 0 0 / 0.55);
 		user-select: none;
 	}
 
+	.orbit-stat::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background:
+			linear-gradient(to bottom, rgb(0 0 0 / 0.42), transparent 38%, transparent 58%, rgb(0 0 0 / 0.5)),
+			rgb(0 0 0 / var(--orbit-art-wash));
+		pointer-events: none;
+	}
+
 	.orbit-stat p {
-		position: relative;
 		margin: 0;
 	}
 
@@ -59,20 +71,43 @@ defineProps<{ item: OrbitItem }>();
 		pointer-events: none;
 	}
 
-	.orbit-stat__label {
-		font-size: var(--orbit-stat-title);
-		font-weight: 600;
-		line-height: 1.15;
-		letter-spacing: -0.01em;
+	.orbit-stat__top,
+	.orbit-stat__bottom {
+		position: relative;
+		z-index: 1;
 	}
 
-	.orbit-stat__meta {
+	.orbit-stat__top {
 		display: flex;
-		align-items: baseline;
+		flex: 1;
+		flex-direction: column;
 		justify-content: space-between;
-		font-size: var(--orbit-stat-meta);
+		padding: var(--orbit-stat-pad);
+	}
+
+	.orbit-stat__index {
+		font-size: var(--orbit-stat-index);
 		font-weight: 500;
 		line-height: 1;
-		opacity: 0.8;
+		letter-spacing: 0.06em;
+	}
+
+	.orbit-stat__label {
+		font-size: var(--orbit-stat-label);
+		font-weight: 600;
+		line-height: 1.2;
+		letter-spacing: -0.02em;
+	}
+
+	.orbit-stat__bottom {
+		border-top: 1px solid rgb(255 255 255 / 0.28);
+		padding: var(--orbit-stat-bottom-pad) var(--orbit-stat-pad);
+	}
+
+	.orbit-stat__value {
+		font-size: var(--orbit-stat-value);
+		font-weight: 700;
+		line-height: 1;
+		letter-spacing: -0.045em;
 	}
 </style>

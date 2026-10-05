@@ -194,12 +194,14 @@ export const ORBIT_ITEMS: readonly OrbitItem[] = ORBIT_STATS.map((stat, position
  */
 export const ORBIT_STAT_TYPE = {
 	padding: { minPx: 18, cqw: 6.5 },
-	title: { minPx: 18, cqw: 6 },
-	meta: { minPx: 12, cqw: 3.6 },
+	bottomPadding: { minPx: 14, cqw: 5 },
+	index: { minPx: 13, cqw: 4 },
+	label: { minPx: 16, cqw: 5.6 },
+	value: { minPx: 36, cqw: 16 },
 } as const;
 
-/** Front-face artwork sits dimmed on the dark card so the white type reads. */
-export const ORBIT_ART = { opacity: 0.4, grayscale: 0.35 } as const;
+/** Front-face artwork stays quiet so the white type stays clean. */
+export const ORBIT_ART = { opacity: 0.28, grayscale: 0.35, wash: 0.28 } as const;
 
 function cqwWithFloor({ minPx, cqw }: { minPx: number; cqw: number }): string {
 	return `max(${minPx}px, ${cqw}cqw)`;
@@ -439,10 +441,13 @@ export function orbitCssVars(): string {
 		'--orbit-desktop-title': `min(${ORBIT_TITLE.sizePx}px, ${ORBIT_TITLE.fitVw}vw)`,
 		'--orbit-copy-width': `${ORBIT_TITLE.centerTextWidthPx}px`,
 		'--orbit-stat-pad': cqwWithFloor(ORBIT_STAT_TYPE.padding),
-		'--orbit-stat-title': cqwWithFloor(ORBIT_STAT_TYPE.title),
-		'--orbit-stat-meta': cqwWithFloor(ORBIT_STAT_TYPE.meta),
+		'--orbit-stat-bottom-pad': cqwWithFloor(ORBIT_STAT_TYPE.bottomPadding),
+		'--orbit-stat-index': cqwWithFloor(ORBIT_STAT_TYPE.index),
+		'--orbit-stat-label': cqwWithFloor(ORBIT_STAT_TYPE.label),
+		'--orbit-stat-value': cqwWithFloor(ORBIT_STAT_TYPE.value),
 		'--orbit-art-opacity': String(ORBIT_ART.opacity),
 		'--orbit-art-grayscale': String(ORBIT_ART.grayscale),
+		'--orbit-art-wash': String(ORBIT_ART.wash),
 	};
 	return Object.entries(vars)
 		.map(([name, value]) => `${name}: ${value};`)

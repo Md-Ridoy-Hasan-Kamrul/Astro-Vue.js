@@ -229,8 +229,10 @@ describe('orbitCssVars', () => {
 		expect(vars).toContain('--orbit-grid-gap: 14px;');
 		expect(vars).toContain('--orbit-compact-title: min(72px, 15vw);');
 		expect(vars).toContain('--orbit-desktop-title: min(144px, 10vw);');
-		expect(vars).toContain('--orbit-art-opacity: 0.4;');
-		expect(vars).toContain('--orbit-stat-title: max(18px, 6cqw);');
-		expect(vars).toContain('--orbit-stat-meta: max(12px, 3.6cqw);');
+		expect(vars).toContain('--orbit-art-opacity: 0.28;');
+		expect(vars).toContain('--orbit-art-wash: 0.28;');
+		expect(vars).toContain('--orbit-stat-index: max(13px, 4cqw);');
+		expect(vars).toContain('--orbit-stat-label: max(16px, 5.6cqw);');
+		expect(vars).toContain('--orbit-stat-value: max(36px, 16cqw);');
 	});
 });
