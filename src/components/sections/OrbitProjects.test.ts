@@ -23,16 +23,22 @@ describe('Orbit projects section', () => {
 		expect(html).toContain('Exploring ideas through daily design practice.');
 	});
 
-	test('renders every stat card in both layouts', async () => {
+	test('renders every card in both layouts: info over the artwork in front, artwork alone on the back', async () => {
 		const html = await render();
 		const occurrences = (text: string) => html.split(text).length - 1;
+		expect(occurrences('data-flip-card')).toBe(ORBIT_ITEMS.length * 2);
 		expect(occurrences('data-orbit-stat')).toBe(ORBIT_ITEMS.length * 2);
 		for (const item of ORBIT_ITEMS) {
-			expect(occurrences(`>${item.index}</p>`)).toBe(2);
+			expect(occurrences(`src="${item.image}"`)).toBe(4);
 			expect(occurrences(`>${item.label}</p>`)).toBe(2);
+			expect(occurrences(`>${item.index}</p>`)).toBe(2);
 			expect(occurrences(`>${item.value}</p>`)).toBe(2);
 		}
-		expect(html).not.toContain('<img');
+	});
+
+	test('hydrates the compact flip cards when they scroll into view', async () => {
+		const html = await render();
+		expect(html.split('client="visible"').length - 1).toBe(ORBIT_ITEMS.length);
 	});
 
 	test('hydrates the desktop orbit only at 1024px and up', async () => {

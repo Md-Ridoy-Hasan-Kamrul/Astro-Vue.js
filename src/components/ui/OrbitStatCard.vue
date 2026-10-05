@@ -1,21 +1,29 @@
 <script setup lang="ts">
 /**
- * One company stat: number, label, divider, value.
- * Sizes come from --orbit-stat-* (set by OrbitProjects.astro) in cqw.
+ * One company stat over its dimmed artwork: label on top, number and value at
+ * the bottom. Sizes come from --orbit-stat-* / --orbit-art-* (OrbitProjects.astro).
  */
-import type { OrbitItem } from '../../lib/orbit/orbitProjects';
+import { ORBIT_IMAGE, type OrbitItem } from '../../lib/orbit/orbitProjects';
 
 defineProps<{ item: OrbitItem }>();
 </script>
 
 <template>
 	<div data-orbit-stat class="orbit-stat">
-		<div class="orbit-stat__top">
-			<p class="orbit-stat__index" aria-hidden="true">{{ item.index }}</p>
-			<p class="orbit-stat__label">{{ item.label }}</p>
-		</div>
-		<div class="orbit-stat__bottom">
-			<p class="orbit-stat__value">{{ item.value }}</p>
+		<img
+			:src="item.image"
+			alt=""
+			:width="ORBIT_IMAGE.widthPx"
+			:height="ORBIT_IMAGE.heightPx"
+			loading="lazy"
+			decoding="async"
+			draggable="false"
+			class="orbit-stat__art"
+		/>
+		<p class="orbit-stat__label">{{ item.label }}</p>
+		<div class="orbit-stat__meta">
+			<p aria-hidden="true">{{ item.index }}</p>
+			<p>{{ item.value }}</p>
 		</div>
 	</div>
 </template>
@@ -23,51 +31,48 @@ defineProps<{ item: OrbitItem }>();
 <style scoped>
 	.orbit-stat {
 		container-type: inline-size;
+		position: relative;
 		display: flex;
 		flex-direction: column;
+		justify-content: space-between;
 		width: 100%;
 		height: 100%;
-		background: var(--orbit-stat-bg);
-		color: var(--orbit-stat-ink);
+		padding: var(--orbit-stat-pad);
+		color: inherit;
 		font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
 		user-select: none;
 	}
 
 	.orbit-stat p {
+		position: relative;
 		margin: 0;
 	}
 
-	.orbit-stat__top {
-		display: flex;
-		flex: 1;
-		flex-direction: column;
-		justify-content: space-between;
-		padding: var(--orbit-stat-pad);
-	}
-
-	.orbit-stat__index {
-		font-size: var(--orbit-stat-index);
-		font-weight: 400;
-		line-height: 1;
-		letter-spacing: 0.02em;
+	.orbit-stat__art {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		opacity: var(--orbit-art-opacity);
+		filter: grayscale(var(--orbit-art-grayscale));
+		pointer-events: none;
 	}
 
 	.orbit-stat__label {
-		font-size: var(--orbit-stat-label);
-		font-weight: 500;
-		line-height: 1.2;
+		font-size: var(--orbit-stat-title);
+		font-weight: 600;
+		line-height: 1.15;
 		letter-spacing: -0.01em;
 	}
 
-	.orbit-stat__bottom {
-		border-top: 1px solid var(--orbit-stat-divider);
-		padding: var(--orbit-stat-bottom-pad);
-	}
-
-	.orbit-stat__value {
-		font-size: var(--orbit-stat-value);
+	.orbit-stat__meta {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		font-size: var(--orbit-stat-meta);
 		font-weight: 500;
 		line-height: 1;
-		letter-spacing: -0.04em;
+		opacity: 0.8;
 	}
 </style>

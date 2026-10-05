@@ -47,6 +47,23 @@ test.describe('Orbit projects', () => {
 				return new Set(tops).size;
 			}, settle)
 			.toBe(2);
+
+		const card = page.locator('[data-orbit-desktop] [data-flip-card]').first();
+		await card.click();
+		await expect(card).toHaveAttribute('aria-pressed', 'true');
+	});
+
+	test('compact flip cards flip on tap and on Enter', async ({ page }) => {
+		await page.setViewportSize({ width: 375, height: 800 });
+		await page.goto('/', { waitUntil: 'domcontentloaded' });
+		const card = page.locator('[data-orbit-compact] [data-flip-card]').first();
+		await card.scrollIntoViewIfNeeded();
+		await expect(card.locator('xpath=ancestor::astro-island[1]')).not.toHaveAttribute('ssr', /.*/);
+		await expect(card).toHaveAttribute('aria-pressed', 'false');
+		await card.click();
+		await expect(card).toHaveAttribute('aria-pressed', 'true');
+		await card.press('Enter');
+		await expect(card).toHaveAttribute('aria-pressed', 'false');
 	});
 
 	for (const { width, columns } of [
@@ -63,7 +80,7 @@ test.describe('Orbit projects', () => {
 			await grid.scrollIntoViewIfNeeded();
 			await expect(page.locator('[data-orbit-desktop]')).toBeHidden();
 			const lefts = await grid
-				.locator('[data-orbit-stat]')
+				.locator('[data-flip-card]')
 				.evaluateAll((cards) => cards.map((card) => Math.round(card.getBoundingClientRect().left)));
 			expect(new Set(lefts).size).toBe(columns);
 			const overflow = await page

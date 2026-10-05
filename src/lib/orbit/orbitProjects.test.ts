@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
 	ORBIT_CARD,
@@ -8,11 +10,9 @@ import {
 	ORBIT_TITLE,
 	cardFrame,
 	cardRenderBox,
-	cardShadow,
 	cardTransform,
 	centerCopyOpacity,
 	clamp,
-	compactCardShadow,
 	dampProgress,
 	isCompactWidth,
 	isMobileWidth,
@@ -182,19 +182,12 @@ describe('card rendering', () => {
 		expect(box.x).toBe(-40);
 		expect(box.y).toBe(-5);
 		expect(box.scale).toBeCloseTo(0.45);
-		expect(box.radius).toBe(ORBIT_CARD.radiusPx * 2);
 	});
 
 	it('writes the 3D transform in the Framer order', () => {
 		expect(cardTransform({ x: 1, y: 2, z: 3, rotateY: 4, rotateZ: 5, scale: 0.5 })).toBe(
 			'translate3d(1px, 2px, 3px) rotateY(4deg) rotateZ(5deg) scale(0.5)',
 		);
-	});
-
-	it('softens the shadow as the cards flatten', () => {
-		expect(cardShadow(0)).toBe('0 36px 100px rgba(0, 0, 0, 0.12)');
-		expect(cardShadow(1)).toBe('0 14.4px 40px rgba(0, 0, 0, 0.048)');
-		expect(compactCardShadow()).toBe('0 5.4px 15px rgba(0, 0, 0, 0.036)');
 	});
 });
 
@@ -205,15 +198,25 @@ describe('content', () => {
 		expect(ORBIT_COPY.centerText).toBe('Exploring ideas through daily design practice.');
 	});
 
-	it('lists the five company stats in order, numbered 001 to 005', () => {
+	it('lists the six company stats in order, numbered 001 to 006', () => {
 		expect(ORBIT_ITEMS.map(({ index, label, value }) => [index, label, value])).toEqual([
 			['001', 'Total Awards', '16'],
 			['002', 'Years of Services', '5+'],
 			['003', 'Location', '6'],
 			['004', 'Team Members', '80+'],
 			['005', 'Happy Clients', '350+'],
+			['006', 'Projects', '1000+'],
 		]);
 		expect(new Set(ORBIT_ITEMS.map((item) => item.id)).size).toBe(ORBIT_ITEMS.length);
+	});
+
+	it('gives every card its own local artwork, not a project screenshot', () => {
+		const images = ORBIT_ITEMS.map((item) => item.image);
+		expect(new Set(images).size).toBe(ORBIT_ITEMS.length);
+		for (const item of ORBIT_ITEMS) {
+			expect(item.image).toBe(`/orbit/${item.id}.webp`);
+			expect(existsSync(resolve('public', item.image.slice(1)))).toBe(true);
+		}
 	});
 });
 
@@ -221,11 +224,13 @@ describe('orbitCssVars', () => {
 	it('exposes the Framer sizes as custom properties', () => {
 		const vars = orbitCssVars();
 		expect(vars).toContain('--orbit-bg: #D4D4D4;');
-		expect(vars).toContain('--orbit-card-radius: 8px;');
 		expect(vars).toContain('--orbit-card-aspect: 1.48;');
 		expect(vars).toContain('--orbit-pad-y: 72px;');
 		expect(vars).toContain('--orbit-grid-gap: 14px;');
 		expect(vars).toContain('--orbit-compact-title: min(72px, 15vw);');
 		expect(vars).toContain('--orbit-desktop-title: min(144px, 10vw);');
+		expect(vars).toContain('--orbit-art-opacity: 0.4;');
+		expect(vars).toContain('--orbit-stat-title: max(18px, 6cqw);');
+		expect(vars).toContain('--orbit-stat-meta: max(12px, 3.6cqw);');
 	});
 });

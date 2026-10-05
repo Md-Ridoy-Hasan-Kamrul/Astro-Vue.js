@@ -7,12 +7,12 @@
 import { computed, ref, type CSSProperties } from 'vue';
 import {
 	ORBIT_COLORS,
+	ORBIT_CARD,
 	ORBIT_COPY,
 	ORBIT_LAYOUT,
 	ORBIT_TITLE,
 	cardFrame,
 	cardRenderBox,
-	cardShadow,
 	cardTransform,
 	centerCopyOpacity,
 	stageGeometry,
@@ -21,7 +21,7 @@ import {
 	type OrbitItem,
 } from '../../lib/orbit/orbitProjects';
 import { useOrbitProgress } from '../../lib/orbit/useOrbitProgress';
-import OrbitStatCard from '../ui/OrbitStatCard.vue';
+import OrbitFlipCard from '../ui/OrbitFlipCard.vue';
 
 const props = defineProps<{ items: readonly OrbitItem[] }>();
 
@@ -78,14 +78,6 @@ function cardStyle(frame: CardFrame): CSSProperties {
 		transform: cardTransform({ ...frame, x: box.x, y: box.y, scale: box.scale }),
 	};
 }
-
-function cardFaceStyle(frame: CardFrame): CSSProperties {
-	return {
-		borderRadius: `${cardRenderBox(frame).radius}px`,
-		background: ORBIT_COLORS.statCard,
-		boxShadow: cardShadow(frame.flattened),
-	};
-}
 </script>
 
 <template>
@@ -129,9 +121,7 @@ function cardFaceStyle(frame: CardFrame): CSSProperties {
 					class="orbit-card absolute left-1/2 top-1/2"
 					:style="cardStyle(frame)"
 				>
-					<div class="orbit-face relative h-full w-full overflow-hidden" :style="cardFaceStyle(frame)">
-						<OrbitStatCard :item="item" />
-					</div>
+					<OrbitFlipCard :item="item" :pixel-scale="ORBIT_CARD.renderQuality" />
 				</div>
 			</div>
 		</div>
@@ -172,10 +162,6 @@ function cardFaceStyle(frame: CardFrame): CSSProperties {
 	.orbit-card {
 		transform-origin: 50% 50%;
 		transform-style: preserve-3d;
-		backface-visibility: hidden;
-	}
-
-	.orbit-face {
 		backface-visibility: hidden;
 	}
 </style>

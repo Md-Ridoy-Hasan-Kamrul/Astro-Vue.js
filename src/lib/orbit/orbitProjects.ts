@@ -7,7 +7,7 @@
  */
 export type Viewport = { width: number; height: number };
 
-export type OrbitItem = { id: string; index: string; label: string; value: string };
+export type OrbitItem = { id: string; index: string; label: string; value: string; image: string };
 
 export type StageGeometry = {
 	columns: number;
@@ -60,10 +60,6 @@ export const ORBIT_COPY = {
 export const ORBIT_COLORS = {
 	background: '#D4D4D4',
 	text: '#242424',
-	card: '#E8E8E8',
-	statCard: '#FFFFFF',
-	statInk: '#111111',
-	statDivider: '#EDEDED',
 } as const;
 
 export const ORBIT_LAYOUT = {
@@ -94,7 +90,6 @@ export const ORBIT_GRID = {
 
 export const ORBIT_CARD = {
 	aspect: 1.48,
-	radiusPx: 8,
 	renderQuality: 2,
 	depthScaleMin: 0.82,
 	depthOpacityMin: 0.2,
@@ -164,31 +159,24 @@ export const ORBIT_TIMING = {
 
 const STACK = { base: 100, depthRange: 800 } as const;
 
-const SHADOW = {
-	offsetPx: 18,
-	blurPx: 50,
-	alpha: 0.12,
-	flatStrength: 0.4,
-	compactStrength: 0.3,
-} as const;
-
 /** Ken Perlin's smootherstep polynomial: 6t^5 - 15t^4 + 10t^3. */
 const SMOOTHERSTEP = { quintic: 6, quartic: 15, cubic: 10 } as const;
-/** Compact cards are not scaled in 3D, so they render at native size. */
-const NATIVE_QUALITY = 1;
 const DEG_TO_RAD = Math.PI / 180;
 const FULL_TURN_DEG = 360;
 const MS_PER_SECOND = 1000;
-const PX_DECIMALS = 2;
-const ALPHA_DECIMALS = 3;
 
+/** Card artwork: public-domain Rijksmuseum landscapes (Wikimedia Commons), at /public/orbit/<id>.webp. */
 const ORBIT_STATS = [
 	{ id: 'awards', label: 'Total Awards', value: '16' },
 	{ id: 'years', label: 'Years of Services', value: '5+' },
 	{ id: 'locations', label: 'Location', value: '6' },
 	{ id: 'team', label: 'Team Members', value: '80+' },
 	{ id: 'clients', label: 'Happy Clients', value: '350+' },
+	{ id: 'projects', label: 'Projects', value: '1000+' },
 ] as const;
+
+/** Intrinsic size of the /orbit/*.webp files (card aspect), so img tags reserve space. */
+export const ORBIT_IMAGE = { widthPx: 1000, heightPx: 676 } as const;
 
 /** Card numbers read "001", "002", … */
 const STAT_INDEX_DIGITS = 3;
@@ -196,20 +184,26 @@ const STAT_INDEX_DIGITS = 3;
 export const ORBIT_ITEMS: readonly OrbitItem[] = ORBIT_STATS.map((stat, position) => ({
 	...stat,
 	index: String(position + 1).padStart(STAT_INDEX_DIGITS, '0'),
+	image: `/orbit/${stat.id}.webp`,
 }));
 
 /**
  * Stat card type, in % of the card width (cqw), so the same card reads the
  * same in the 3D orbit (rendered at 2x then scaled) and in the compact grid.
+ * The px floors keep small phone cards legible.
  */
 export const ORBIT_STAT_TYPE = {
-	paddingCqw: 6,
-	bottomPaddingTopCqw: 4.5,
-	bottomPaddingEndCqw: 5,
-	indexSizeCqw: 3.4,
-	labelSizeCqw: 4.2,
-	valueSizeCqw: 12,
+	padding: { minPx: 18, cqw: 6.5 },
+	title: { minPx: 18, cqw: 6 },
+	meta: { minPx: 12, cqw: 3.6 },
 } as const;
+
+/** Front-face artwork sits dimmed on the dark card so the white type reads. */
+export const ORBIT_ART = { opacity: 0.4, grayscale: 0.35 } as const;
+
+function cqwWithFloor({ minPx, cqw }: { minPx: number; cqw: number }): string {
+	return `max(${minPx}px, ${cqw}cqw)`;
+}
 
 export const ORBIT_MEDIA_QUERY = `(min-width: ${ORBIT_LAYOUT.desktopMinPx}px)`;
 
@@ -229,11 +223,6 @@ export function smootherstep(start: number, end: number, value: number): number 
 
 function ease(span: Span, progress: number): number {
 	return smootherstep(span[0], span[1], progress);
-}
-
-function round(value: number, decimals: number): number {
-	const factor = 10 ** decimals;
-	return Math.round(value * factor) / factor;
 }
 
 export function isCompactWidth(width: number): boolean {
@@ -428,7 +417,6 @@ export function cardRenderBox(pose: Pick<CardPose, 'x' | 'y' | 'width' | 'height
 		width,
 		height,
 		scale: pose.scale / quality,
-		radius: ORBIT_CARD.radiusPx * quality,
 	};
 }
 
@@ -436,30 +424,12 @@ export function cardTransform(pose: Pick<CardPose, 'x' | 'y' | 'z' | 'rotateY' |
 	return `translate3d(${pose.x}px, ${pose.y}px, ${pose.z}px) rotateY(${pose.rotateY}deg) rotateZ(${pose.rotateZ}deg) scale(${pose.scale})`;
 }
 
-function shadow(strength: number, quality: number): string {
-	const offset = round(SHADOW.offsetPx * strength * quality, PX_DECIMALS);
-	const blur = round(SHADOW.blurPx * strength * quality, PX_DECIMALS);
-	const alpha = round(SHADOW.alpha * strength, ALPHA_DECIMALS);
-	return `0 ${offset}px ${blur}px rgba(0, 0, 0, ${alpha})`;
-}
-
-export function cardShadow(flattened: number): string {
-	return shadow(lerp(1, SHADOW.flatStrength, flattened), ORBIT_CARD.renderQuality);
-}
-
-export function compactCardShadow(): string {
-	return shadow(SHADOW.compactStrength, NATIVE_QUALITY);
-}
-
 /** CSS custom properties for the section, so styles reuse the constants above. */
 export function orbitCssVars(): string {
 	const vars: Record<string, string> = {
 		'--orbit-bg': ORBIT_COLORS.background,
 		'--orbit-ink': ORBIT_COLORS.text,
-		'--orbit-card': ORBIT_COLORS.card,
-		'--orbit-card-radius': `${ORBIT_CARD.radiusPx}px`,
 		'--orbit-card-aspect': String(ORBIT_CARD.aspect),
-		'--orbit-card-shadow': compactCardShadow(),
 		'--orbit-pad-y': `${ORBIT_COMPACT.paddingYPx}px`,
 		'--orbit-pad-x': `${ORBIT_COMPACT.paddingXPx}px`,
 		'--orbit-header-gap': `${ORBIT_COMPACT.headerGapPx}px`,
@@ -468,14 +438,11 @@ export function orbitCssVars(): string {
 		'--orbit-compact-title': `min(${ORBIT_COMPACT.titleSizePx}px, ${ORBIT_COMPACT.titleFitVw}vw)`,
 		'--orbit-desktop-title': `min(${ORBIT_TITLE.sizePx}px, ${ORBIT_TITLE.fitVw}vw)`,
 		'--orbit-copy-width': `${ORBIT_TITLE.centerTextWidthPx}px`,
-		'--orbit-stat-bg': ORBIT_COLORS.statCard,
-		'--orbit-stat-ink': ORBIT_COLORS.statInk,
-		'--orbit-stat-divider': ORBIT_COLORS.statDivider,
-		'--orbit-stat-pad': `${ORBIT_STAT_TYPE.paddingCqw}cqw`,
-		'--orbit-stat-bottom-pad': `${ORBIT_STAT_TYPE.bottomPaddingTopCqw}cqw ${ORBIT_STAT_TYPE.paddingCqw}cqw ${ORBIT_STAT_TYPE.bottomPaddingEndCqw}cqw`,
-		'--orbit-stat-index': `${ORBIT_STAT_TYPE.indexSizeCqw}cqw`,
-		'--orbit-stat-label': `${ORBIT_STAT_TYPE.labelSizeCqw}cqw`,
-		'--orbit-stat-value': `${ORBIT_STAT_TYPE.valueSizeCqw}cqw`,
+		'--orbit-stat-pad': cqwWithFloor(ORBIT_STAT_TYPE.padding),
+		'--orbit-stat-title': cqwWithFloor(ORBIT_STAT_TYPE.title),
+		'--orbit-stat-meta': cqwWithFloor(ORBIT_STAT_TYPE.meta),
+		'--orbit-art-opacity': String(ORBIT_ART.opacity),
+		'--orbit-art-grayscale': String(ORBIT_ART.grayscale),
 	};
 	return Object.entries(vars)
 		.map(([name, value]) => `${name}: ${value};`)
