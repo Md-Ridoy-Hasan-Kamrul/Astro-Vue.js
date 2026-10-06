@@ -71,7 +71,7 @@ onUnmounted(() => {
 			<div class="flex shrink-0 justify-end gap-2">
 				<button
 					type="button"
-					class="inline-flex size-11 items-center justify-center rounded-full border border-line bg-paper text-ink transition hover:bg-mist focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sea disabled:opacity-40"
+					class="inline-flex size-11 items-center justify-center rounded-full border border-line bg-paper text-ink transition hover:bg-mist focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-sea disabled:opacity-40"
 					aria-label="Previous client story"
 					:disabled="!canPrev"
 					@click="step(-1)"
@@ -82,7 +82,7 @@ onUnmounted(() => {
 				</button>
 				<button
 					type="button"
-					class="inline-flex size-11 items-center justify-center rounded-full border border-line bg-paper text-ink transition hover:bg-mist focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sea disabled:opacity-40"
+					class="inline-flex size-11 items-center justify-center rounded-full border border-line bg-paper text-ink transition hover:bg-mist focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-sea disabled:opacity-40"
 					aria-label="Next client story"
 					:disabled="!canNext"
 					@click="step(1)"
@@ -96,7 +96,7 @@ onUnmounted(() => {
 
 		<ul
 			ref="scroller"
-			class="m-0 mt-8 flex list-none snap-x snap-mandatory gap-5 overflow-x-auto scroll-pl-[max(1rem,calc((100%-72rem)/2))] px-[max(1rem,calc((100%-72rem)/2))] pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+			class="m-0 mt-8 flex list-none snap-x snap-mandatory gap-5 overflow-x-auto scroll-pl-[max(1rem,calc((100%-72rem)/2))] px-[max(1rem,calc((100%-72rem)/2))] pb-2 scrollbar-none [&::-webkit-scrollbar]:hidden"
 			aria-label="Client stories"
 			tabindex="0"
 			@keydown="onKeydown"
