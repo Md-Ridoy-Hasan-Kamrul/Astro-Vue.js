@@ -60,7 +60,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-	<div>
+	<div class="w-full">
 		<div class="mx-auto flex w-[min(100%-2rem,72rem)] flex-col items-stretch gap-4 min-[720px]:flex-row min-[720px]:items-center min-[720px]:justify-between min-[720px]:gap-6">
 			<h2
 				id="client-stories-title"
@@ -96,7 +96,7 @@ onUnmounted(() => {
 
 		<ul
 			ref="scroller"
-			class="m-0 mt-10 flex list-none snap-x snap-mandatory gap-5 overflow-x-auto scroll-pl-[max(1rem,calc((100%-72rem)/2))] px-[max(1rem,calc((100%-72rem)/2))] pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+			class="m-0 mt-8 flex list-none snap-x snap-mandatory gap-5 overflow-x-auto scroll-pl-[max(1rem,calc((100%-72rem)/2))] px-[max(1rem,calc((100%-72rem)/2))] pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
 			aria-label="Client stories"
 			tabindex="0"
 			@keydown="onKeydown"
@@ -107,8 +107,8 @@ onUnmounted(() => {
 				data-client-story
 				class="w-[min(100%,38rem)] shrink-0 snap-start"
 			>
-				<article class="grid h-full overflow-hidden rounded-2xl border border-line bg-paper shadow-[0_18px_40px_rgb(20_33_43/0.06)] sm:min-h-[24rem] sm:grid-cols-[1.12fr_0.88fr]">
-					<div class="flex flex-col justify-between gap-8 p-6 sm:p-8">
+				<article class="client-story-card grid h-full overflow-hidden rounded-2xl border border-line bg-paper shadow-[0_18px_40px_rgb(20_33_43/0.06)] sm:grid-cols-[1.12fr_0.88fr]">
+					<div class="flex flex-col justify-between gap-5 p-5 sm:p-6">
 						<div>
 							<p
 								v-if="story.mark === 'display'"
@@ -133,7 +133,7 @@ onUnmounted(() => {
 							<p class="m-0 text-sm leading-snug text-ink-soft">{{ story.location }}</p>
 						</footer>
 					</div>
-					<div class="relative min-h-64 sm:min-h-full">
+					<div class="relative h-44 sm:h-auto sm:min-h-full">
 						<img
 							:src="story.image"
 							:alt="story.imageAlt"
@@ -155,3 +155,11 @@ onUnmounted(() => {
 		</ul>
 	</div>
 </template>
+
+<style scoped>
+@media (min-width: 640px) {
+	.client-story-card {
+		height: min(22rem, calc(100svh - 14.5rem));
+	}
+}
+</style>

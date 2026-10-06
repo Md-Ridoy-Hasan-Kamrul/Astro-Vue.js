@@ -14,9 +14,10 @@ async function render() {
 }
 
 describe('Client stories section', () => {
-	test('renders the headline and both client stories', async () => {
+	test('renders the headline and every client story from the JSON data', async () => {
 		const html = await render();
 		expect(html).toContain('id="client-stories"');
+		expect(html).toContain('h-screen');
 		expect(html).toContain('id="client-stories-title"');
 		const escaped = (value: string) => value.replaceAll('&', '&amp;').replaceAll("'", '&#39;');
 		expect(html).toContain(escaped(CLIENT_STORY_COPY.titleLead));

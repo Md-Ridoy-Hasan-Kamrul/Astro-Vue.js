@@ -1,0 +1,66 @@
+{
+	"titleLead": "What It's Like to Build With",
+	"titleTail": "Musemind? Hear from Our Clients",
+	"stories": [
+		{
+			"id": "arrive",
+			"brand": "Arrive",
+			"brandMark": "ARRIVE",
+			"mark": "display",
+			"quote": "They brought our app redesign to life beyond expectations! We're thrilled with the results and truly loved collaborating with their incredibly talented team.",
+			"name": "Robin Fish",
+			"role": "Founder & CEO, Arrive",
+			"location": "New York, USA",
+			"image": "/partner/office.jpg",
+			"imageAlt": "Studio interior"
+		},
+		{
+			"id": "trainmate",
+			"brand": "Trainmate",
+			"brandMark": "TRAINMATE",
+			"mark": "mono",
+			"quote": "As a founder, finding the right team for Trainmate was a challenge until we discovered Musemind. They quickly onboarded, worked within our budget, and delivered high-quality designs at an impressive pace.",
+			"name": "George El Nachar",
+			"role": "Founder, Trainmate",
+			"location": "Dubai, United Arab Emirates",
+			"image": "/partner/avatar.jpg",
+			"imageAlt": "Studio portrait"
+		},
+		{
+			"id": "lumen",
+			"brand": "Lumen",
+			"brandMark": "LUMEN",
+			"mark": "display",
+			"quote": "They shaped the product from the first workshop through launch. Every screen felt considered, and the handoff to development never lost the design.",
+			"name": "Maya Chen",
+			"role": "Head of Product, Lumen",
+			"location": "Singapore",
+			"image": "/products/10.jpg",
+			"imageAlt": "Product interface"
+		},
+		{
+			"id": "northwind",
+			"brand": "Northwind",
+			"brandMark": "NORTHWIND",
+			"mark": "mono",
+			"quote": "We needed one team that could hold strategy, design, and build together. They did, and the admin we shipped is the one our people actually use.",
+			"name": "Jonas Hale",
+			"role": "Founder, Northwind",
+			"location": "London, UK",
+			"image": "/products/2.png",
+			"imageAlt": "Northwind product"
+		},
+		{
+			"id": "harbor",
+			"brand": "Harbor",
+			"brandMark": "HARBOR",
+			"mark": "display",
+			"quote": "The work stayed close to the brief and still surprised us. Clear decisions, a calm process, and a product our customers understood on the first visit.",
+			"name": "Amina Rahman",
+			"role": "Co-Founder, Harbor",
+			"location": "Dhaka, Bangladesh",
+			"image": "/products/33.jpg",
+			"imageAlt": "Product still"
+		}
+	]
+}
