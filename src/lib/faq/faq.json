@@ -1,36 +1,39 @@
 {
 	"title": "FAQ",
 	"searchPlaceholder": "Search questions...",
-	"emptyTitle": "No matching questions",
-	"emptyDescription": "Try a different word from the question or the answer.",
+	"emptyMessage": "No matching questions found.",
 	"items": [
 		{
-			"id": "what-musemind-does",
+			"id": "what-we-do",
 			"question": "What does Musemind do?",
 			"answer": [
 				"Musemind is a digital transformation agency that brings strategy, UI/UX design, branding, web and software development, and product expertise together under one roof."
-			]
+			],
+			"image": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800&auto=format&fit=crop"
 		},
 		{
 			"id": "one-agency",
 			"question": "Why work with one agency for strategy, design, and development?",
 			"answer": [
 				"Using separate teams for strategy, design, and development can create communication gaps, inconsistent decisions, and expensive rework."
-			]
+			],
+			"image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop"
 		},
 		{
 			"id": "digital-products",
 			"question": "What digital products can Musemind design and develop?",
 			"answer": [
 				"We work across websites, mobile apps, SaaS platforms, MVPs, web applications, enterprise software, B2B products, and other digital experiences."
-			]
+			],
+			"image": "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop"
 		},
 		{
 			"id": "existing-team",
 			"question": "Can you work with an existing product or development team?",
 			"answer": [
 				"Yes. Musemind can work as an end-to-end product partner or support an existing internal team. We can join at strategy, research, UX/UI, branding, development, or another specific stage depending on where additional expertise is needed."
-			]
+			],
+			"image": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=800&auto=format&fit=crop"
 		},
 		{
 			"id": "redesign",
@@ -39,7 +42,8 @@
 				"Yes. A redesign is not simply a visual refresh.",
 				"We examine the current user experience, business requirements, product structure, usability issues, and technical constraints before deciding what should change.",
 				"Depending on the problem, the project may include research, UX audits, information architecture, prototyping, UI design, design systems, development, testing, and migration."
-			]
+			],
+			"image": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800&auto=format&fit=crop"
 		},
 		{
 			"id": "timeline",
@@ -48,7 +52,8 @@
 				"There is no meaningful universal timeline.",
 				"A focused website or design engagement may take several weeks, while a complex SaaS platform, mobile app, MVP, or enterprise product can take several months.",
 				"The timeline depends on product complexity, project scope, research requirements, number of features, integrations, technology, stakeholder availability, testing, and development requirements."
-			]
+			],
+			"image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop"
 		},
 		{
 			"id": "cost",
@@ -57,7 +62,8 @@
 				"Project cost depends on the scope, complexity, required team, technology, timeline, and whether you need strategy, design, development, or an end-to-end engagement.",
 				"Instead of forcing different projects into a fixed package, we first understand what needs to be solved and then recommend an appropriate scope and engagement model.",
 				"After the initial discussion, you receive a proposal outlining the recommended deliverables, timeline, and cost."
-			]
+			],
+			"image": "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop"
 		}
 	]
 }

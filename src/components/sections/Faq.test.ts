@@ -14,12 +14,14 @@ async function render() {
 }
 
 describe('FAQ section', () => {
-	test('renders the title, search, and every question from the JSON data', async () => {
+	test('renders the search and every question from the JSON data', async () => {
 		const html = await render();
 		expect(html).toContain('id="faq"');
 		expect(html).toContain('id="faq-title"');
 		expect(html).toContain(FAQ_COPY.title);
 		expect(html).toContain(FAQ_COPY.searchPlaceholder);
+		expect(html).toContain('bg-[#0a0a0a]');
+		expect(html).toContain('faq-title');
 		expect(html.split('data-faq-item').length - 1).toBe(FAQ_ITEMS.length);
 		for (const item of FAQ_ITEMS) {
 			expect(html).toContain(item.question);

@@ -1,23 +1,17 @@
 ---
 /**
- * FAQ — reference questions, this site's type and accordion motion.
- * Search and open/close run in a Vue island.
+ * FAQ — dark list, orange open card, hover on desktop and tap on small screens.
  */
 import FaqList from '../islands/FaqList.vue';
 import { FAQ_COPY, FAQ_ITEMS } from '../../lib/faq/faq';
 ---
 
-<section
-	id="faq"
-	class="border-t border-line bg-paper py-[clamp(4rem,9vw,6.5rem)]"
-	aria-labelledby="faq-title"
->
+<section id="faq" class="bg-[#0a0a0a]" aria-labelledby="faq-title">
 	<FaqList
 		client:visible
 		title={FAQ_COPY.title}
 		searchPlaceholder={FAQ_COPY.searchPlaceholder}
-		emptyTitle={FAQ_COPY.emptyTitle}
-		emptyDescription={FAQ_COPY.emptyDescription}
+		emptyMessage={FAQ_COPY.emptyMessage}
 		items={FAQ_ITEMS}
 	/>
 </section>
