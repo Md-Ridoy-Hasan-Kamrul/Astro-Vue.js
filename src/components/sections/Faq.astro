@@ -1,0 +1,23 @@
+---
+/**
+ * FAQ — reference questions, this site's type and accordion motion.
+ * Search and open/close run in a Vue island.
+ */
+import FaqList from '../islands/FaqList.vue';
+import { FAQ_COPY, FAQ_ITEMS } from '../../lib/faq/faq';
+---
+
+<section
+	id="faq"
+	class="border-t border-line bg-paper py-[clamp(4rem,9vw,6.5rem)]"
+	aria-labelledby="faq-title"
+>
+	<FaqList
+		client:visible
+		title={FAQ_COPY.title}
+		searchPlaceholder={FAQ_COPY.searchPlaceholder}
+		emptyTitle={FAQ_COPY.emptyTitle}
+		emptyDescription={FAQ_COPY.emptyDescription}
+		items={FAQ_ITEMS}
+	/>
+</section>
