@@ -1,0 +1,21 @@
+---
+/**
+ * Client stories — reference copy, this site's type, ink, and paper cards.
+ * The scroller is a Vue island so the arrows can move the row.
+ */
+import ClientStoriesCarousel from '../islands/ClientStories.vue';
+import { CLIENT_STORIES, CLIENT_STORY_COPY } from '../../lib/clientStories/clientStories';
+---
+
+<section
+	id="client-stories"
+	class="border-t border-line bg-mist py-[clamp(4rem,9vw,6.5rem)]"
+	aria-labelledby="client-stories-title"
+>
+	<ClientStoriesCarousel
+		client:visible
+		titleLead={CLIENT_STORY_COPY.titleLead}
+		titleTail={CLIENT_STORY_COPY.titleTail}
+		stories={CLIENT_STORIES}
+	/>
+</section>
