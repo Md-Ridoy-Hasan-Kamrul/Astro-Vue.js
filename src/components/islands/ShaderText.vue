@@ -9,8 +9,8 @@ import {
 	makeTextMaskSVG,
 	measureWrappedLines,
 	type ShaderPreset,
-} from '../../lib/shaderText/shaderText';
-import { useShaderText } from '../../lib/shaderText/useShaderText';
+} from '../../lib/shaderText/shaderText.ts';
+import { useShaderText } from '../../lib/shaderText/useShaderText.ts';
 
 const props = withDefaults(
 	defineProps<{
