@@ -36,12 +36,11 @@ describe('Capabilities section', () => {
 	});
 });
 
-test('home page places capabilities after Motion Design and before How it works', () => {
+test('home page places capabilities after Motion Design', () => {
 	const page = readFileSync(resolve('src/pages/index.astro'), 'utf8');
 	const orbit = page.indexOf('<OrbitProjects />');
 	const capabilities = page.indexOf('<Capabilities />');
-	const how = page.indexOf('<HowItWorks />');
 	expect(orbit).toBeGreaterThan(-1);
 	expect(capabilities).toBeGreaterThan(orbit);
-	expect(how).toBeGreaterThan(capabilities);
+	expect(page).not.toContain('<HowItWorks />');
 });

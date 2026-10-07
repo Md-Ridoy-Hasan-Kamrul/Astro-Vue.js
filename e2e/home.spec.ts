@@ -15,8 +15,9 @@ test.describe('Home landing page', () => {
     await expect(page.locator('#orbit-projects')).toBeAttached();
     await expect(page.locator('#capabilities')).toBeAttached();
     await expect(page.locator('#specialists')).toBeAttached();
-    await expect(page.locator('#how')).toBeVisible();
-    await expect(page.locator('#stack')).toBeVisible();
+    await expect(page.locator('#faq')).toBeAttached();
+    await expect(page.locator('#how')).toHaveCount(0);
+    await expect(page.locator('#stack')).toHaveCount(0);
     await expect(page.getByRole('contentinfo')).toBeVisible();
   });
 
@@ -26,7 +27,7 @@ test.describe('Home landing page', () => {
       .getByRole('navigation', { name: 'Primary' })
       .getByRole('link', { name: 'Blog' })
       .click();
-    await expect(page).toHaveURL(/\/#how/);
+    await expect(page).toHaveURL(/\/#faq/);
   });
 
   test('navbar navigates to the about route', async ({ page }) => {

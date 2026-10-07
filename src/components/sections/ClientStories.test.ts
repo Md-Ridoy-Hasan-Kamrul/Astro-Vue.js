@@ -37,12 +37,11 @@ describe('Client stories section', () => {
 	});
 });
 
-test('home page places client stories after specialists and before how it works', () => {
+test('home page places client stories after specialists', () => {
 	const page = readFileSync(resolve('src/pages/index.astro'), 'utf8');
 	const specialists = page.indexOf('<Specialists />');
 	const stories = page.indexOf('<ClientStories />');
-	const how = page.indexOf('<HowItWorks />');
 	expect(specialists).toBeGreaterThan(-1);
 	expect(stories).toBeGreaterThan(specialists);
-	expect(how).toBeGreaterThan(stories);
+	expect(page).not.toContain('<HowItWorks />');
 });

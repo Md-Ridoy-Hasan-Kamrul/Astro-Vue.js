@@ -19,7 +19,7 @@ const props = withDefaults(
   { surface: 'light', currentPath: '/' },
 );
 
-const SECTION_IDS = ['features', 'how', 'stack'] as const;
+const SECTION_IDS = ['features', 'capabilities', 'faq'] as const;
 type SectionId = (typeof SECTION_IDS)[number];
 type LinkMatch = 'services' | 'about' | 'work' | 'pricing' | 'blog' | 'career';
 
@@ -184,9 +184,9 @@ onUnmounted(() => {
 const links = [
   { href: '/about#services', label: 'Services', match: 'services' as const, hasMenu: true },
   { href: '/about', label: 'About Us', match: 'about' as const, hasMenu: false },
-  { href: '/#stack', label: 'Work', match: 'work' as const, hasMenu: false },
+  { href: '/#capabilities', label: 'Work', match: 'work' as const, hasMenu: false },
   { href: '/#features', label: 'Pricing', match: 'pricing' as const, hasMenu: false },
-  { href: '/#how', label: 'Blog', match: 'blog' as const, hasMenu: false },
+  { href: '/#faq', label: 'Blog', match: 'blog' as const, hasMenu: false },
   { href: '/dashboard/hiring', label: 'Career', match: 'career' as const, hasMenu: false },
 ] as const;
 
@@ -204,8 +204,8 @@ const socials = [
 
 const sectionByMatch: Partial<Record<LinkMatch, SectionId>> = {
   pricing: 'features',
-  blog: 'how',
-  work: 'stack',
+  blog: 'faq',
+  work: 'capabilities',
 };
 
 function isActive(match: LinkMatch) {

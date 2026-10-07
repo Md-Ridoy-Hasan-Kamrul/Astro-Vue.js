@@ -39,12 +39,11 @@ describe('Specialists section', () => {
 	});
 });
 
-test('home page places specialists after capabilities and before how it works', () => {
+test('home page places specialists after capabilities', () => {
 	const page = readFileSync(resolve('src/pages/index.astro'), 'utf8');
 	const capabilities = page.indexOf('<Capabilities />');
 	const specialists = page.indexOf('<Specialists />');
-	const how = page.indexOf('<HowItWorks />');
 	expect(capabilities).toBeGreaterThan(-1);
 	expect(specialists).toBeGreaterThan(capabilities);
-	expect(how).toBeGreaterThan(specialists);
+	expect(page).not.toContain('<HowItWorks />');
 });

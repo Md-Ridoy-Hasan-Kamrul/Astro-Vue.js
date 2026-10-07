@@ -32,12 +32,12 @@ describe('FAQ section', () => {
 	});
 });
 
-test('home page places the FAQ after client stories and before how it works', () => {
+test('home page places the FAQ after client stories', () => {
 	const page = readFileSync(resolve('src/pages/index.astro'), 'utf8');
 	const stories = page.indexOf('<ClientStories />');
 	const faq = page.indexOf('<Faq />');
-	const how = page.indexOf('<HowItWorks />');
 	expect(stories).toBeGreaterThan(-1);
 	expect(faq).toBeGreaterThan(stories);
-	expect(how).toBeGreaterThan(faq);
+	expect(page).not.toContain('<HowItWorks />');
+	expect(page).not.toContain('<Stack />');
 });
