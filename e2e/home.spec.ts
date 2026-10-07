@@ -25,19 +25,14 @@ test.describe('Home landing page', () => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page
       .getByRole('navigation', { name: 'Primary' })
-      .getByRole('link', { name: 'Blog' })
+      .getByRole('link', { name: 'FAQ', exact: true })
       .click();
     await expect(page).toHaveURL(/\/#faq/);
   });
 
   test('navbar navigates to the about route', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    const about = page
-      .getByRole('navigation', { name: 'Primary' })
-      .getByRole('link', { name: 'About Us', exact: true });
-    if (!(await about.isVisible())) {
-      await page.getByRole('button', { name: 'Menu' }).click();
-    }
+    const about = page.getByRole('contentinfo').getByRole('link', { name: 'About', exact: true }).first();
     await about.click();
     await expect(page).toHaveURL(/\/about\/?$/);
     await expect(page.getByRole('button', { name: /Astro pages/i })).toBeVisible();

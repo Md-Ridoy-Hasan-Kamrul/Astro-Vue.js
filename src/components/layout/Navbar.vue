@@ -8,7 +8,7 @@
  */
 import { ref, computed, watch, watchEffect, onMounted, onUnmounted } from 'vue';
 import LiquidGlassButton from '../ui/LiquidGlassButton.vue';
-import { pauseSmoothScroll, resumeSmoothScroll } from '../../lib/smoothScroll';
+import { getLenis, pauseSmoothScroll, resumeSmoothScroll, scrollSmoothTo } from '../../lib/smoothScroll';
 
 const props = withDefaults(
   defineProps<{
@@ -19,12 +19,19 @@ const props = withDefaults(
   { surface: 'light', currentPath: '/' },
 );
 
-const SECTION_IDS = ['features', 'capabilities', 'faq'] as const;
+const SECTION_IDS = [
+  'partner',
+  'showcase',
+  'orbit-projects',
+  'capabilities',
+  'specialists',
+  'client-stories',
+  'faq',
+] as const;
 type SectionId = (typeof SECTION_IDS)[number];
-type LinkMatch = 'services' | 'about' | 'work' | 'pricing' | 'blog' | 'career';
+type LinkMatch = SectionId;
 
 const open = ref(false);
-const servicesOpen = ref(false);
 const path = ref(normalizePath(props.currentPath));
 const hash = ref('');
 const scrolledSection = ref<SectionId | ''>('');
@@ -57,15 +64,6 @@ function toggle() {
 
 function close() {
   open.value = false;
-  servicesOpen.value = false;
-}
-
-function toggleServices() {
-  servicesOpen.value = !servicesOpen.value;
-}
-
-function closeServices() {
-  servicesOpen.value = false;
 }
 
 // Sync body overflow & smooth scroll with open state
@@ -87,90 +85,137 @@ watchEffect((onCleanup) => {
 });
 
 let navCleanup: (() => void) | null = null;
+/** Click target stays highlighted until that section reaches the navbar line. */
+let lockedTarget: SectionId | '' = '';
 
-onMounted(() => {
-  let observer: IntersectionObserver | undefined;
-  const ratios = new Map<string, number>();
+function navOffset() {
+  const header = document.querySelector('header');
+  return (header?.getBoundingClientRect().height ?? 88) + 8;
+}
 
-  function bindSectionObserver() {
-    observer?.disconnect();
-    ratios.clear();
-    const sectionNodes = SECTION_IDS.map((id) => document.getElementById(id)).filter(
-      (el): el is HTMLElement => Boolean(el),
-    );
-    if (sectionNodes.length === 0) return;
+function sectionInView(): SectionId | '' {
+  // A little below the bar, so a section parked under the navbar still counts.
+  const line = navOffset() + 48;
+  let best: SectionId | '' = '';
+  for (const id of SECTION_IDS) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    if (el.getBoundingClientRect().top <= line) best = id;
+  }
+  return best;
+}
 
-    observer = new IntersectionObserver(
-      (entries) => {
-        if (normalizePath(window.location.pathname) !== '/') return;
-        for (const entry of entries) {
-          ratios.set(entry.target.id, entry.isIntersecting ? entry.intersectionRatio : 0);
-        }
-        let bestId: SectionId | '' = '';
-        let bestRatio = 0;
-        for (const id of SECTION_IDS) {
-          const ratio = ratios.get(id) ?? 0;
-          if (ratio > bestRatio) {
-            bestRatio = ratio;
-            bestId = id;
-          }
-        }
-        if (bestId && bestRatio > 0.12) {
-          scrolledSection.value = bestId;
-          const nextHash = `#${bestId}`;
-          if (window.location.hash !== nextHash) {
-            history.replaceState(null, '', nextHash);
-            hash.value = nextHash;
-          }
-        } else if (window.scrollY < 120) {
-          scrolledSection.value = '';
-          if (window.location.hash) {
-            history.replaceState(null, '', window.location.pathname + window.location.search);
-            hash.value = '';
-          }
-        }
-      },
-      {
-        root: null,
-        rootMargin: '-18% 0px -55% 0px',
-        threshold: [0, 0.15, 0.35, 0.55, 0.75],
-      },
-    );
-    for (const node of sectionNodes) observer.observe(node);
+function writeHash(next: string) {
+  const current = window.location.hash;
+  if (current === next) {
+    hash.value = next;
+    return;
+  }
+  const url = next
+    ? `${window.location.pathname}${window.location.search}${next}`
+    : `${window.location.pathname}${window.location.search}`;
+  history.replaceState(null, '', url);
+  hash.value = next;
+}
+
+function updateActiveSection() {
+  if (normalizePath(window.location.pathname) !== '/') {
+    scrolledSection.value = '';
+    lockedTarget = '';
+    return;
   }
 
+  const best = sectionInView();
+  if (lockedTarget) {
+    const el = document.getElementById(lockedTarget);
+    const top = el?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY;
+    const line = navOffset();
+    const atEnd =
+      window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+    if (Math.abs(top - line) < 40 || (best === lockedTarget && top <= line) || atEnd) {
+      lockedTarget = '';
+    } else {
+      scrolledSection.value = lockedTarget;
+      return;
+    }
+  }
+
+  scrolledSection.value = best;
+  if (!best && window.scrollY < navOffset()) {
+    writeHash('');
+    return;
+  }
+  if (best) writeHash(`#${best}`);
+}
+
+function goToSection(event: MouseEvent, match: LinkMatch) {
+  close();
+  if (normalizePath(window.location.pathname) !== '/') return;
+  const el = document.getElementById(match);
+  if (!el) return;
+  event.preventDefault();
+  lockedTarget = match;
+  scrolledSection.value = match;
+  writeHash(`#${match}`);
+  scrollSmoothTo(el);
+}
+
+onMounted(() => {
   function onHashChange() {
     hash.value = window.location.hash;
-    if (hash.value) {
-      const id = hash.value.slice(1) as SectionId;
-      if ((SECTION_IDS as readonly string[]).includes(id)) {
-        scrolledSection.value = id;
-      }
+    const id = window.location.hash.slice(1);
+    if ((SECTION_IDS as readonly string[]).includes(id)) {
+      scrolledSection.value = id as SectionId;
     }
+  }
+
+  function unlockFromUser() {
+    lockedTarget = '';
   }
 
   function onPageLoad() {
     close();
+    lockedTarget = '';
     syncFromLocation();
     onHashChange();
-    bindSectionObserver();
+    updateActiveSection();
   }
 
   syncFromLocation();
   onHashChange();
-  bindSectionObserver();
+  updateActiveSection();
 
+  let detachLenis: (() => void) | null = null;
+  function attachLenis() {
+    if (detachLenis) return;
+    const lenis = getLenis();
+    if (!lenis) return;
+    lenis.on('scroll', updateActiveSection);
+    detachLenis = () => lenis.off('scroll', updateActiveSection);
+  }
+  attachLenis();
+  const lenisTimer = window.setInterval(() => {
+    attachLenis();
+    if (detachLenis) window.clearInterval(lenisTimer);
+  }, 250);
+  window.addEventListener('scroll', updateActiveSection, { passive: true });
+  window.addEventListener('wheel', unlockFromUser, { passive: true });
+  window.addEventListener('touchmove', unlockFromUser, { passive: true });
   window.addEventListener('hashchange', onHashChange);
   window.addEventListener('popstate', syncFromLocation);
   document.addEventListener('astro:page-load', onPageLoad);
   document.addEventListener('astro:after-swap', onPageLoad);
 
   navCleanup = () => {
+    window.clearInterval(lenisTimer);
+    detachLenis?.();
+    window.removeEventListener('scroll', updateActiveSection);
+    window.removeEventListener('wheel', unlockFromUser);
+    window.removeEventListener('touchmove', unlockFromUser);
     window.removeEventListener('hashchange', onHashChange);
     window.removeEventListener('popstate', syncFromLocation);
     document.removeEventListener('astro:page-load', onPageLoad);
     document.removeEventListener('astro:after-swap', onPageLoad);
-    observer?.disconnect();
   };
 });
 
@@ -182,18 +227,13 @@ onUnmounted(() => {
 });
 
 const links = [
-  { href: '/about#services', label: 'Services', match: 'services' as const, hasMenu: true },
-  { href: '/about', label: 'About Us', match: 'about' as const, hasMenu: false },
-  { href: '/#capabilities', label: 'Work', match: 'work' as const, hasMenu: false },
-  { href: '/#features', label: 'Pricing', match: 'pricing' as const, hasMenu: false },
-  { href: '/#faq', label: 'Blog', match: 'blog' as const, hasMenu: false },
-  { href: '/dashboard/hiring', label: 'Career', match: 'career' as const, hasMenu: false },
-] as const;
-
-const serviceMenu = [
-  { href: '/about#services', label: 'Astro pages' },
-  { href: '/about#services', label: 'Vue islands' },
-  { href: '/about#services', label: 'Data & feedback' },
+  { href: '/#partner', label: 'Partner', match: 'partner' as const },
+  { href: '/#showcase', label: 'Showcase', match: 'showcase' as const },
+  { href: '/#orbit-projects', label: 'Motion', match: 'orbit-projects' as const },
+  { href: '/#capabilities', label: 'Capabilities', match: 'capabilities' as const },
+  { href: '/#specialists', label: 'Specialists', match: 'specialists' as const },
+  { href: '/#client-stories', label: 'Clients', match: 'client-stories' as const },
+  { href: '/#faq', label: 'FAQ', match: 'faq' as const },
 ] as const;
 
 const socials = [
@@ -202,29 +242,14 @@ const socials = [
   { href: 'https://github.com/withastro/astro', label: 'GitHub' },
 ] as const;
 
-const sectionByMatch: Partial<Record<LinkMatch, SectionId>> = {
-  pricing: 'features',
-  blog: 'faq',
-  work: 'capabilities',
-};
-
 function isActive(match: LinkMatch) {
-  if (match === 'services') {
-    return path.value === '/about' && hash.value === '#services';
-  }
-  if (match === 'about') {
-    return path.value === '/about' && hash.value !== '#services' && hash.value !== '#feedback';
-  }
-  if (match === 'career') return path.value === '/dashboard/hiring';
   if (path.value !== '/') return false;
-  const section = sectionByMatch[match];
-  if (!section) return false;
-  return hash.value === `#${section}` || scrolledSection.value === section;
+  return scrolledSection.value === match;
 }
 
 function linkClass(match: LinkMatch) {
   const base =
-    'inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[0.9375rem] font-semibold tracking-[-0.01em] no-underline transition';
+    'inline-flex items-center gap-1 rounded-full px-2 py-2 text-[0.8125rem] font-semibold tracking-[-0.01em] no-underline transition';
   if (isActive(match)) {
     return `${base} bg-[#f7f7f8] text-[#0a0a0c] shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_1px_2px_rgba(0,0,0,0.08)]`;
   }
@@ -242,10 +267,10 @@ const ink = '#111111';
     <!-- Desktop: Liquid Glass -->
     <div class="hidden px-[clamp(0.75rem,3vw,1.25rem)] pb-2 pt-3 min-[1021px]:block">
       <div
-        class="mx-auto w-[min(100%,58rem)] rounded-full p-0.75 [background:linear-gradient(180deg,rgba(255,255,255,0.85)_0%,rgba(244,245,247,0.55)_40%,rgba(255,255,255,0.7)_100%)] [box-shadow:0.29px_4.36px_2.18px_rgba(0,0,0,0.01),0.48px_7.24px_3.63px_rgba(0,0,0,0.01),0.78px_11.7px_5.86px_rgba(0,0,0,0.015),1.28px_19.15px_9.6px_rgba(0,0,0,0.02),2.2px_32.97px_16.52px_rgba(0,0,0,0.025),4px_60px_30.07px_rgba(0,0,0,0.04)]"
+        class="mx-auto w-[min(100%,76rem)] rounded-full p-0.75 [background:linear-gradient(180deg,rgba(255,255,255,0.85)_0%,rgba(244,245,247,0.55)_40%,rgba(255,255,255,0.7)_100%)] [box-shadow:0.29px_4.36px_2.18px_rgba(0,0,0,0.01),0.48px_7.24px_3.63px_rgba(0,0,0,0.01),0.78px_11.7px_5.86px_rgba(0,0,0,0.015),1.28px_19.15px_9.6px_rgba(0,0,0,0.02),2.2px_32.97px_16.52px_rgba(0,0,0,0.025),4px_60px_30.07px_rgba(0,0,0,0.04)]"
       >
         <div
-          class="relative flex items-center justify-between gap-3 overflow-visible rounded-full bg-[#f4f5f7]/55 px-2.5 py-2 pl-3.5 shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.85),inset_0_-1px_1.5px_rgba(20,33,43,0.04)] backdrop-blur-xl"
+          class="relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 overflow-hidden rounded-full bg-[#f4f5f7]/55 px-2 py-2 pl-3 shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.85),inset_0_-1px_1.5px_rgba(20,33,43,0.04)] backdrop-blur-xl"
         >
           <a href="/" class="inline-flex shrink-0 items-center gap-1.5 no-underline" data-astro-prefetch>
             <span
@@ -260,67 +285,19 @@ const ink = '#111111';
           </a>
 
           <nav class="flex min-w-0 flex-1 items-center justify-center gap-0.5" aria-label="Primary">
-            <template v-for="link in links" :key="link.href + link.label">
-              <div
-                v-if="link.hasMenu"
-                class="relative"
-                @mouseenter="servicesOpen = true"
-                @mouseleave="closeServices"
-              >
-                <button
-                  type="button"
-                  :class="linkClass(link.match)"
-                  :aria-expanded="servicesOpen"
-                  aria-haspopup="menu"
-                  @click="toggleServices"
-                >
-                  {{ link.label }}
-                  <span
-                    class="grid size-4 place-items-center rounded-full bg-white/70 text-[#0a0a0c]"
-                    aria-hidden="true"
-                  >
-                    <svg class="size-2.5" viewBox="0 0 12 12" fill="none">
-                      <path
-                        d="M3 4.5L6 7.5L9 4.5"
-                        stroke="currentColor"
-                        stroke-width="1.6"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
-                    </svg>
-                  </span>
-                </button>
-                <div
-                  v-if="servicesOpen"
-                  class="absolute left-0 top-[calc(100%-0.15rem)] z-50 min-w-44 rounded-2xl bg-[#f7f7f8]/95 p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.12)] backdrop-blur-md"
-                  role="menu"
-                >
-                  <a
-                    v-for="item in serviceMenu"
-                    :key="item.label"
-                    :href="item.href"
-                    class="block rounded-xl px-3 py-2 text-[0.875rem] font-semibold text-[#0a0a0c]/80 no-underline transition hover:bg-white hover:text-[#0a0a0c]"
-                    role="menuitem"
-                    data-astro-prefetch
-                    @click="closeServices"
-                  >
-                    {{ item.label }}
-                  </a>
-                </div>
-              </div>
-              <a
-                v-else
-                :href="link.href"
-                :class="linkClass(link.match)"
-                :aria-current="isActive(link.match) ? 'page' : undefined"
-                data-astro-prefetch
-              >
-                {{ link.label }}
-              </a>
-            </template>
+            <a
+              v-for="link in links"
+              :key="link.href"
+              :href="link.href"
+              :class="linkClass(link.match)"
+              :aria-current="isActive(link.match) ? 'page' : undefined"
+              @click="goToSection($event, link.match)"
+            >
+              {{ link.label }}
+            </a>
           </nav>
 
-          <LiquidGlassButton href="/about#feedback" label="Contact Us" size="sm" />
+          <LiquidGlassButton href="/about#feedback" label="Contact Us" size="sm" class="shrink-0 overflow-hidden" />
         </div>
       </div>
     </div>
@@ -418,7 +395,7 @@ const ink = '#111111';
             :key="link.href"
             :href="link.href"
             :class="`group flex items-baseline gap-4 border-b py-[clamp(0.85rem,2.8vw,1.35rem)] no-underline transition ${isDark ? 'border-white/10' : 'border-black/10'}`"
-            @click="close"
+            @click="goToSection($event, link.match)"
             :aria-current="isActive(link.match) ? 'page' : undefined"
             :style="`animation-delay: ${80 + index * 50}ms`"
           >
