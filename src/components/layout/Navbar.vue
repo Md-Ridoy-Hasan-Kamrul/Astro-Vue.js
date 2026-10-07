@@ -8,7 +8,14 @@
  */
 import { ref, computed, watch, watchEffect, onMounted, onUnmounted } from 'vue';
 import LiquidGlassButton from '../ui/LiquidGlassButton.vue';
-import { getLenis, pauseSmoothScroll, resumeSmoothScroll, scrollSmoothTo } from '../../lib/smoothScroll';
+import {
+  easeInOutCubic,
+  getLenis,
+  glideDuration,
+  pauseSmoothScroll,
+  resumeSmoothScroll,
+  scrollSmoothTo,
+} from '../../lib/smoothScroll';
 
 const props = withDefaults(
   defineProps<{
@@ -153,11 +160,17 @@ function goToSection(event: MouseEvent, match: LinkMatch) {
   if (normalizePath(window.location.pathname) !== '/') return;
   const el = document.getElementById(match);
   if (!el) return;
+  // Lenis also listens for anchor clicks and would start a second, lerp-based
+  // scroll. That second scroll is what launches like a rocket and fights the way back.
   event.preventDefault();
+  event.stopPropagation();
   lockedTarget = match;
   scrolledSection.value = match;
   writeHash(`#${match}`);
-  scrollSmoothTo(el);
+  scrollSmoothTo(el, {
+    duration: glideDuration(el.getBoundingClientRect().top),
+    easing: easeInOutCubic,
+  });
 }
 
 onMounted(() => {

@@ -84,10 +84,29 @@ export function createAreaScroll(wrapper: HTMLElement, content: HTMLElement) {
 	});
 }
 
+/** Symmetric ease. Forward and back use the same curve. */
+export function easeInOutCubic(t: number) {
+	return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
+}
+
+/**
+ * Navbar jumps. Duration grows with distance, then caps, so a long
+ * trip does not launch at rocket speed the way Lenis lerp does.
+ */
+export function glideDuration(distancePx: number) {
+	const distance = Math.abs(distancePx);
+	return Math.min(1.45, Math.max(0.78, distance / 2600));
+}
+
 /** Soft navigations / hash targets */
 export function scrollSmoothTo(
 	target: number | string | HTMLElement,
-	options?: { immediate?: boolean; offset?: number },
+	options?: {
+		immediate?: boolean;
+		offset?: number;
+		duration?: number;
+		easing?: (t: number) => number;
+	},
 ) {
 	if (!lenis) {
 		if (typeof target === 'number') window.scrollTo({ top: target, behavior: 'auto' });
