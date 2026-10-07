@@ -4,7 +4,7 @@ export const CAPABILITY_COPY = {
 	title: 'End-to-End Digital Capabilities',
 	lede: 'From product thinking and experience design to development and launch, our specialists work together to move your digital product forward.',
 	contactLabel: 'Contact us',
-	contactHref: '/about#feedback',
+	contactHref: '/contact',
 	exploreLabel: 'Explore Now',
 	exploreHref: '/about#services',
 } as const;

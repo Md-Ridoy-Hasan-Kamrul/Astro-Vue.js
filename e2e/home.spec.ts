@@ -41,7 +41,7 @@ test.describe('Home landing page', () => {
 
 /** The button is server-rendered; clicking before Vue hydrates does a native submit. */
 async function openHydratedFeedback(page: Page) {
-  await page.goto('/about', { waitUntil: 'domcontentloaded' });
+  await page.goto('/contact', { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => {
     const island = document.querySelector('#feedback form')?.closest('astro-island');
     return island !== null && island !== undefined && !island.hasAttribute('ssr');

@@ -1,0 +1,45 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Footer from '../components/layout/Footer.astro';
+import ToastHost from '../components/islands/ToastHost.vue';
+import FeedbackFormPanel from '../components/islands/FeedbackFormPanel.vue';
+---
+
+<Layout
+	title="Contact — Astro Vue"
+	description="Send a message to the studio. We read every note."
+>
+	<ToastHost client:load />
+	<main
+		id="main"
+		class="grid min-h-[100svh] place-items-center overflow-x-clip bg-[#e7eef0] px-[clamp(1rem,3vw,2rem)] pb-16 pt-[5.75rem]"
+	>
+		<section
+			id="feedback"
+			class="mx-auto grid w-full max-w-[68rem] items-center gap-10 min-[900px]:grid-cols-[0.92fr_1.08fr] min-[900px]:gap-16"
+			aria-labelledby="feedback-title"
+		>
+			<div>
+				<p class="mb-4 font-mono text-[0.75rem] font-semibold uppercase tracking-[0.18em] text-sea">
+					Contact
+				</p>
+				<h1
+					id="feedback-title"
+					class="m-0 font-display text-[clamp(2.6rem,6vw,4.4rem)] font-extrabold leading-[0.92] tracking-[-0.045em] text-ink"
+				>
+					Contact Us
+				</h1>
+				<p class="mt-5 max-w-[28rem] text-[1.05rem] leading-relaxed text-ink-soft">
+					Tell us what you want to build. A short note is enough we reply with a clear next step.
+				</p>
+			</div>
+
+			<div
+				class="rounded-[1.75rem] bg-white px-5 py-6 shadow-[0_24px_60px_rgba(20,33,43,0.08)] min-[768px]:px-8 min-[768px]:py-8"
+			>
+				<FeedbackFormPanel client:load />
+			</div>
+		</section>
+	</main>
+	<Footer />
+</Layout>

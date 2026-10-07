@@ -310,7 +310,7 @@ const ink = '#111111';
             </a>
           </nav>
 
-          <LiquidGlassButton href="/about#feedback" label="Contact Us" size="sm" class="shrink-0 overflow-hidden" />
+          <LiquidGlassButton href="/contact" label="Contact Us" size="sm" class="shrink-0 overflow-hidden" />
         </div>
       </div>
     </div>
@@ -444,7 +444,7 @@ const ink = '#111111';
             </div>
           </div>
           <LiquidGlassButton
-            href="/about#feedback"
+            href="/contact"
             label="Contact Us"
             :surface="isDark ? 'dark' : 'light'"
             :on-click="close"

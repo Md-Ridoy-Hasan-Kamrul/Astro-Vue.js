@@ -10,7 +10,7 @@ describe('capability copy', () => {
 			'From product thinking and experience design to development and launch, our specialists work together to move your digital product forward.',
 		);
 		expect(CAPABILITY_COPY.contactLabel).toBe('Contact us');
-		expect(CAPABILITY_COPY.contactHref).toBe('/about#feedback');
+		expect(CAPABILITY_COPY.contactHref).toBe('/contact');
 		expect(CAPABILITY_COPY.exploreLabel).toBe('Explore Now');
 		expect(CAPABILITY_COPY.exploreHref).toBe('/about#services');
 	});

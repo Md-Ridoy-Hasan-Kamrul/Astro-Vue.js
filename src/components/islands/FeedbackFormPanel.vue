@@ -173,9 +173,6 @@ function clearStatus() {
         class="m-0 text-sm text-accent"
         role="alert"
       >{{ fieldErrors.message }}</p>
-      <p v-else-if="!message.trim()" class="m-0 text-sm text-ink-soft">
-        Share what worked, what broke, or what to try next.
-      </p>
     </div>
 
     <LiquidGlassButton
