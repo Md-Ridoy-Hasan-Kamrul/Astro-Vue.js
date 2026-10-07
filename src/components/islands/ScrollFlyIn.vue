@@ -9,7 +9,6 @@ import {
 	FLY_IMAGE_PATH,
 	INSET_PROGRESS_END,
 	NARROW_LAYOUT_MAX_PX,
-	SCROLL_TRACK_VH,
 	clamp01,
 	contentTranslateYPx,
 	insetClipPath,
@@ -48,10 +47,12 @@ onMounted(() => {
 	narrowQuery = window.matchMedia(`(max-width: ${NARROW_LAYOUT_MAX_PX}px)`);
 	narrow.value = narrowQuery.matches;
 	narrowQuery.addEventListener('change', syncNarrow);
+	window.addEventListener('resize', syncNarrow);
 });
 
 onUnmounted(() => {
 	narrowQuery?.removeEventListener('change', syncNarrow);
+	window.removeEventListener('resize', syncNarrow);
 });
 
 /** Circle veil only while the narrow track is actually on screen. */
@@ -102,7 +103,6 @@ function onImageError() {
 		ref="track"
 		class="scroll-fly relative w-full"
 		:class="{ 'scroll-fly--flow': narrow }"
-		:style="narrow ? undefined : { height: `${SCROLL_TRACK_VH}vh` }"
 		data-scroll-fly-in
 	>
 		<div
@@ -153,21 +153,28 @@ function onImageError() {
 </template>
 
 <style>
+	@media (min-width: 1021px) {
+		.scroll-fly {
+			height: 350vh;
+		}
+	}
+
 	@media (max-width: 1020px) {
-		/* Full partner height — quote author is in normal page scroll, not clipped by 100vh. */
-		.scroll-fly--flow {
+		/* Full partner height — quote author is in normal page scroll, not clipped by 100vh.
+		   These rules apply before hydration so a phone never keeps the desktop track. */
+		.scroll-fly {
 			height: auto !important;
 			padding-top: 100vh;
 		}
 
-		.scroll-fly--flow .scroll-fly__stage {
+		.scroll-fly .scroll-fly__stage {
 			position: relative;
 			height: auto;
 			min-height: 0;
 			overflow: visible;
 		}
 
-		.scroll-fly--flow .scroll-fly__inset {
+		.scroll-fly .scroll-fly__inset {
 			position: relative;
 			inset: auto;
 			height: auto;
@@ -175,7 +182,7 @@ function onImageError() {
 			clip-path: none !important;
 		}
 
-		.scroll-fly--flow .scroll-fly__content {
+		.scroll-fly .scroll-fly__content {
 			display: block;
 			height: auto;
 			min-height: 0;
@@ -183,12 +190,12 @@ function onImageError() {
 			transform: none !important;
 		}
 
-		.scroll-fly--flow .scroll-fly__plane {
+		.scroll-fly .scroll-fly__plane {
 			position: fixed;
 			z-index: 30;
 		}
 
-		.scroll-fly--flow .scroll-fly__plane img {
+		.scroll-fly .scroll-fly__plane img {
 			width: min(92vw, 34rem);
 			transform: scale(1);
 		}

@@ -65,6 +65,13 @@ export function pauseSmoothScroll() {
 export function resumeSmoothScroll() {
 	if (!lenis) return;
 	if (typeof document !== 'undefined' && document.body.style.overflow === 'hidden') return;
+	// autoToggle keeps overflow:clip on <html> until a transitionend.
+	// The stopped class can keep that clip in place, so a menu click
+	// scrolls into a short page and the highlight never meets the section.
+	if (typeof document !== 'undefined') {
+		document.documentElement.classList.remove('lenis-stopped');
+		document.documentElement.style.removeProperty('overflow');
+	}
 	lenis.start();
 	if (lenis.isStopped) flushOverflowToggle();
 }
@@ -106,6 +113,8 @@ export function scrollSmoothTo(
 		offset?: number;
 		duration?: number;
 		easing?: (t: number) => number;
+		force?: boolean;
+		onComplete?: () => void;
 	},
 ) {
 	if (!lenis) {
@@ -116,6 +125,7 @@ export function scrollSmoothTo(
 		} else {
 			target.scrollIntoView({ behavior: 'auto' });
 		}
+		options?.onComplete?.();
 		return;
 	}
 	lenis.scrollTo(target, options);

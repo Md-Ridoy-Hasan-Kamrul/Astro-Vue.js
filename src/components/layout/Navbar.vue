@@ -74,12 +74,16 @@ function close() {
 }
 
 // Sync body overflow & smooth scroll with open state
-watch(open, (isOpen) => {
-  if (typeof document === 'undefined') return;
-  document.body.style.overflow = isOpen ? 'hidden' : '';
-  if (isOpen) pauseSmoothScroll();
-  else resumeSmoothScroll();
-});
+watch(
+  open,
+  (isOpen) => {
+    if (typeof document === 'undefined') return;
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+    if (isOpen) pauseSmoothScroll();
+    else resumeSmoothScroll();
+  },
+  { flush: 'sync' },
+);
 
 // Escape key to close menu
 watchEffect((onCleanup) => {
@@ -92,12 +96,13 @@ watchEffect((onCleanup) => {
 });
 
 let navCleanup: (() => void) | null = null;
-/** Click target stays highlighted until that section reaches the navbar line. */
-let lockedTarget: SectionId | '' = '';
 
 function navOffset() {
   const header = document.querySelector('header');
-  return (header?.getBoundingClientRect().height ?? 88) + 8;
+  const height = header?.getBoundingClientRect().height ?? 88;
+  // The open mobile menu is fixed inside the header. Don't let that
+  // stretch the spy line down the page and mark FAQ while Hero is on screen.
+  return Math.min(height, 120) + 8;
 }
 
 function sectionInView(): SectionId | '' {
@@ -128,25 +133,10 @@ function writeHash(next: string) {
 function updateActiveSection() {
   if (normalizePath(window.location.pathname) !== '/') {
     scrolledSection.value = '';
-    lockedTarget = '';
     return;
   }
 
   const best = sectionInView();
-  if (lockedTarget) {
-    const el = document.getElementById(lockedTarget);
-    const top = el?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY;
-    const line = navOffset();
-    const atEnd =
-      window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
-    if (Math.abs(top - line) < 40 || (best === lockedTarget && top <= line) || atEnd) {
-      lockedTarget = '';
-    } else {
-      scrolledSection.value = lockedTarget;
-      return;
-    }
-  }
-
   scrolledSection.value = best;
   if (!best && window.scrollY < navOffset()) {
     writeHash('');
@@ -156,39 +146,73 @@ function updateActiveSection() {
 }
 
 function goToSection(event: MouseEvent, match: LinkMatch) {
-  close();
-  if (normalizePath(window.location.pathname) !== '/') return;
-  const el = document.getElementById(match);
-  if (!el) return;
   // Lenis also listens for anchor clicks and would start a second, lerp-based
   // scroll. That second scroll is what launches like a rocket and fights the way back.
   event.preventDefault();
   event.stopPropagation();
-  lockedTarget = match;
-  scrolledSection.value = match;
-  writeHash(`#${match}`);
-  scrollSmoothTo(el, {
-    duration: glideDuration(el.getBoundingClientRect().top),
-    easing: easeInOutCubic,
-  });
+  // Blur before the menu unmounts. A focused link inside the fixed menu
+  // otherwise makes the browser jump the page on its own.
+  (event.currentTarget as HTMLElement | null)?.blur();
+  if (normalizePath(window.location.pathname) !== '/') {
+    close();
+    return;
+  }
+  const menuOpen = open.value;
+  // Keep focus on the menu button. Blurring a link inside the fixed
+  // menu makes the browser jump the document on its own.
+  const menuButton = document.querySelector(
+    'header button[aria-controls="fullscreen-menu"]',
+  );
+  if (menuButton instanceof HTMLElement) menuButton.focus({ preventScroll: true });
+  close();
+
+  const beginGlide = () => {
+    const target = document.getElementById(match);
+    if (!target) return;
+    // Measure after the menu is gone. While it is open the page can still
+    // be laid out at the previous width, and that stale distance misses FAQ.
+    const margin = Number.parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+    const distance = target.getBoundingClientRect().top;
+    const destination = Math.max(0, distance + window.scrollY - margin);
+    const root = document.documentElement;
+    const from = window.scrollY;
+    const delta = destination - from;
+    const duration = glideDuration(distance) * 1000;
+    const start = performance.now();
+    let settled = false;
+    const settle = () => {
+      if (settled) return;
+      settled = true;
+      root.style.removeProperty('overflow-y');
+      if (Math.abs(window.scrollY - destination) > 1) window.scrollTo(0, destination);
+      getLenis()?.resize();
+      scrollSmoothTo(window.scrollY, { immediate: true, force: true });
+      updateActiveSection();
+    };
+    root.style.setProperty('overflow-y', 'visible', 'important');
+    const frame = () => {
+      const t = Math.min(1, (performance.now() - start) / duration);
+      window.scrollTo(0, from + delta * easeInOutCubic(t));
+      if (t < 1) window.setTimeout(frame, 16);
+      else settle();
+    };
+    frame();
+    window.setTimeout(settle, duration + 80);
+  };
+
+  // The menu close clears an overflow clip that would swallow the jump.
+  if (menuOpen) window.setTimeout(beginGlide, 80);
+  else beginGlide();
 }
 
 onMounted(() => {
   function onHashChange() {
     hash.value = window.location.hash;
-    const id = window.location.hash.slice(1);
-    if ((SECTION_IDS as readonly string[]).includes(id)) {
-      scrolledSection.value = id as SectionId;
-    }
-  }
-
-  function unlockFromUser() {
-    lockedTarget = '';
+    updateActiveSection();
   }
 
   function onPageLoad() {
     close();
-    lockedTarget = '';
     syncFromLocation();
     onHashChange();
     updateActiveSection();
@@ -212,8 +236,6 @@ onMounted(() => {
     if (detachLenis) window.clearInterval(lenisTimer);
   }, 250);
   window.addEventListener('scroll', updateActiveSection, { passive: true });
-  window.addEventListener('wheel', unlockFromUser, { passive: true });
-  window.addEventListener('touchmove', unlockFromUser, { passive: true });
   window.addEventListener('hashchange', onHashChange);
   window.addEventListener('popstate', syncFromLocation);
   document.addEventListener('astro:page-load', onPageLoad);
@@ -223,8 +245,6 @@ onMounted(() => {
     window.clearInterval(lenisTimer);
     detachLenis?.();
     window.removeEventListener('scroll', updateActiveSection);
-    window.removeEventListener('wheel', unlockFromUser);
-    window.removeEventListener('touchmove', unlockFromUser);
     window.removeEventListener('hashchange', onHashChange);
     window.removeEventListener('popstate', syncFromLocation);
     document.removeEventListener('astro:page-load', onPageLoad);
