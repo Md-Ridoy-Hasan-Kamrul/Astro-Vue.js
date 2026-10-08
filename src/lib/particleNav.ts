@@ -271,6 +271,7 @@ export class ParticleEngine {
 	linkRects: (Rect | null)[] = [];
 	ctaEl: HTMLElement | null = null;
 	cta: Rect | null = null;
+	ctaAt: { x: number; y: number } | null = null;
 	n = 0;
 	x = new Float32Array(0);
 	y = new Float32Array(0);
@@ -570,6 +571,21 @@ export class ParticleEngine {
 			const br = parseFloat(getComputedStyle(this.ctaEl).borderTopLeftRadius);
 			this.cta.r = Math.min(this.cta.h / 2, isNaN(br) ? this.cta.h / 2 : br);
 		}
+		// The button slides while the bar's width animates; its ring rides along with it
+		// instead of springing after it and trailing outside the bar.
+		const c = this.cta;
+		if (c && this.ctaAt) {
+			const dx = c.x - this.ctaAt.x;
+			const dy = c.y - this.ctaAt.y;
+			if (dx || dy) {
+				const [c0, c1] = this.rCta;
+				for (let i = c0; i < c1 && i < this.n; i++) {
+					this.x[i] += dx;
+					this.y[i] += dy;
+				}
+			}
+		}
+		this.ctaAt = c ? { x: c.x, y: c.y } : null;
 		if (this.hover >= 0) {
 			const rc = this.linkRects[this.hover];
 			if (rc) this.hoverRect = rc;
@@ -773,7 +789,10 @@ export class ParticleEngine {
 	onResize() {
 		if (this.destroyed) return;
 		this.measure(false);
-		this.flushDraw();
+		// Resize callbacks land after layout but before paint: redraw at the new size now, so
+		// an animating bar never shows particles from the previous frame's width.
+		this.computeHomes();
+		this.draw(this.now());
 		this.wake();
 	}
 
