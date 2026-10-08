@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
  * Shared site navbar (Layout).
- * Desktop (≥1021px): Liquid Glass Navbar
- * ≤1020px: Fullscreen Navbars
+ * Desktop, Laptop L, and Laptop (≥1020px): Liquid Glass Navbar, animated.
+ * Below 1020px: fullscreen menu, no entrance motion.
  *
  * Active route/section is driven from the live URL + scroll spy.
  */
@@ -324,7 +324,7 @@ const ink = '#111111';
     class="fixed inset-x-0 top-0 z-40 w-full max-w-[100vw] overflow-x-clip bg-transparent"
   >
     <!-- Desktop: Liquid Glass -->
-    <div class="nav-shell hidden px-[clamp(0.75rem,3vw,1.25rem)] pb-2 pt-3 min-[1021px]:block">
+    <div class="nav-shell hidden px-[clamp(0.75rem,3vw,1.25rem)] pb-2 pt-3 min-[1020px]:block">
       <div
         class="mx-auto w-[min(100%,76rem)] rounded-full p-0.75 [background:linear-gradient(180deg,rgba(255,255,255,0.85)_0%,rgba(244,245,247,0.55)_40%,rgba(255,255,255,0.7)_100%)] [box-shadow:0.29px_4.36px_2.18px_rgba(0,0,0,0.01),0.48px_7.24px_3.63px_rgba(0,0,0,0.01),0.78px_11.7px_5.86px_rgba(0,0,0,0.015),1.28px_19.15px_9.6px_rgba(0,0,0,0.02),2.2px_32.97px_16.52px_rgba(0,0,0,0.025),4px_60px_30.07px_rgba(0,0,0,0.04)]"
       >
@@ -372,8 +372,8 @@ const ink = '#111111';
       </div>
     </div>
 
-    <!-- ≤1020px: Fullscreen Navbars -->
-    <div class="min-[1021px]:hidden">
+    <!-- Below 1020px: fullscreen menu, no entrance motion -->
+    <div class="min-[1020px]:hidden">
       <div
         class="flex h-16 items-center justify-between gap-2 px-[clamp(0.5rem,3vw,1.75rem)] min-[375px]:gap-3 min-[768px]:h-20"
       >
@@ -422,7 +422,7 @@ const ink = '#111111';
       <div
         v-if="open"
         id="fullscreen-menu"
-        :class="`fixed inset-0 z-50 flex flex-col overflow-auto overscroll-contain motion-safe:animate-[rise_500ms_ease_both] ${isDark ? 'bg-[#0a0a0a] text-[#f5f3ee]' : 'bg-[#f5f3ee] text-[#111]'}`"
+        :class="`fixed inset-0 z-50 flex flex-col overflow-auto overscroll-contain ${isDark ? 'bg-[#0a0a0a] text-[#f5f3ee]' : 'bg-[#f5f3ee] text-[#111]'}`"
         role="dialog"
         aria-modal="true"
         aria-label="Site menu"
@@ -464,10 +464,9 @@ const ink = '#111111';
             v-for="(link, index) in links"
             :key="link.href"
             :href="link.href"
-            :class="`nav-link-rise group flex items-baseline gap-4 border-b py-[clamp(0.85rem,2.8vw,1.35rem)] no-underline transition ${isDark ? 'border-white/10' : 'border-black/10'}`"
+            :class="`group flex items-baseline gap-4 border-b py-[clamp(0.85rem,2.8vw,1.35rem)] no-underline ${isDark ? 'border-white/10' : 'border-black/10'}`"
             @click="goToSection($event, link.match)"
             :aria-current="isActive(link.match) ? 'page' : undefined"
-            :style="`animation-delay: ${80 + index * 50}ms`"
           >
             <span
               :class="`font-mono text-[0.75rem] font-semibold tracking-wider tabular-nums ${isDark ? 'text-[#8a8782]' : 'text-sea'}`"
@@ -525,25 +524,22 @@ const ink = '#111111';
   }
 }
 
-.nav-shell {
-  animation: nav-in 640ms cubic-bezier(0.22, 1, 0.36, 1) both;
+@media (min-width: 1020px) {
+  .nav-shell {
+    animation: nav-in 640ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .nav-pill {
+    transition:
+      transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
+      width 520ms cubic-bezier(0.22, 1, 0.36, 1),
+      height 520ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 240ms ease;
+  }
 }
 
-.nav-pill {
-  transition:
-    transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
-    width 520ms cubic-bezier(0.22, 1, 0.36, 1),
-    height 520ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 240ms ease;
-}
-
-.nav-link-rise {
-  animation: rise 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .nav-shell,
-  .nav-link-rise {
+@media (max-width: 1019px), (prefers-reduced-motion: reduce) {
+  .nav-shell {
     animation: none;
   }
 
