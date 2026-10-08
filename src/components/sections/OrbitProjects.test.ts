@@ -14,38 +14,33 @@ async function render() {
 }
 
 describe('Orbit projects section', () => {
-	test('renders the compact grid with the Framer copy', async () => {
+	test('keeps the plain grid with the Framer copy for visitors without JavaScript', async () => {
 		const html = await render();
 		expect(html).toContain('id="orbit-projects"');
-		expect(html).toContain('data-orbit-compact');
+		expect(html).toMatch(/<noscript>\s*<div data-orbit-compact/);
 		expect(html).toContain('>MOTION</span>');
 		expect(html).toContain('>DESIGN IN</span>');
 		expect(html).toContain('Exploring ideas through daily design practice.');
 	});
 
-	test('renders every card in both layouts: info over the artwork in front, artwork alone on the back', async () => {
+	test('renders every card in the orbit (info in front, artwork on the back) and in the fallback grid', async () => {
 		const html = await render();
 		const occurrences = (text: string) => html.split(text).length - 1;
-		expect(occurrences('data-flip-card')).toBe(ORBIT_ITEMS.length * 2);
+		expect(occurrences('data-flip-card')).toBe(ORBIT_ITEMS.length);
 		expect(occurrences('data-orbit-stat')).toBe(ORBIT_ITEMS.length * 2);
 		for (const item of ORBIT_ITEMS) {
-			expect(occurrences(`src="${item.image}"`)).toBe(4);
+			expect(occurrences(`src="${item.image}"`)).toBe(3);
 			expect(occurrences(`>${item.label}</p>`)).toBe(2);
 			expect(occurrences(`>${item.index}</p>`)).toBe(2);
 			expect(occurrences(`>${item.value}</p>`)).toBe(2);
 		}
 	});
 
-	test('hydrates the compact flip cards when they scroll into view', async () => {
+	test('hydrates the scroll-driven orbit at every width, tablet and phones included', async () => {
 		const html = await render();
-		expect(html.split('client="visible"').length - 1).toBe(ORBIT_ITEMS.length);
-	});
-
-	test('hydrates the desktop orbit only at 1024px and up', async () => {
-		const html = await render();
-		expect(html).toContain('data-orbit-desktop');
-		expect(html).toContain('client="media"');
-		expect(html).toContain('(min-width: 1024px)');
+		expect(html).toContain('data-orbit-animated');
+		expect(html).toContain('client="idle"');
+		expect(html).not.toContain('client="media"');
 		expect(html).toMatch(/height:\s?460vh/);
 	});
 

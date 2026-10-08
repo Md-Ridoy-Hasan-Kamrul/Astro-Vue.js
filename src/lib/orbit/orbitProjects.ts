@@ -21,6 +21,8 @@ export type StageGeometry = {
 	curveWidth: number;
 	curveHeight: number;
 	depth: number;
+	gapPx: number;
+	renderQuality: number;
 };
 
 export type CardPose = {
@@ -257,11 +259,54 @@ export function isSettled(current: number, target: number): boolean {
 	return current === target;
 }
 
+/**
+ * Tablet and phones: the copy moves below the titles, so the titles park just either side
+ * of the center line and are sized so "DESIGN IN" (about 4.6em wide) fits half the screen.
+ */
+export const ORBIT_TITLE_COMPACT = {
+	maxSizePx: 72,
+	widthEm: 4.6,
+	edgePx: 20,
+	parkedPx: 6,
+	rightTopPercent: 40,
+	leftTopPercent: 54,
+	copyTopPercent: 70,
+} as const;
+
+export type TitleLayout = {
+	/** null: the CSS size (desktop). */
+	fontSizePx: number | null;
+	leftTopPercent: number;
+	rightTopPercent: number;
+	copyTopPercent: number;
+};
+
+export function titleLayout(viewportWidth: number): TitleLayout {
+	if (!isCompactWidth(viewportWidth)) {
+		return {
+			fontSizePx: null,
+			leftTopPercent: ORBIT_TITLE.leftTopPercent,
+			rightTopPercent: ORBIT_TITLE.rightTopPercent,
+			copyTopPercent: 50,
+		};
+	}
+	const c = ORBIT_TITLE_COMPACT;
+	const fits = (viewportWidth / 2 - c.edgePx - c.parkedPx) / c.widthEm;
+	return {
+		fontSizePx: Math.min(c.maxSizePx, fits),
+		leftTopPercent: c.leftTopPercent,
+		rightTopPercent: c.rightTopPercent,
+		copyTopPercent: c.copyTopPercent,
+	};
+}
+
 export function titleFrame(progress: number, viewportWidth: number): TitleFrame {
 	const enter = ease(ORBIT_TIMING.titleEnter, progress);
 	const exit = ease(ORBIT_TIMING.titleExit, progress);
 	const copyWidth = Math.min(ORBIT_TITLE.centerTextWidthPx, viewportWidth * ORBIT_TITLE.centerTextMaxRatio);
-	const parked = (copyWidth + ORBIT_TITLE.centerGapPx) / 2;
+	const parked = isCompactWidth(viewportWidth)
+		? ORBIT_TITLE_COMPACT.parkedPx
+		: (copyWidth + ORBIT_TITLE.centerGapPx) / 2;
 	const offset = lerp(viewportWidth * ORBIT_TITLE.outsideRatio, parked, enter);
 	return {
 		opacity: enter * (1 - exit),
@@ -276,30 +321,101 @@ export function centerCopyOpacity(progress: number): number {
 	return ease(ORBIT_TIMING.copyIn, progress) * (1 - ease(ORBIT_TIMING.copyOut, progress));
 }
 
-function gridGeometry(viewport: Viewport, count: number) {
-	const columns = Math.min(ORBIT_GRID.columns, Math.max(count, 1));
+/**
+ * How the orbit is laid out at a given stage width. Desktop (1024px and up) is the Framer
+ * component as authored. Tablet and phones run the same animation, sized for the screen:
+ * a tighter grid, phones in two columns with squarer cards so the stat type still fits.
+ * Cards render at 1x there, so the stat type floors read at their real size.
+ */
+export type StageProfile = {
+	columns: number;
+	paddingPx: number;
+	gapPx: number;
+	aspect: number;
+	arcCardWidthRatio: number;
+	curveWidthRatio: number;
+	depthRatio: number;
+	renderQuality: number;
+};
+
+const DESKTOP_PROFILE: StageProfile = {
+	columns: ORBIT_GRID.columns,
+	paddingPx: ORBIT_LAYOUT.horizontalPaddingPx,
+	gapPx: ORBIT_GRID.gapPx,
+	aspect: ORBIT_CARD.aspect,
+	arcCardWidthRatio: ORBIT_ARC.cardWidthRatio,
+	curveWidthRatio: ORBIT_ARC.curveWidthRatio,
+	depthRatio: ORBIT_ARC.depthRatio,
+	renderQuality: ORBIT_CARD.renderQuality,
+};
+
+const TABLET_PROFILE: StageProfile = {
+	columns: 3,
+	paddingPx: 32,
+	gapPx: 14,
+	aspect: ORBIT_CARD.aspect,
+	arcCardWidthRatio: 0.3,
+	curveWidthRatio: 0.42,
+	depthRatio: 0.42,
+	renderQuality: 1,
+};
+
+const PHONE_PROFILE: StageProfile = {
+	columns: 2,
+	paddingPx: 20,
+	gapPx: 12,
+	aspect: 1.05,
+	arcCardWidthRatio: 0.42,
+	curveWidthRatio: 0.32,
+	depthRatio: 0.4,
+	renderQuality: 1,
+};
+
+/** The finished grid never takes more than this share of the stage height. */
+const GRID_MAX_HEIGHT_RATIO = 0.8;
+
+export function stageProfile(width: number): StageProfile {
+	if (!isCompactWidth(width)) return DESKTOP_PROFILE;
+	return isMobileWidth(width) ? PHONE_PROFILE : TABLET_PROFILE;
+}
+
+function gridGeometry(viewport: Viewport, count: number, profile: StageProfile) {
+	const columns = Math.min(profile.columns, Math.max(count, 1));
 	const rows = Math.ceil(count / columns);
-	const available = Math.max(viewport.width - ORBIT_LAYOUT.horizontalPaddingPx * 2, ORBIT_LAYOUT.minGridWidthPx);
-	const gridWidth = Math.min(ORBIT_GRID.maxWidthPx, available);
-	const cardWidth = Math.max(ORBIT_GRID.minCardWidthPx, (gridWidth - ORBIT_GRID.gapPx * (columns - 1)) / columns);
-	const cardHeight = cardWidth / ORBIT_CARD.aspect;
-	const gridHeight = rows * cardHeight + Math.max(rows - 1, 0) * ORBIT_GRID.gapPx;
+	const gaps = (n: number) => Math.max(n - 1, 0) * profile.gapPx;
+	const available = Math.max(viewport.width - profile.paddingPx * 2, ORBIT_LAYOUT.minGridWidthPx);
+	let gridWidth = Math.min(ORBIT_GRID.maxWidthPx, available);
+	let cardWidth = Math.max(ORBIT_GRID.minCardWidthPx, (gridWidth - gaps(columns)) / columns);
+	// Short screens (phones, landscape tablets): shrink the grid until it fits the height.
+	const maxHeight = viewport.height * GRID_MAX_HEIGHT_RATIO;
+	if (rows * (cardWidth / profile.aspect) + gaps(rows) > maxHeight) {
+		cardWidth = Math.max(ORBIT_GRID.minCardWidthPx, ((maxHeight - gaps(rows)) / rows) * profile.aspect);
+		gridWidth = columns * cardWidth + gaps(columns);
+	}
+	const cardHeight = cardWidth / profile.aspect;
+	const gridHeight = rows * cardHeight + gaps(rows);
 	return { columns, rows, gridWidth, gridHeight, cardWidth, cardHeight };
 }
 
-function arcGeometry(viewport: Viewport) {
-	const arcCardWidth = Math.min(ORBIT_ARC.cardWidthPx, viewport.width * ORBIT_ARC.cardWidthRatio);
+function arcGeometry(viewport: Viewport, profile: StageProfile) {
+	const arcCardWidth = Math.min(ORBIT_ARC.cardWidthPx, viewport.width * profile.arcCardWidthRatio);
 	return {
 		arcCardWidth,
-		arcCardHeight: arcCardWidth / ORBIT_CARD.aspect,
-		curveWidth: Math.min(ORBIT_ARC.curveWidthPx, viewport.width * ORBIT_ARC.curveWidthRatio),
+		arcCardHeight: arcCardWidth / profile.aspect,
+		curveWidth: Math.min(ORBIT_ARC.curveWidthPx, viewport.width * profile.curveWidthRatio),
 		curveHeight: Math.min(ORBIT_ARC.curveHeightPx, viewport.height * ORBIT_ARC.curveHeightRatio),
-		depth: Math.min(ORBIT_ARC.depthPx, viewport.width * ORBIT_ARC.depthRatio),
+		depth: Math.min(ORBIT_ARC.depthPx, viewport.width * profile.depthRatio),
 	};
 }
 
 export function stageGeometry(viewport: Viewport, count: number): StageGeometry {
-	return { ...gridGeometry(viewport, count), ...arcGeometry(viewport) };
+	const profile = stageProfile(viewport.width);
+	return {
+		...gridGeometry(viewport, count, profile),
+		...arcGeometry(viewport, profile),
+		gapPx: profile.gapPx,
+		renderQuality: profile.renderQuality,
+	};
 }
 
 function cardReveal(index: number, progress: number): number {
@@ -348,12 +464,12 @@ function gridPose(index: number, viewport: Viewport, geometry: StageGeometry): C
 	const column = index % geometry.columns;
 	const row = Math.floor(index / geometry.columns);
 	return {
-		x: -geometry.gridWidth / 2 + column * (geometry.cardWidth + ORBIT_GRID.gapPx),
+		x: -geometry.gridWidth / 2 + column * (geometry.cardWidth + geometry.gapPx),
 		y:
 			viewport.height * ORBIT_GRID.positionY -
 			viewport.height / 2 -
 			geometry.gridHeight / 2 +
-			row * (geometry.cardHeight + ORBIT_GRID.gapPx),
+			row * (geometry.cardHeight + geometry.gapPx),
 		z: 0,
 		width: geometry.cardWidth,
 		height: geometry.cardHeight,
@@ -409,8 +525,10 @@ export function cardFrame(
  * Cards sit in front of the perspective plane, so the browser would upscale
  * their texture. Render them larger and scale back to keep images sharp.
  */
-export function cardRenderBox(pose: Pick<CardPose, 'x' | 'y' | 'width' | 'height' | 'scale'>) {
-	const quality = ORBIT_CARD.renderQuality;
+export function cardRenderBox(
+	pose: Pick<CardPose, 'x' | 'y' | 'width' | 'height' | 'scale'>,
+	quality: number = ORBIT_CARD.renderQuality,
+) {
 	const width = pose.width * quality;
 	const height = pose.height * quality;
 	return {

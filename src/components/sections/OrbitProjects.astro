@@ -3,12 +3,13 @@
  * Orbit projects — Framer "OrbitProject" port:
  * https://framer.com/m/OrbitProject-9wzRp1.js@PjYJYM0UOVDHnPEXbdIB
  *
- * Below 1024px the Framer component shows a plain grid, so that part is
- * static HTML. The scroll-driven orbit only hydrates on desktop.
+ * The scroll-driven orbit runs at every width (tablet and phones get their own
+ * sizing in lib/orbit). Without JavaScript the cards would stay hidden, so the
+ * plain grid is kept for that case only.
  */
 import OrbitProjectsStage from '../islands/OrbitProjectsStage.vue';
-import OrbitFlipCard from '../ui/OrbitFlipCard.vue';
-import { ORBIT_COPY, ORBIT_ITEMS, ORBIT_MEDIA_QUERY, orbitCssVars } from '../../lib/orbit/orbitProjects';
+import OrbitStatCard from '../ui/OrbitStatCard.vue';
+import { ORBIT_COPY, ORBIT_ITEMS, orbitCssVars } from '../../lib/orbit/orbitProjects';
 ---
 
 <section
@@ -17,26 +18,28 @@ import { ORBIT_COPY, ORBIT_ITEMS, ORBIT_MEDIA_QUERY, orbitCssVars } from '../../
 	aria-label={ORBIT_COPY.sectionLabel}
 	style={orbitCssVars()}
 >
-	<div data-orbit-desktop class="hidden min-[1024px]:block">
-		<OrbitProjectsStage items={ORBIT_ITEMS} client:media={ORBIT_MEDIA_QUERY} />
+	<div data-orbit-animated>
+		<OrbitProjectsStage items={ORBIT_ITEMS} client:idle />
 	</div>
 
-	<div data-orbit-compact class="orbit-compact box-border w-full px-(--orbit-pad-x) py-(--orbit-pad-y) min-[1024px]:hidden">
-		<header class="orbit-compact__header mb-(--orbit-header-gap)">
-			<h2 class="orbit-compact__title m-0 text-left text-(length:--orbit-compact-title) leading-[0.9] font-normal tracking-[-0.065em]">
-				<span class="block">{ORBIT_COPY.leftTitle}</span>
-				<span class="block">{ORBIT_COPY.rightTitle}</span>
-			</h2>
-			<p class="orbit-compact__copy mt-(--orbit-copy-gap) max-w-(--orbit-copy-width) text-left text-[12px] leading-[1.05] font-medium tracking-[-0.035em]">{ORBIT_COPY.centerText}</p>
-		</header>
-		<div data-orbit-grid class="orbit-compact__grid grid grid-cols-1 gap-(--orbit-grid-gap) min-[640px]:grid-cols-2">
-			{
-				ORBIT_ITEMS.map((item) => (
-					<div class="orbit-compact__card relative aspect-(--orbit-card-aspect) w-full">
-						<OrbitFlipCard item={item} client:visible />
-					</div>
-				))
-			}
+	<noscript>
+		<div data-orbit-compact class="orbit-compact box-border w-full px-(--orbit-pad-x) py-(--orbit-pad-y)">
+			<header class="orbit-compact__header mb-(--orbit-header-gap)">
+				<h2 class="orbit-compact__title m-0 text-left text-(length:--orbit-compact-title) leading-[0.9] font-normal tracking-[-0.065em]">
+					<span class="block">{ORBIT_COPY.leftTitle}</span>
+					<span class="block">{ORBIT_COPY.rightTitle}</span>
+				</h2>
+				<p class="orbit-compact__copy mt-(--orbit-copy-gap) max-w-(--orbit-copy-width) text-left text-[12px] leading-[1.05] font-medium tracking-[-0.035em]">{ORBIT_COPY.centerText}</p>
+			</header>
+			<div data-orbit-grid class="orbit-compact__grid grid grid-cols-1 gap-(--orbit-grid-gap) min-[640px]:grid-cols-2 min-[1024px]:grid-cols-3">
+				{
+					ORBIT_ITEMS.map((item) => (
+						<div class="orbit-compact__card relative aspect-(--orbit-card-aspect) w-full overflow-hidden rounded-[18px]">
+							<OrbitStatCard item={item} />
+						</div>
+					))
+				}
+			</div>
 		</div>
-	</div>
+	</noscript>
 </section>

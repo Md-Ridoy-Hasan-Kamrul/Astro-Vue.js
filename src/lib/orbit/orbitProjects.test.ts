@@ -8,6 +8,7 @@ import {
 	ORBIT_ITEMS,
 	ORBIT_LAYOUT,
 	ORBIT_TITLE,
+	ORBIT_TITLE_COMPACT,
 	cardFrame,
 	cardRenderBox,
 	cardTransform,
@@ -22,6 +23,7 @@ import {
 	smootherstep,
 	stageGeometry,
 	titleFrame,
+	titleLayout,
 } from './orbitProjects';
 
 const DESKTOP = { width: 1440, height: 900 };
@@ -128,6 +130,50 @@ describe('stage geometry', () => {
 		expect(geometry.gridWidth).toBe(LAPTOP.width - 96);
 		expect(geometry.curveWidth).toBeCloseTo(LAPTOP.width * 0.44);
 		expect(geometry.depth).toBeCloseTo(LAPTOP.width * 0.42);
+	});
+});
+
+describe('tablet and phone orbit', () => {
+	const TABLET = { width: 768, height: 1024 };
+	const PHONES = [
+		{ width: 425, height: 860 },
+		{ width: 375, height: 667 },
+		{ width: 320, height: 568 },
+	];
+
+	it('ends in a 3-column grid on a tablet, rendered at 1x', () => {
+		const geometry = stageGeometry(TABLET, ORBIT_ITEMS.length);
+		expect(geometry.columns).toBe(3);
+		expect(geometry.renderQuality).toBe(1);
+		expect(geometry.gridWidth).toBe(TABLET.width - 64);
+	});
+
+	it('ends in a 2-column grid of squarer cards that fits the width and height of a phone', () => {
+		for (const phone of PHONES) {
+			const geometry = stageGeometry(phone, ORBIT_ITEMS.length);
+			expect(geometry.columns).toBe(2);
+			expect(geometry.rows).toBe(3);
+			expect(geometry.cardWidth / geometry.cardHeight).toBeCloseTo(1.05);
+			expect(geometry.gridWidth).toBeLessThanOrEqual(phone.width - 40 + 0.001);
+			expect(geometry.gridHeight).toBeLessThanOrEqual(phone.height * 0.8 + 0.001);
+		}
+	});
+
+	it('shrinks the grid on a short screen so it never runs past 80% of the height', () => {
+		const geometry = stageGeometry({ width: 1440, height: 560 }, ORBIT_ITEMS.length);
+		expect(geometry.gridHeight).toBeCloseTo(560 * 0.8);
+	});
+
+	it('sizes the titles so DESIGN IN fits beside the center line, and moves the copy below', () => {
+		for (const width of [320, 375, 425, 768]) {
+			const layout = titleLayout(width);
+			expect(layout.fontSizePx).not.toBeNull();
+			const titleWidth = (layout.fontSizePx ?? 0) * ORBIT_TITLE_COMPACT.widthEm;
+			expect(width / 2 + ORBIT_TITLE_COMPACT.parkedPx + titleWidth).toBeLessThanOrEqual(width - ORBIT_TITLE_COMPACT.edgePx + 0.001);
+			expect(layout.copyTopPercent).toBeGreaterThan(layout.leftTopPercent);
+		}
+		expect(titleLayout(768).fontSizePx).toBe(72);
+		expect(titleLayout(DESKTOP.width).fontSizePx).toBeNull();
 	});
 });
 
