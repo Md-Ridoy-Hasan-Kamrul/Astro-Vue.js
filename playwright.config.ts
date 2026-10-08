@@ -1,9 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-/**
- * Standalone Playwright for full-page E2E.
- * Uses `astro dev` so API routes + server islands work with the Vercel adapter.
- */
+
 export default defineConfig({
 	testDir: './e2e',
 	fullyParallel: true,
