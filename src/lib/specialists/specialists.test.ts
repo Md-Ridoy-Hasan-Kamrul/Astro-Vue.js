@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { SPECIALIST_COPY, SPECIALIST_SHOTS } from './specialists';
 
 describe('specialist copy', () => {
-	it('keeps the reference headline, three paragraphs, and about action', () => {
+	it('keeps the reference headline, three paragraphs, and contact action', () => {
 		expect(SPECIALIST_COPY.titleLead).toBe('Built by Specialists.');
 		expect(SPECIALIST_COPY.titleTail).toBe('Connected by One Goal.');
 		expect(SPECIALIST_COPY.paragraphs).toEqual([
@@ -12,8 +12,8 @@ describe('specialist copy', () => {
 			'Instead of handing work from one disconnected vendor to another, we bring the disciplines together. Decisions made during strategy inform design. Design works with technology. Development stays aligned with the product and business goals from the beginning.',
 			'That is how we turn ideas into digital products that feel considered from every angle.',
 		]);
-		expect(SPECIALIST_COPY.actionLabel).toBe('More About Us');
-		expect(SPECIALIST_COPY.actionHref).toBe('/about');
+		expect(SPECIALIST_COPY.actionLabel).toBe('Contact Us');
+		expect(SPECIALIST_COPY.actionHref).toBe('/contact');
 	});
 });
 

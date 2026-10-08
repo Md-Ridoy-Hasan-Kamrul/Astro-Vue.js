@@ -9,7 +9,8 @@ export type IconName =
   | 'database'
   | 'cloud'
   | 'spinner'
-  | 'warning';
+  | 'warning'
+  | 'mail';
 
 withDefaults(
   defineProps<{
@@ -59,6 +60,10 @@ withDefaults(
       d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"
     />
     <path v-else-if="name === 'spinner'" d="M21 12a9 9 0 1 1-6.219-8.56" />
+    <template v-else-if="name === 'mail'">
+      <path d="M4 6h16v12H4Z" />
+      <path d="m4 7 8 6 8-6" />
+    </template>
     <template v-else-if="name === 'warning'">
       <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
       <path d="M12 9v4M12 17h.01" />

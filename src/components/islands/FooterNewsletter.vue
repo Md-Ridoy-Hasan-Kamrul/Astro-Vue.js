@@ -62,7 +62,7 @@ function clearSuccess() {
       @submit="onSubmit"
       novalidate
     >
-      <label class="sr-only" for="footer-email">Newsletter email</label>
+      <label class="sr-only" for="footer-email">Email</label>
       <input
         id="footer-email"
         name="email"

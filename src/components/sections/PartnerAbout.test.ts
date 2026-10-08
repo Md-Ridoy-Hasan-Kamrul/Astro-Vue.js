@@ -26,7 +26,9 @@ test('PartnerAbout section matches the strategy-to-scale reference layout', asyn
 	expect(result).toContain('id="partner"');
 	expect(result).toContain('One Partner. From Strategy to Scale.');
 	expect(result).toContain('Great digital products need more than good design.');
-	expect(result).toContain('More About Us');
+	expect(result).toContain('Contact Us');
+	expect(result).toContain('href="/contact"');
+	expect(result).not.toContain('/about');
 	expect(result).toContain('Nedin Zahirovic');
 	expect(result).toContain('/partner/office.jpg');
 	expect(result).toContain('min-[1021px]:items-stretch');

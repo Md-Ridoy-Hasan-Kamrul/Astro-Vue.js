@@ -117,7 +117,7 @@ Learning project: **Astro** pages + **Vue** islands, with Tailwind, Zustand, Tan
 - [x] CI quality gate: Vitest and production build run in parallel
 - [x] Toast notifications via `vue-sonner` (Sonner for Vue)
 - [x] Engineering rules + Vue code-quality docs for AI feature prompts
-- [x] `/about` route + feedback form (mutation + toast + Vitest TDD)
+- [x] `/contact` route + feedback form (mutation + toast + Vitest TDD)
 - [x] Expanded Playwright E2E + CI Playwright job
 - [x] Vercel adapter + deploy docs
 - [x] Speed harden: self-hosted fonts, deferred islands, local hero LCP, HTML edge cache
@@ -164,7 +164,7 @@ Learning project: **Astro** pages + **Vue** islands, with Tailwind, Zustand, Tan
 │   ├── pages/
 │   │   ├── _app.ts            # Vue appEntrypoint (VueQueryPlugin)
 │   │   ├── index.astro        # /
-│   │   ├── about.astro        # /about
+│   │   ├── contact.astro      # /contact
 │   │   └── api/
 │   │       └── feedback.ts    # POST /api/feedback
 │   ├── stores/

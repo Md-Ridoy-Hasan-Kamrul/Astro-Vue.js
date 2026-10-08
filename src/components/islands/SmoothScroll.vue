@@ -7,6 +7,7 @@ import { onMounted, onUnmounted } from 'vue';
 import 'lenis/dist/lenis.css';
 import {
   destroySmoothScroll,
+  glideToElement,
   initSmoothScroll,
   resumeSmoothScroll,
   scrollSmoothTo,
@@ -21,8 +22,10 @@ onMounted(() => {
     initSmoothScroll();
     resumeSmoothScroll();
     const hash = window.location.hash;
-    if (hash && hash.length > 1) {
-      requestAnimationFrame(() => scrollSmoothTo(hash, { offset: -12 }));
+    const id = hash.length > 1 ? decodeURIComponent(hash.slice(1)) : '';
+    const target = id ? document.getElementById(id) : null;
+    if (target) {
+      requestAnimationFrame(() => glideToElement(target));
     } else {
       scrollSmoothTo(0, { immediate: true });
     }

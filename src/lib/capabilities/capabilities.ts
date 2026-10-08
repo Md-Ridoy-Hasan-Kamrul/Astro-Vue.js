@@ -6,7 +6,7 @@ export const CAPABILITY_COPY = {
 	contactLabel: 'Contact us',
 	contactHref: '/contact',
 	exploreLabel: 'Explore Now',
-	exploreHref: '/about#services',
+	exploreHref: '/contact',
 } as const;
 
 const CAPABILITY_SOURCES = [

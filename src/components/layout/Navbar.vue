@@ -9,12 +9,10 @@
 import { ref, computed, watch, watchEffect, onMounted, onUnmounted, nextTick } from 'vue';
 import LiquidGlassButton from '../ui/LiquidGlassButton.vue';
 import {
-  easeInOutCubic,
   getLenis,
-  glideDuration,
+  glideToElement,
   pauseSmoothScroll,
   resumeSmoothScroll,
-  scrollSmoothTo,
 } from '../../lib/smoothScroll';
 
 const props = withDefaults(
@@ -146,6 +144,11 @@ function updateActiveSection() {
 }
 
 function goToSection(event: MouseEvent, match: LinkMatch) {
+  // Off the home page, let the real /#section link load the landing page.
+  if (normalizePath(window.location.pathname) !== '/') {
+    close();
+    return;
+  }
   // Lenis also listens for anchor clicks and would start a second, lerp-based
   // scroll. That second scroll is what launches like a rocket and fights the way back.
   event.preventDefault();
@@ -153,10 +156,6 @@ function goToSection(event: MouseEvent, match: LinkMatch) {
   // Blur before the menu unmounts. A focused link inside the fixed menu
   // otherwise makes the browser jump the page on its own.
   (event.currentTarget as HTMLElement | null)?.blur();
-  if (normalizePath(window.location.pathname) !== '/') {
-    close();
-    return;
-  }
   const menuOpen = open.value;
   // Keep focus on the menu button. Blurring a link inside the fixed
   // menu makes the browser jump the document on its own.
@@ -171,33 +170,7 @@ function goToSection(event: MouseEvent, match: LinkMatch) {
     if (!target) return;
     // Measure after the menu is gone. While it is open the page can still
     // be laid out at the previous width, and that stale distance misses FAQ.
-    const margin = Number.parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
-    const distance = target.getBoundingClientRect().top;
-    const destination = Math.max(0, distance + window.scrollY - margin);
-    const root = document.documentElement;
-    const from = window.scrollY;
-    const delta = destination - from;
-    const duration = glideDuration(distance) * 1000;
-    const start = performance.now();
-    let settled = false;
-    const settle = () => {
-      if (settled) return;
-      settled = true;
-      root.style.removeProperty('overflow-y');
-      if (Math.abs(window.scrollY - destination) > 1) window.scrollTo(0, destination);
-      getLenis()?.resize();
-      scrollSmoothTo(window.scrollY, { immediate: true, force: true });
-      updateActiveSection();
-    };
-    root.style.setProperty('overflow-y', 'visible', 'important');
-    const frame = () => {
-      const t = Math.min(1, (performance.now() - start) / duration);
-      window.scrollTo(0, from + delta * easeInOutCubic(t));
-      if (t < 1) window.setTimeout(frame, 16);
-      else settle();
-    };
-    frame();
-    window.setTimeout(settle, duration + 80);
+    glideToElement(target, updateActiveSection);
   };
 
   // The menu close clears an overflow clip that would swallow the jump.

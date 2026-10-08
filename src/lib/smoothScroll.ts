@@ -105,6 +105,50 @@ export function glideDuration(distancePx: number) {
 	return Math.min(1.45, Math.max(0.78, distance / 2600));
 }
 
+let glideToken = 0;
+
+/**
+ * Time-based ease to a document Y. Lenis anchor clicks use lerp and miss
+ * the section, so callers prevent that click and use this instead.
+ */
+export function glideToY(destination: number, onComplete?: () => void) {
+	if (typeof window === 'undefined') return;
+	const token = ++glideToken;
+	const root = document.documentElement;
+	const from = window.scrollY;
+	const delta = destination - from;
+	const duration = glideDuration(delta) * 1000;
+	const start = performance.now();
+	let settled = false;
+	const settle = () => {
+		if (settled || token !== glideToken) return;
+		settled = true;
+		root.style.removeProperty('overflow-y');
+		if (Math.abs(window.scrollY - destination) > 1) window.scrollTo(0, destination);
+		getLenis()?.resize();
+		scrollSmoothTo(window.scrollY, { immediate: true, force: true });
+		onComplete?.();
+	};
+	root.style.setProperty('overflow-y', 'visible', 'important');
+	const frame = () => {
+		if (token !== glideToken) return;
+		const t = Math.min(1, (performance.now() - start) / duration);
+		window.scrollTo(0, from + delta * easeInOutCubic(t));
+		if (t < 1) window.setTimeout(frame, 16);
+		else settle();
+	};
+	frame();
+	window.setTimeout(settle, duration + 80);
+}
+
+/** Glide so the element's top sits on its scroll-margin, just under the bar. */
+export function glideToElement(target: HTMLElement, onComplete?: () => void) {
+	const margin = Number.parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+	const distance = target.getBoundingClientRect().top;
+	const destination = Math.max(0, distance + window.scrollY - margin);
+	glideToY(destination, onComplete);
+}
+
 /** Soft navigations / hash targets */
 export function scrollSmoothTo(
 	target: number | string | HTMLElement,

@@ -8,8 +8,8 @@ export const SPECIALIST_COPY = {
 		'Instead of handing work from one disconnected vendor to another, we bring the disciplines together. Decisions made during strategy inform design. Design works with technology. Development stays aligned with the product and business goals from the beginning.',
 		'That is how we turn ideas into digital products that feel considered from every angle.',
 	],
-	actionLabel: 'More About Us',
-	actionHref: '/about',
+	actionLabel: 'Contact Us',
+	actionHref: '/contact',
 } as const;
 
 export type SpecialistShot = {

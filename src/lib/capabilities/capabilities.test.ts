@@ -12,7 +12,7 @@ describe('capability copy', () => {
 		expect(CAPABILITY_COPY.contactLabel).toBe('Contact us');
 		expect(CAPABILITY_COPY.contactHref).toBe('/contact');
 		expect(CAPABILITY_COPY.exploreLabel).toBe('Explore Now');
-		expect(CAPABILITY_COPY.exploreHref).toBe('/about#services');
+		expect(CAPABILITY_COPY.exploreHref).toBe('/contact');
 	});
 });
 

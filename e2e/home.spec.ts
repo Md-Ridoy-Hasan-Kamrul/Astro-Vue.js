@@ -30,12 +30,27 @@ test.describe('Home landing page', () => {
     await expect(page).toHaveURL(/\/#faq/);
   });
 
-  test('navbar navigates to the about route', async ({ page }) => {
+  test('footer section links land on that section', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    const about = page.getByRole('contentinfo').getByRole('link', { name: 'About', exact: true }).first();
-    await about.click();
-    await expect(page).toHaveURL(/\/about\/?$/);
-    await expect(page.getByRole('button', { name: /Astro pages/i })).toBeVisible();
+    const footer = page.getByRole('contentinfo');
+    await expect(footer.getByRole('link', { name: 'About', exact: true })).toHaveCount(0);
+
+    await footer.getByRole('link', { name: 'Partner', exact: true }).click();
+    await expect(page).toHaveURL(/\/#partner$/);
+    await expect(page.locator('#partner')).toBeInViewport();
+
+    await footer.getByRole('link', { name: 'FAQ', exact: true }).first().click();
+    await expect(page).toHaveURL(/\/#faq$/);
+    const faqTop = await page.locator('#faq').evaluate((el) => el.getBoundingClientRect().top);
+    expect(faqTop).toBeGreaterThan(40);
+    expect(faqTop).toBeLessThan(140);
+  });
+
+  test('footer contact link opens the contact page', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.getByRole('contentinfo').getByRole('link', { name: 'Contact', exact: true }).first().click();
+    await expect(page).toHaveURL(/\/contact\/?$/);
+    await expect(page.getByRole('button', { name: 'Send feedback' })).toBeVisible();
   });
 });
 
@@ -48,7 +63,7 @@ async function openHydratedFeedback(page: Page) {
   });
 }
 
-test.describe('About feedback form', () => {
+test.describe('Contact feedback form', () => {
   test.describe.configure({ mode: 'serial' });
 
   test('shows validation errors for invalid input', async ({ page }) => {

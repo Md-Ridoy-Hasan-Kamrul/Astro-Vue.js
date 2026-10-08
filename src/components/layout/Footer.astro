@@ -9,42 +9,28 @@ import FooterNewsletter from '../islands/FooterNewsletter.vue';
 
 const year = new Date().getFullYear();
 
-const productLinks = [{ href: '/login', label: 'Get started' }];
-
-const companyLinks = [
-	{ href: '/about', label: 'About' },
-	{ href: '/contact', label: 'Contact' },
-	{ href: '/#top', label: 'Home' },
+const workLinks = [
+	{ href: '/#partner', label: 'Partner' },
+	{ href: '/#showcase', label: 'Showcase' },
+	{ href: '/#orbit-projects', label: 'Motion' },
+	{ href: '/#capabilities', label: 'Capabilities' },
 ];
 
-const resourceLinks = [
-	{ href: 'https://docs.astro.build', label: 'Astro docs', external: true },
-	{ href: 'https://vuejs.org/guide/introduction.html', label: 'Vue docs', external: true },
-	{ href: 'https://tanstack.com/query/latest', label: 'TanStack Query', external: true },
-	{ href: 'https://tailwindcss.com', label: 'Tailwind', external: true },
+const studioLinks = [
+	{ href: '/#specialists', label: 'Specialists' },
+	{ href: '/#client-stories', label: 'Clients' },
+	{ href: '/#faq', label: 'FAQ' },
+];
+
+const visitLinks = [
+	{ href: '/', label: 'Home' },
+	{ href: '/contact', label: 'Contact' },
 ];
 
 const socialLinks = [
-	{
-		href: 'https://docs.astro.build',
-		label: 'Astro docs',
-		icon: 'book' as const,
-	},
-	{
-		href: 'https://vuejs.org/guide/introduction.html',
-		label: 'Vue docs',
-		icon: 'code' as const,
-	},
-	{
-		href: 'https://github.com/withastro/astro',
-		label: 'Astro on GitHub',
-		icon: 'layers' as const,
-	},
-	{
-		href: '/about',
-		label: 'About',
-		icon: 'info' as const,
-	},
+	{ href: '/', label: 'Home', icon: 'layers' as const },
+	{ href: '/#faq', label: 'FAQ', icon: 'book' as const },
+	{ href: '/contact', label: 'Contact', icon: 'mail' as const },
 ];
 
 const linkClass =
@@ -72,8 +58,8 @@ const colTitleClass =
 							Astro Vue
 						</p>
 						<p class="m-0 max-w-xs text-[0.9375rem] leading-snug text-[#141419]/55">
-							Liquid glass interfaces, crafted with care for modern Astro + Vue
-							products that love detail.
+							Digital product design and development. Strategy, experience, and
+							technology built for growth.
 						</p>
 					</div>
 					<FooterNewsletter client:visible />
@@ -83,9 +69,9 @@ const colTitleClass =
 					class="flex gap-12 max-[900px]:w-full max-[900px]:justify-between max-[900px]:gap-5 max-[768px]:flex-col max-[768px]:gap-5"
 				>
 					<div class="flex flex-col gap-1">
-						<p class={colTitleClass}>Product</p>
+						<p class={colTitleClass}>Work</p>
 						{
-							productLinks.map((link) => (
+							workLinks.map((link) => (
 								<a href={link.href} class={linkClass}>
 									{link.label}
 								</a>
@@ -93,9 +79,9 @@ const colTitleClass =
 						}
 					</div>
 					<div class="flex flex-col gap-1">
-						<p class={colTitleClass}>Company</p>
+						<p class={colTitleClass}>Studio</p>
 						{
-							companyLinks.map((link) => (
+							studioLinks.map((link) => (
 								<a href={link.href} class={linkClass}>
 									{link.label}
 								</a>
@@ -103,24 +89,13 @@ const colTitleClass =
 						}
 					</div>
 					<div class="flex flex-col gap-1">
-						<p class={colTitleClass}>Resources</p>
+						<p class={colTitleClass}>Visit</p>
 						{
-							resourceLinks.map((link) =>
-								link.external ? (
-									<a
-										href={link.href}
-										class={linkClass}
-										target="_blank"
-										rel="noopener noreferrer"
-									>
-										{link.label}
-									</a>
-								) : (
-									<a href={link.href} class={linkClass}>
-										{link.label}
-									</a>
-								),
-							)
+							visitLinks.map((link) => (
+								<a href={link.href} class={linkClass}>
+									{link.label}
+								</a>
+							))
 						}
 					</div>
 				</div>
@@ -132,7 +107,7 @@ const colTitleClass =
 				class="flex items-center justify-between gap-4 max-[720px]:flex-col max-[720px]:items-start"
 			>
 				<p class="m-0 text-[0.8125rem] text-[#141419]/55">
-					© {year} Astro Vue · Liquid glass footer port
+					© {year} Astro Vue
 				</p>
 				<nav class="flex flex-wrap gap-2" aria-label="Social">
 					{
@@ -152,4 +127,61 @@ const colTitleClass =
 			</div>
 		</div>
 	</div>
-</footer>
+	</footer>
+
+<script>
+	import { glideToElement, glideToY } from '../../lib/smoothScroll';
+
+	function samePath(pathname: string) {
+		const current = window.location.pathname.replace(/\/$/, '') || '/';
+		const next = pathname.replace(/\/$/, '') || '/';
+		return current === next;
+	}
+
+	function onFooterClick(event: MouseEvent) {
+		const footer = (event.currentTarget as Element | null)?.closest?.('footer');
+		const node = event.target;
+		if (!(node instanceof Element) || !footer) return;
+		const link = node.closest('a');
+		if (!(link instanceof HTMLAnchorElement) || !footer.contains(link)) return;
+		const url = new URL(link.href, window.location.href);
+		if (url.origin !== window.location.origin) return;
+		if (!samePath(url.pathname)) {
+			if (!url.hash) return;
+			event.preventDefault();
+			event.stopPropagation();
+			window.location.assign(`${url.pathname}${url.search}${url.hash}`);
+			return;
+		}
+
+		const id = decodeURIComponent(url.hash.replace(/^#/, ''));
+		if (!id) {
+			event.preventDefault();
+			event.stopPropagation();
+			const search = window.location.search;
+			if (window.location.hash) history.replaceState(null, '', `${url.pathname}${search}`);
+			glideToY(0);
+			return;
+		}
+
+		const target = document.getElementById(id);
+		if (!target) return;
+		event.preventDefault();
+		event.stopPropagation();
+		const nextHash = `#${id}`;
+		if (window.location.hash !== nextHash) {
+			history.replaceState(null, '', `${url.pathname}${window.location.search}${nextHash}`);
+		}
+		glideToElement(target);
+	}
+
+	function bindFooter() {
+		const footer = document.querySelector('footer[aria-label="Site"]');
+		if (!(footer instanceof HTMLElement) || footer.dataset.glideBound === 'true') return;
+		footer.dataset.glideBound = 'true';
+		footer.addEventListener('click', onFooterClick);
+	}
+
+	bindFooter();
+	document.addEventListener('astro:page-load', bindFooter);
+</script>
