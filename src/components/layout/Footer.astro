@@ -31,7 +31,7 @@ const visitLinks = [
 const socialLinks = [
 	{ href: '/', label: 'Home', icon: 'layers' as const },
 	{ href: '/#faq', label: 'FAQ', icon: 'book' as const },
-	{ href: '/contact', label: 'Contact', icon: 'mail' as const },
+	{ href: 'mailto:mdridoyhasankamrul@gmail.com', label: 'Email', icon: 'mail' as const },
 ];
 
 ---
@@ -98,19 +98,19 @@ const socialLinks = [
 	<FooterWaterWordmark client:visible text="Astro Vue" />
 
 	<div
-		class="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-wrap items-center justify-between gap-5 px-6 pb-5 min-[1020px]:gap-6 min-[1020px]:px-8 min-[1020px]:pb-[18px] min-[1132px]:px-14 min-[1132px]:pb-5"
+		class="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 px-6 min-[375px]:gap-5 pb-5 min-[1020px]:gap-6 min-[1020px]:px-8 min-[1020px]:pb-4.5 min-[1132px]:px-14 min-[1132px]:pb-5"
 	>
 		<a href="/" class="footer-link footer-link-sm pointer-events-auto">
 			<span class="footer-link-label">© {year} Astro Vue</span>
 			<span class="footer-underline" aria-hidden="true"></span>
 		</a>
-		<nav class="pointer-events-auto flex flex-wrap gap-2" aria-label="Social">
+		<nav class="pointer-events-auto flex flex-wrap gap-1.5 min-[375px]:gap-2" aria-label="Social">
 			{
 				socialLinks.map((item) => (
 					<a
 						href={item.href}
 						aria-label={item.label}
-						class="grid size-10 place-items-center rounded-full border border-[#ece9df]/25 text-[#ece9df] transition hover:-translate-y-px hover:border-[#ece9df]/50"
+						class="grid size-8 place-items-center min-[375px]:size-10 rounded-full border border-[#ece9df]/25 text-[#ece9df] transition hover:-translate-y-px hover:border-[#ece9df]/50"
 						target={item.href.startsWith('http') ? '_blank' : undefined}
 						rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}
 					>
