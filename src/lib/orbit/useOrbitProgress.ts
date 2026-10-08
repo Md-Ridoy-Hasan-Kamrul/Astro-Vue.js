@@ -80,7 +80,10 @@ export function useOrbitProgress(rootRef: Ref<HTMLElement | null>, stageRef: Ref
 		lastTime = null;
 	}
 
-	function onVisibility([entry]: IntersectionObserverEntry[]) {
+	// A jump right after hydration can deliver the stale "hidden" entry and the fresh
+	// "visible" one in a single batch: only the latest one counts.
+	function onVisibility(entries: IntersectionObserverEntry[]) {
+		const entry = entries[entries.length - 1];
 		if (entry?.isIntersecting) startEngine();
 		else stopEngine();
 	}

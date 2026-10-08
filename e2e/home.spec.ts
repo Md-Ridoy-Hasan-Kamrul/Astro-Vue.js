@@ -41,9 +41,10 @@ test.describe('Home landing page', () => {
 
     await footer.getByRole('link', { name: 'FAQ', exact: true }).first().click();
     await expect(page).toHaveURL(/\/#faq$/);
-    const faqTop = await page.locator('#faq').evaluate((el) => el.getBoundingClientRect().top);
-    expect(faqTop).toBeGreaterThan(40);
-    expect(faqTop).toBeLessThan(140);
+    // The hash is written when the smooth glide starts; poll until it lands under the navbar.
+    const faqTop = () => page.locator('#faq').evaluate((el) => el.getBoundingClientRect().top);
+    await expect.poll(faqTop).toBeGreaterThan(40);
+    await expect.poll(faqTop).toBeLessThan(140);
   });
 
   test('footer contact link opens the contact page', async ({ page }) => {
