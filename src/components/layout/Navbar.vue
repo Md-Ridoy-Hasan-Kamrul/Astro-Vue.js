@@ -526,13 +526,16 @@ const ink = '#111111';
       <div
         v-if="open"
         id="fullscreen-menu"
-        :class="`fixed inset-0 z-50 flex flex-col overflow-auto overscroll-contain ${isDark ? 'bg-[#0a0a0a] text-[#f5f3ee]' : 'bg-[#f5f3ee] text-[#111]'}`"
+        :class="`fixed inset-0 z-50 flex flex-col overflow-y-auto overscroll-contain ${isDark ? 'bg-[#0a0a0a] text-[#f5f3ee]' : 'bg-[#f5f3ee] text-[#111]'}`"
         role="dialog"
         aria-modal="true"
         aria-label="Site menu"
+        data-lenis-prevent
       >
+        <!-- Lenis is stopped while the menu is open and would swallow every wheel event;
+             data-lenis-prevent lets the menu scroll natively when it is taller than the screen. -->
         <div
-          class="flex h-16 shrink-0 items-center justify-between gap-3 px-[clamp(0.5rem,3vw,1.75rem)] min-[768px]:h-20"
+          :class="`sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between gap-3 px-[clamp(0.5rem,3vw,1.75rem)] min-[768px]:h-20 ${isDark ? 'bg-[#0a0a0a]' : 'bg-[#f5f3ee]'}`"
         >
           <a href="/" class="inline-flex items-center no-underline" @click="close">
             <span
@@ -560,25 +563,40 @@ const ink = '#111111';
           </button>
         </div>
 
+        <!-- Link size follows the screen height as well as its width, so all seven fit on a
+             tablet; justify-center-safe keeps the first item reachable if they ever overflow. -->
         <nav
-          class="flex flex-1 flex-col justify-center gap-0 px-[clamp(0.75rem,4vw,2.5rem)] py-6"
+          class="flex flex-1 flex-col justify-center-safe gap-0 px-[clamp(0.75rem,4vw,2.5rem)] py-[clamp(0.75rem,2.5svh,1.5rem)]"
           aria-label="Primary"
         >
           <a
             v-for="(link, index) in links"
             :key="link.href"
             :href="link.href"
-            :class="`group flex items-baseline gap-4 border-b py-[clamp(0.85rem,2.8vw,1.35rem)] no-underline ${isDark ? 'border-white/10' : 'border-black/10'}`"
+            :class="`group flex items-center gap-4 border-b py-[clamp(0.5rem,1.6svh,1.25rem)] no-underline outline-none first:border-t focus-visible:bg-current/5 ${isDark ? 'border-white/10' : 'border-black/10'}`"
             @click="goToSection($event, link.match)"
             :aria-current="isActive(link.match) ? 'page' : undefined"
           >
             <span
-              :class="`font-mono text-[0.75rem] font-semibold tracking-wider tabular-nums ${isDark ? 'text-[#8a8782]' : 'text-sea'}`"
+              :class="`w-6 shrink-0 font-mono text-[0.75rem] font-semibold tracking-wider tabular-nums ${isDark ? 'text-[#8a8782]' : 'text-sea'}`"
             >{{ String(index + 1).padStart(2, '0') }}</span>
             <span
-              :class="`font-display text-[clamp(2rem,9vw,4.5rem)] font-normal italic leading-none tracking-tight transition group-hover:opacity-70 ${isActive(link.match) ? 'underline decoration-2 underline-offset-8' : ''}`"
+              :class="`min-w-0 flex-1 truncate pb-[0.08em] font-display text-[clamp(1.75rem,min(8.5vw,6.2svh),4.5rem)] font-normal italic leading-none tracking-tight transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-2 group-focus-visible:translate-x-2 ${isActive(link.match) ? 'opacity-100' : 'opacity-85 group-hover:opacity-100'}`"
               :style="`color: ${isDark ? cream : ink}`"
             >{{ link.label }}</span>
+            <svg
+              :class="`size-[clamp(1.25rem,3svh,1.75rem)] shrink-0 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${isActive(link.match) ? 'translate-x-0 opacity-100' : '-translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100'}`"
+              :style="`color: ${isDark ? cream : ink}`"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M7 17 17 7M8 7h9v9" />
+            </svg>
           </a>
         </nav>
 
@@ -608,7 +626,7 @@ const ink = '#111111';
             label="Contact Us"
             :surface="isDark ? 'dark' : 'light'"
             :on-click="close"
-            class="self-start min-[768px]:self-auto"
+            class="self-start overflow-hidden min-[768px]:self-auto"
           />
         </div>
       </div>
