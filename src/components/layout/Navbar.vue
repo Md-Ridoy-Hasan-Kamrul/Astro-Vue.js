@@ -8,6 +8,7 @@
  */
 import { ref, computed, watch, watchEffect, onMounted, onUnmounted, nextTick } from 'vue';
 import LiquidGlassButton from '../ui/LiquidGlassButton.vue';
+import { ParticleEngine, type ParticleNavOptions } from '../../lib/particleNav';
 import {
   getLenis,
   glideToElement,
@@ -195,6 +196,7 @@ onMounted(() => {
   onHashChange();
   updateActiveSection();
   nextTick(movePill);
+  startParticles();
   if (desktopNav.value && typeof ResizeObserver !== 'undefined') {
     pillObserver = new ResizeObserver(() => movePill());
     pillObserver.observe(desktopNav.value);
@@ -234,6 +236,7 @@ onMounted(() => {
 watch([scrolledSection, path], () => nextTick(movePill));
 
 onUnmounted(() => {
+  stopParticles();
   pillObserver?.disconnect();
   navCleanup?.();
   if (typeof document !== 'undefined') {
@@ -262,11 +265,13 @@ function isActive(match: LinkMatch) {
   return scrolledSection.value === match;
 }
 
+// The hover highlight is the particle capsule (src/lib/particleNav.ts), which marks the
+// hovered link with `.is-hot`.
 function linkClass(match: LinkMatch) {
   const base =
-    'relative z-10 inline-flex items-center gap-1 rounded-full px-2 py-2 text-[0.8125rem] font-semibold tracking-[-0.01em] no-underline transition-colors duration-300';
+    'pn-link relative z-10 inline-flex items-center gap-1 rounded-full px-2 py-2 text-[0.8125rem] font-semibold tracking-[-0.01em] no-underline transition-colors duration-[420ms] ease-[cubic-bezier(.2,.8,.2,1)]';
   if (isActive(match)) return `${base} text-[#0a0a0c]`;
-  return `${base} text-[#0a0a0c]/80 hover:bg-white/40 hover:text-[#0a0a0c]`;
+  return `${base} text-[#0a0a0c]/80 hover:text-[#0a0a0c] [&.is-hot]:text-[#0a0a0c]`;
 }
 
 const desktopNav = ref<HTMLElement | null>(null);
@@ -315,6 +320,46 @@ function movePill() {
 
 let pillObserver: ResizeObserver | null = null;
 
+// Particle Navbar defaults; only the colours follow this navbar's ink.
+const particleRoot = ref<HTMLElement | null>(null);
+const particleCanvas = ref<HTMLCanvasElement | null>(null);
+let particles: ParticleEngine | null = null;
+let stopParticles = () => {};
+
+function particleOptions(reduced: boolean): ParticleNavOptions {
+  return {
+    color: '#0a0a0c',
+    hoverColor: '#0a0a0c',
+    density: 1,
+    size: 1.2,
+    glow: 0.6,
+    twinkle: 0.5,
+    gather: 0.45,
+    speed: 1,
+    drift: 0.5,
+    cursor: 0.5,
+    assemble: true,
+    hasButton: true,
+    radius: 999,
+    reduced,
+  };
+}
+
+function startParticles() {
+  const root = particleRoot.value;
+  const canvas = particleCanvas.value;
+  if (!root || !canvas) return;
+  const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  particles = new ParticleEngine(root, canvas, particleOptions(motion.matches));
+  const onMotion = () => particles?.setOptions(particleOptions(motion.matches));
+  motion.addEventListener('change', onMotion);
+  stopParticles = () => {
+    motion.removeEventListener('change', onMotion);
+    particles?.destroy();
+    particles = null;
+  };
+}
+
 const cream = '#f5f3ee';
 const ink = '#111111';
 </script>
@@ -326,12 +371,23 @@ const ink = '#111111';
     <!-- Desktop: Liquid Glass -->
     <div class="nav-shell hidden px-[clamp(0.75rem,3vw,1.25rem)] pb-2 pt-3 min-[1020px]:block">
       <div
-        class="mx-auto w-[min(100%,76rem)] rounded-full p-0.75 [background:linear-gradient(180deg,rgba(255,255,255,0.85)_0%,rgba(244,245,247,0.55)_40%,rgba(255,255,255,0.7)_100%)] [box-shadow:0.29px_4.36px_2.18px_rgba(0,0,0,0.01),0.48px_7.24px_3.63px_rgba(0,0,0,0.01),0.78px_11.7px_5.86px_rgba(0,0,0,0.015),1.28px_19.15px_9.6px_rgba(0,0,0,0.02),2.2px_32.97px_16.52px_rgba(0,0,0,0.025),4px_60px_30.07px_rgba(0,0,0,0.04)]"
+        ref="particleRoot"
+        class="relative isolate mx-auto w-[min(100%,76rem)] rounded-full p-0.75 [background:linear-gradient(180deg,rgba(255,255,255,0.85)_0%,rgba(244,245,247,0.55)_40%,rgba(255,255,255,0.7)_100%)] [box-shadow:0.29px_4.36px_2.18px_rgba(0,0,0,0.01),0.48px_7.24px_3.63px_rgba(0,0,0,0.01),0.78px_11.7px_5.86px_rgba(0,0,0,0.015),1.28px_19.15px_9.6px_rgba(0,0,0,0.02),2.2px_32.97px_16.52px_rgba(0,0,0,0.025),4px_60px_30.07px_rgba(0,0,0,0.04)]"
       >
+        <!-- Glass sits on its own layer so the particles can run between it and the labels. -->
         <div
-          class="relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 overflow-hidden rounded-full bg-[#f4f5f7]/55 px-2 py-2 pl-3 shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.85),inset_0_-1px_1.5px_rgba(20,33,43,0.04)] backdrop-blur-xl"
+          class="pointer-events-none absolute inset-0.75 rounded-full bg-[#f4f5f7]/55 shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.85),inset_0_-1px_1.5px_rgba(20,33,43,0.04)] backdrop-blur-xl"
+          aria-hidden="true"
+        ></div>
+        <canvas
+          ref="particleCanvas"
+          class="pointer-events-none absolute -top-11 -left-11 z-1 block w-[calc(100%+88px)]"
+          aria-hidden="true"
+        ></canvas>
+        <div
+          class="pn-bar relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 overflow-hidden rounded-full px-2 py-2 pl-3"
         >
-          <a href="/" class="inline-flex shrink-0 items-center gap-1.5 no-underline" data-astro-prefetch>
+          <a href="/" class="relative z-10 inline-flex shrink-0 items-center gap-1.5 no-underline" data-astro-prefetch>
             <span
               class="grid size-7.5 place-items-center rounded-[0.2rem] [background:linear-gradient(135deg,#f4f5f8_0%,#c4c8d0_55%,#9ea2ac_100%)] [box-shadow:inset_0_1px_1px_rgba(255,255,255,0.9),0_4px_7px_-1px_rgba(0,0,0,0.35)]"
               aria-hidden="true"
@@ -345,7 +401,7 @@ const ink = '#111111';
 
           <nav
             ref="desktopNav"
-            class="relative flex min-w-0 flex-1 items-center justify-center gap-0.5"
+            class="pn-links relative flex min-w-0 flex-1 items-center justify-center gap-0.5"
             aria-label="Primary"
           >
             <span
@@ -367,7 +423,7 @@ const ink = '#111111';
             </a>
           </nav>
 
-          <LiquidGlassButton href="/contact" label="Contact Us" size="sm" class="shrink-0 overflow-hidden" />
+          <LiquidGlassButton href="/contact" label="Contact Us" size="sm" class="pn-cta z-10 shrink-0 overflow-hidden" />
         </div>
       </div>
     </div>
