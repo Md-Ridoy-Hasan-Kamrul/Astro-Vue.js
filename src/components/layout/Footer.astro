@@ -1,11 +1,12 @@
 ---
 /**
- * Liquid Glass Footer — Astro port of
- * https://framer.com/m/Liquid-Glass-Footer-PpecQS.js@NwnM5wWKuZaTzAqqZTeX
- * (Framer ships React; this repo stays Astro + Vue.)
+ * Site footer. Copy and links stay the site's own.
+ * Motion matches Interactive Footer 6: a left-growing underline on each
+ * link, and the wordmark reflected in water.
  */
 import Icon from '../ui/Icon.vue';
 import FooterNewsletter from '../islands/FooterNewsletter.vue';
+import FooterWaterWordmark from '../islands/FooterWaterWordmark.vue';
 
 const year = new Date().getFullYear();
 
@@ -33,101 +34,198 @@ const socialLinks = [
 	{ href: '/contact', label: 'Contact', icon: 'mail' as const },
 ];
 
-const linkClass =
-	'inline-flex min-h-[1.875rem] items-center rounded-full px-3 text-[0.875rem] font-medium text-[#141419]/80 no-underline transition hover:bg-white/35 hover:text-[#141419]';
-const colTitleClass =
-	'm-0 px-3 py-1.5 text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-[#141419]/40';
 ---
 
-<footer class="px-[clamp(0.75rem,3vw,1.5rem)] pb-[clamp(1.25rem,4vw,2rem)] pt-2" aria-label="Site">
-	<div
-		class="mx-auto w-[min(100%,71.25rem)] rounded-[2.5rem] p-[3px] max-[720px]:rounded-[2rem] [background:linear-gradient(180deg,#fff_0%,#c9c9c9_9%,#a1a1a1_32%,#757575_73%,#fff_100%)] [box-shadow:0.29px_4.36px_2.18px_rgba(0,0,0,0.01),0.48px_7.24px_3.63px_rgba(0,0,0,0.01),0.78px_11.7px_5.86px_rgba(0,0,0,0.02),1.28px_19.15px_9.6px_rgba(0,0,0,0.03),2.2px_32.97px_16.52px_rgba(0,0,0,0.03),4px_60px_30.07px_rgba(0,0,0,0.06)]"
+<footer class="relative bg-[#111b1d] text-[#ece9df]" aria-label="Site" data-maree>
+	<div class="relative mx-auto w-[min(100%-2rem,72rem)]">
+	<nav
+		class="grid grid-cols-2 gap-x-5 gap-y-7 px-6 pt-9 min-[1020px]:flex min-[1020px]:items-start min-[1020px]:justify-between min-[1020px]:gap-7 min-[1020px]:px-8 min-[1020px]:pt-10 min-[1132px]:px-14 min-[1132px]:pt-11"
+		aria-label="Footer"
 	>
-		<div
-			class="flex flex-col gap-7 rounded-[calc(2.5rem-3px)] px-11 pb-7 pt-10 max-[900px]:gap-6 max-[900px]:px-7 max-[900px]:pb-6 max-[900px]:pt-8 max-[720px]:rounded-[calc(2rem-3px)] max-[720px]:gap-6 max-[720px]:px-5 max-[720px]:pb-6 max-[720px]:pt-7 [background:linear-gradient(150deg,#d0d0d0_0%,#e8e8e8_50%,#c8c8c8_100%)] [box-shadow:inset_0_1px_1.5px_rgba(0,0,0,0.07),inset_0_-1px_1.5px_rgba(0,0,0,0.07)]"
-		>
-			<div
-				class="flex justify-between gap-10 max-[900px]:flex-col max-[900px]:gap-9"
-			>
-				<div class="flex w-full max-w-sm flex-col gap-6 max-[720px]:max-w-none">
-					<div class="flex flex-col gap-3">
-						<p
-							class="m-0 inline-flex items-center gap-2 font-display text-[1.35rem] font-extrabold tracking-tight text-[#141419]"
-						>
-							<Icon name="layers" class="size-5 text-sea" />
-							Astro Vue
-						</p>
-						<p class="m-0 max-w-xs text-[0.9375rem] leading-snug text-[#141419]/55">
-							Digital product design and development. Strategy, experience, and
-							technology built for growth.
-						</p>
-					</div>
-					<FooterNewsletter client:visible />
-				</div>
+		<div class="col-span-2 flex w-full max-w-none flex-col gap-3 min-[1020px]:col-span-1 min-[1020px]:max-w-sm">
+			<p class="m-0 inline-flex items-center gap-2 font-display text-[1.35rem] font-extrabold tracking-tight text-[#ece9df]">
+				<Icon name="layers" class="size-5 text-sea" />
+				Astro Vue
+			</p>
+			<p class="m-0 max-w-xs text-[0.9375rem] leading-snug text-[#aab5af]">
+				Digital product design and development. Strategy, experience, and technology built for
+				growth.
+			</p>
+			<FooterNewsletter client:visible />
+		</div>
 
-				<div
-					class="flex gap-12 max-[900px]:w-full max-[900px]:justify-between max-[900px]:gap-5 max-[768px]:flex-col max-[768px]:gap-5"
-				>
-					<div class="flex flex-col gap-1">
-						<p class={colTitleClass}>Work</p>
-						{
-							workLinks.map((link) => (
-								<a href={link.href} class={linkClass}>
-									{link.label}
-								</a>
-							))
-						}
-					</div>
-					<div class="flex flex-col gap-1">
-						<p class={colTitleClass}>Studio</p>
-						{
-							studioLinks.map((link) => (
-								<a href={link.href} class={linkClass}>
-									{link.label}
-								</a>
-							))
-						}
-					</div>
-					<div class="flex flex-col gap-1">
-						<p class={colTitleClass}>Visit</p>
-						{
-							visitLinks.map((link) => (
-								<a href={link.href} class={linkClass}>
-									{link.label}
-								</a>
-							))
-						}
-					</div>
-				</div>
-			</div>
-
-			<div class="h-px w-full bg-[#0a0a0c]/10" aria-hidden="true"></div>
-
-			<div
-				class="flex items-center justify-between gap-4 max-[720px]:flex-col max-[720px]:items-start"
-			>
-				<p class="m-0 text-[0.8125rem] text-[#141419]/55">
-					© {year} Astro Vue
-				</p>
-				<nav class="flex flex-wrap gap-2" aria-label="Social">
-					{
-						socialLinks.map((item) => (
-							<a
-								href={item.href}
-								aria-label={item.label}
-								class="grid size-10 place-items-center rounded-full border border-white/45 bg-white/35 text-[#141419] shadow-[inset_0_1px_1px_rgba(255,255,255,0.75),0_4px_10px_rgba(0,0,0,0.06)] transition hover:-translate-y-px hover:bg-white/55"
-								target={item.href.startsWith('http') ? '_blank' : undefined}
-								rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-							>
-								<Icon name={item.icon} class="size-4" />
-							</a>
-						))
-					}
-				</nav>
+		<div class="flex flex-col gap-3">
+			<p class="footer-heading">Work</p>
+			<div class="flex flex-col gap-0.5">
+				{
+					workLinks.map((link) => (
+						<a href={link.href} class="footer-link">
+							<span class="footer-link-label">{link.label}</span>
+							<span class="footer-underline" aria-hidden="true"></span>
+						</a>
+					))
+				}
 			</div>
 		</div>
+		<div class="flex flex-col gap-3">
+			<p class="footer-heading">Studio</p>
+			<div class="flex flex-col gap-0.5">
+				{
+					studioLinks.map((link) => (
+						<a href={link.href} class="footer-link">
+							<span class="footer-link-label">{link.label}</span>
+							<span class="footer-underline" aria-hidden="true"></span>
+						</a>
+					))
+				}
+			</div>
+		</div>
+		<div class="flex flex-col gap-3">
+			<p class="footer-heading">Visit</p>
+			<div class="flex flex-col gap-0.5">
+				{
+					visitLinks.map((link) => (
+						<a href={link.href} class="footer-link">
+							<span class="footer-link-label">{link.label}</span>
+							<span class="footer-underline" aria-hidden="true"></span>
+						</a>
+					))
+				}
+			</div>
+		</div>
+	</nav>
+
+	<FooterWaterWordmark client:visible text="Astro Vue" />
+
+	<div
+		class="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-wrap items-center justify-between gap-5 px-6 pb-5 min-[1020px]:gap-6 min-[1020px]:px-8 min-[1020px]:pb-[18px] min-[1132px]:px-14 min-[1132px]:pb-5"
+	>
+		<a href="/" class="footer-link footer-link-sm pointer-events-auto">
+			<span class="footer-link-label">© {year} Astro Vue</span>
+			<span class="footer-underline" aria-hidden="true"></span>
+		</a>
+		<nav class="pointer-events-auto flex flex-wrap gap-2" aria-label="Social">
+			{
+				socialLinks.map((item) => (
+					<a
+						href={item.href}
+						aria-label={item.label}
+						class="grid size-10 place-items-center rounded-full border border-[#ece9df]/25 text-[#ece9df] transition hover:-translate-y-px hover:border-[#ece9df]/50"
+						target={item.href.startsWith('http') ? '_blank' : undefined}
+						rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+					>
+						<Icon name={item.icon} class="size-4" />
+					</a>
+				))
+			}
+		</nav>
 	</div>
-	</footer>
+	</div>
+</footer>
+
+<style>
+	@font-face {
+		font-family: 'Instrument Serif';
+		font-style: italic;
+		font-weight: 400;
+		font-display: swap;
+		src: url('https://fonts.gstatic.com/s/instrumentserif/v5/jizHRFtNs2ka5fXjeivQ4LroWlx-6zAjjH7M.woff2')
+			format('woff2');
+	}
+
+	.footer-heading {
+		margin: 0;
+		font-family: 'Instrument Serif', 'Times New Roman', serif;
+		font-style: italic;
+		font-weight: 400;
+		font-size: 19px;
+		line-height: 24px;
+		letter-spacing: 0;
+		color: #ece9df;
+	}
+
+	.footer-link {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		height: 28px;
+		padding: 0 1px;
+		color: #aab5af;
+		text-decoration: none;
+		background: transparent;
+		transition: color 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.footer-link-sm {
+		height: 24px;
+	}
+
+	.footer-link-label {
+		font-size: 14px;
+		line-height: 22px;
+		letter-spacing: -0.15px;
+		transition: color 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.footer-link-sm .footer-link-label {
+		font-size: 12px;
+		line-height: 18px;
+		letter-spacing: 0;
+	}
+
+	.footer-underline {
+		position: absolute;
+		right: 0;
+		bottom: 2px;
+		left: 0;
+		height: 1px;
+		background: #3de8ff;
+		opacity: 1;
+		transform: scaleX(0);
+		transform-origin: 0% 50%;
+		pointer-events: none;
+		transition: transform 0.45s cubic-bezier(0.45, 0, 0.25, 1);
+	}
+
+	.footer-link:focus-visible {
+		outline: 1px solid #ece9df;
+		outline-offset: 3px;
+		border-radius: 1px;
+	}
+
+	.footer-link:focus-visible > .footer-underline {
+		transform: scaleX(1);
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.footer-link:hover > .footer-underline {
+			transform: scaleX(1);
+			transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+		}
+
+		.footer-link:hover,
+		.footer-link:hover .footer-link-label {
+			color: #fff;
+		}
+	}
+
+	@media (max-width: 809.98px) {
+		.footer-heading {
+			font-size: 18px;
+			line-height: 22px;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.footer-link,
+		.footer-link *,
+		.footer-underline,
+		.footer-link:hover > .footer-underline {
+			transition-duration: 0.001ms;
+			animation-duration: 0.001ms;
+		}
+	}
+</style>
 
 <script>
 	import { glideToElement, glideToY } from '../../lib/smoothScroll';

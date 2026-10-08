@@ -53,7 +53,7 @@ function clearSuccess() {
       description="We will keep you posted."
       action-label="Dismiss"
       :on-action="clearSuccess"
-      class="text-[#0a0a0c]"
+      class="text-[#ece9df]"
     />
 
     <form
@@ -74,7 +74,7 @@ function clearSuccess() {
         v-model="email"
         :aria-invalid="fieldError ? 'true' : undefined"
         :aria-describedby="fieldError ? 'footer-email-error' : undefined"
-        class="min-h-9 min-w-0 flex-1 rounded-full border border-white/35 bg-white/35 px-4 text-[0.8125rem] text-[#0a0a0c] shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),inset_0_-1px_1.5px_rgba(0,0,0,0.06)] outline-none placeholder:text-[#141419]/40 focus:bg-white/45 disabled:cursor-not-allowed disabled:opacity-60"
+        class="min-h-9 min-w-0 flex-1 rounded-full border border-[#ece9df]/25 bg-transparent px-4 text-[0.8125rem] text-[#ece9df] outline-none placeholder:text-[#aab5af] focus:border-[#ece9df]/50 disabled:cursor-not-allowed disabled:opacity-60"
       />
       <LiquidGlassButton
         type="submit"
