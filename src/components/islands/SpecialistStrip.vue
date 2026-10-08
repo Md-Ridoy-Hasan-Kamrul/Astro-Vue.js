@@ -32,7 +32,7 @@ function width(index: number) {
 </script>
 
 <template>
-	<div class="specialist-strip relative h-full w-full min-w-0 max-w-full overflow-hidden" data-specialist-strip>
+	<div class="specialist-strip relative h-full w-full min-w-0 max-w-full overflow-hidden max-[426px]:h-auto max-[426px]:pb-3" data-specialist-strip>
 		<div class="specialist-strip__track flex w-max items-start" data-specialist-track>
 			<ul
 				v-for="copy in 2"

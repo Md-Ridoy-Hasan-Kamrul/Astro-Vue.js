@@ -6,7 +6,7 @@
  *
  * Active route/section is driven from the live URL + scroll spy.
  */
-import { ref, computed, watch, watchEffect, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, watchEffect, onMounted, onUnmounted, nextTick } from 'vue';
 import LiquidGlassButton from '../ui/LiquidGlassButton.vue';
 import {
   easeInOutCubic,
@@ -221,6 +221,12 @@ onMounted(() => {
   syncFromLocation();
   onHashChange();
   updateActiveSection();
+  nextTick(movePill);
+  if (desktopNav.value && typeof ResizeObserver !== 'undefined') {
+    pillObserver = new ResizeObserver(() => movePill());
+    pillObserver.observe(desktopNav.value);
+  }
+  document.fonts?.ready.then(() => movePill()).catch(() => {});
 
   let detachLenis: (() => void) | null = null;
   function attachLenis() {
@@ -252,7 +258,10 @@ onMounted(() => {
   };
 });
 
+watch([scrolledSection, path], () => nextTick(movePill));
+
 onUnmounted(() => {
+  pillObserver?.disconnect();
   navCleanup?.();
   if (typeof document !== 'undefined') {
     document.body.style.overflow = '';
@@ -282,12 +291,56 @@ function isActive(match: LinkMatch) {
 
 function linkClass(match: LinkMatch) {
   const base =
-    'inline-flex items-center gap-1 rounded-full px-2 py-2 text-[0.8125rem] font-semibold tracking-[-0.01em] no-underline transition';
-  if (isActive(match)) {
-    return `${base} bg-[#f7f7f8] text-[#0a0a0c] shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_1px_2px_rgba(0,0,0,0.08)]`;
-  }
+    'relative z-10 inline-flex items-center gap-1 rounded-full px-2 py-2 text-[0.8125rem] font-semibold tracking-[-0.01em] no-underline transition-colors duration-300';
+  if (isActive(match)) return `${base} text-[#0a0a0c]`;
   return `${base} text-[#0a0a0c]/80 hover:bg-white/40 hover:text-[#0a0a0c]`;
 }
+
+const desktopNav = ref<HTMLElement | null>(null);
+const linkEls = new Map<LinkMatch, HTMLElement>();
+const pillReady = ref(false);
+const pill = ref({ x: 0, y: 0, width: 0, height: 0, on: false });
+
+const pillStyle = computed(() => ({
+  transform: `translate(${pill.value.x}px, ${pill.value.y}px)`,
+  width: `${pill.value.width}px`,
+  height: `${pill.value.height}px`,
+  opacity: pill.value.on ? '1' : '0',
+}));
+
+function registerLink(match: LinkMatch, el: unknown) {
+  if (el instanceof HTMLElement) linkEls.set(match, el);
+  else linkEls.delete(match);
+}
+
+function movePill() {
+  const nav = desktopNav.value;
+  const match = path.value === '/' ? scrolledSection.value : '';
+  const link = match ? linkEls.get(match) : undefined;
+  if (!nav || !link) {
+    pill.value = { ...pill.value, on: false };
+    return;
+  }
+  const navBox = nav.getBoundingClientRect();
+  const box = link.getBoundingClientRect();
+  if (box.width < 1 || navBox.width < 1) {
+    pill.value = { ...pill.value, on: false };
+    return;
+  }
+  const next = {
+    x: box.left - navBox.left,
+    y: box.top - navBox.top,
+    width: box.width,
+    height: box.height,
+    on: true,
+  };
+  pill.value = next;
+  if (!pillReady.value) requestAnimationFrame(() => {
+    pillReady.value = true;
+  });
+}
+
+let pillObserver: ResizeObserver | null = null;
 
 const cream = '#f5f3ee';
 const ink = '#111111';
@@ -298,7 +351,7 @@ const ink = '#111111';
     class="fixed inset-x-0 top-0 z-40 w-full max-w-[100vw] overflow-x-clip bg-transparent"
   >
     <!-- Desktop: Liquid Glass -->
-    <div class="hidden px-[clamp(0.75rem,3vw,1.25rem)] pb-2 pt-3 min-[1021px]:block">
+    <div class="nav-shell hidden px-[clamp(0.75rem,3vw,1.25rem)] pb-2 pt-3 min-[1021px]:block">
       <div
         class="mx-auto w-[min(100%,76rem)] rounded-full p-0.75 [background:linear-gradient(180deg,rgba(255,255,255,0.85)_0%,rgba(244,245,247,0.55)_40%,rgba(255,255,255,0.7)_100%)] [box-shadow:0.29px_4.36px_2.18px_rgba(0,0,0,0.01),0.48px_7.24px_3.63px_rgba(0,0,0,0.01),0.78px_11.7px_5.86px_rgba(0,0,0,0.015),1.28px_19.15px_9.6px_rgba(0,0,0,0.02),2.2px_32.97px_16.52px_rgba(0,0,0,0.025),4px_60px_30.07px_rgba(0,0,0,0.04)]"
       >
@@ -317,10 +370,21 @@ const ink = '#111111';
             </span>
           </a>
 
-          <nav class="flex min-w-0 flex-1 items-center justify-center gap-0.5" aria-label="Primary">
+          <nav
+            ref="desktopNav"
+            class="relative flex min-w-0 flex-1 items-center justify-center gap-0.5"
+            aria-label="Primary"
+          >
+            <span
+              class="pointer-events-none absolute top-0 left-0 z-0 rounded-full bg-[#f7f7f8] shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_1px_2px_rgba(0,0,0,0.08)]"
+              :class="pillReady ? 'nav-pill' : ''"
+              :style="pillStyle"
+              aria-hidden="true"
+            />
             <a
               v-for="link in links"
               :key="link.href"
+              :ref="(el) => registerLink(link.match, el)"
               :href="link.href"
               :class="linkClass(link.match)"
               :aria-current="isActive(link.match) ? 'page' : undefined"
@@ -427,7 +491,7 @@ const ink = '#111111';
             v-for="(link, index) in links"
             :key="link.href"
             :href="link.href"
-            :class="`group flex items-baseline gap-4 border-b py-[clamp(0.85rem,2.8vw,1.35rem)] no-underline transition ${isDark ? 'border-white/10' : 'border-black/10'}`"
+            :class="`nav-link-rise group flex items-baseline gap-4 border-b py-[clamp(0.85rem,2.8vw,1.35rem)] no-underline transition ${isDark ? 'border-white/10' : 'border-black/10'}`"
             @click="goToSection($event, link.match)"
             :aria-current="isActive(link.match) ? 'page' : undefined"
             :style="`animation-delay: ${80 + index * 50}ms`"
@@ -475,3 +539,43 @@ const ink = '#111111';
     </div>
   </header>
 </template>
+
+<style>
+@keyframes nav-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.nav-shell {
+  animation: nav-in 640ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.nav-pill {
+  transition:
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 240ms ease;
+}
+
+.nav-link-rise {
+  animation: rise 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-shell,
+  .nav-link-rise {
+    animation: none;
+  }
+
+  .nav-pill {
+    transition: none;
+  }
+}
+</style>
