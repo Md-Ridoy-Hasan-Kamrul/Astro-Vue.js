@@ -258,6 +258,7 @@ export class ParticleEngine {
 	barH = 0;
 	capH = 0;
 	cssH = 0;
+	cssW = 0;
 	scale = 1;
 	innerR = 16;
 	shape: Rect = { x: 0, y: 0, w: 0, h: 0, r: 0 };
@@ -474,7 +475,10 @@ export class ParticleEngine {
 		const w = root.offsetWidth;
 		const h = root.offsetHeight;
 		const bb = root.getBoundingClientRect();
-		this.scale = w > 0 && bb.width > 0 ? bb.width / w : 1;
+		// offsetWidth is rounded while the rect is fractional; ignore that sub-pixel wobble so
+		// an animating width does not look like a zoom change every frame.
+		const s = w > 0 && bb.width > 0 ? bb.width / w : 1;
+		this.scale = Math.abs(s - 1) < 0.02 ? 1 : s;
 		const bar = root.querySelector<HTMLElement>('.pn-bar');
 		this.barH = bar ? bar.offsetHeight : h;
 		this.capH = Math.max(h, this.barH);
@@ -517,7 +521,14 @@ export class ParticleEngine {
 			this.cssH = cssH;
 			this.canvas.style.height = cssH + 'px';
 		}
-		const cw = Math.max(1, Math.round((this.w + this.M * 2) * this.ratio));
+		// The canvas only ever grows in width, so a bar animating its width (compact on scroll)
+		// draws into the same buffer every frame instead of reallocating and blanking it.
+		const cssW = Math.max(this.cssW, Math.round(this.w + this.M * 2));
+		if (cssW !== this.cssW) {
+			this.cssW = cssW;
+			this.canvas.style.width = cssW + 'px';
+		}
+		const cw = Math.max(1, Math.round(cssW * this.ratio));
 		const ch = Math.max(1, Math.round(cssH * this.ratio));
 		if (this.canvas.width !== cw || this.canvas.height !== ch) {
 			this.canvas.width = cw;

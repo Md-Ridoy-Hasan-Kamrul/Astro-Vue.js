@@ -384,8 +384,12 @@ const shellStyle = computed(() => ({
   width: compact.value && compactWidth.value ? `${compactWidth.value}px` : 'min(100%, 76rem)',
 }));
 
+// Shrinks past COMPACT_AFTER but only expands again right at the top, so hovering around
+// the threshold never makes the bar flicker between the two widths.
 function updateCompact() {
-  compact.value = window.scrollY > COMPACT_AFTER;
+  const y = window.scrollY;
+  if (y > COMPACT_AFTER) compact.value = true;
+  else if (y < 8) compact.value = false;
 }
 
 function measureCompact() {
@@ -415,7 +419,7 @@ const ink = '#111111';
     <div class="nav-shell hidden px-[clamp(0.75rem,3vw,1.25rem)] pb-2 pt-3 min-[1020px]:block">
       <div
         ref="particleRoot"
-        class="relative isolate mx-auto max-w-full rounded-full p-0.75 transition-[width] duration-640 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none [background:linear-gradient(180deg,rgba(255,255,255,0.85)_0%,rgba(244,245,247,0.55)_40%,rgba(255,255,255,0.7)_100%)] [box-shadow:0.29px_4.36px_2.18px_rgba(0,0,0,0.01),0.48px_7.24px_3.63px_rgba(0,0,0,0.01),0.78px_11.7px_5.86px_rgba(0,0,0,0.015),1.28px_19.15px_9.6px_rgba(0,0,0,0.02),2.2px_32.97px_16.52px_rgba(0,0,0,0.025),4px_60px_30.07px_rgba(0,0,0,0.04)]"
+        class="relative isolate mx-auto max-w-full rounded-full p-0.75 transition-[width] duration-1000 ease-[cubic-bezier(0.32,0.72,0,1)] will-change-[width] motion-reduce:transition-none [background:linear-gradient(180deg,rgba(255,255,255,0.85)_0%,rgba(244,245,247,0.55)_40%,rgba(255,255,255,0.7)_100%)] [box-shadow:0.29px_4.36px_2.18px_rgba(0,0,0,0.01),0.48px_7.24px_3.63px_rgba(0,0,0,0.01),0.78px_11.7px_5.86px_rgba(0,0,0,0.015),1.28px_19.15px_9.6px_rgba(0,0,0,0.02),2.2px_32.97px_16.52px_rgba(0,0,0,0.025),4px_60px_30.07px_rgba(0,0,0,0.04)]"
         :style="shellStyle"
       >
         <!-- Glass sits on its own layer so the particles can run between it and the labels. -->
@@ -425,7 +429,7 @@ const ink = '#111111';
         ></div>
         <canvas
           ref="particleCanvas"
-          class="pointer-events-none absolute -top-11 -left-11 z-1 block w-[calc(100%+88px)]"
+          class="pointer-events-none absolute -top-11 -left-11 z-1 block"
           aria-hidden="true"
         ></canvas>
         <div
