@@ -263,6 +263,7 @@ export class ParticleEngine {
 	shape: Rect = { x: 0, y: 0, w: 0, h: 0, r: 0 };
 	capShape: Rect = { x: 0, y: 0, w: 0, h: 0, r: 0 };
 	buildKey = '';
+	builtW = 0;
 	homesDirty = true;
 	pendingDraw = false;
 	linkEls: HTMLElement[] = [];
@@ -489,8 +490,11 @@ export class ParticleEngine {
 		this.fitCanvas();
 		this.updateShape();
 		const o = this.o;
+		// While the bar's width animates (compact on scroll), keep the particles and let the
+		// outline stretch with it; only a big change in width lays them out again.
+		const keepWidth = this.builtW > 0 && Math.abs(w - this.builtW) / this.builtW < 0.45;
 		const key = [
-			Math.round(w),
+			Math.round(keepWidth ? this.builtW : w),
 			Math.round(this.capH),
 			Math.round(this.barH),
 			this.cta ? Math.round(this.cta.w) + 'x' + Math.round(this.cta.h) : '-',
@@ -501,6 +505,7 @@ export class ParticleEngine {
 		].join('|');
 		if (force || key !== this.buildKey) {
 			this.buildKey = key;
+			this.builtW = w;
 			this.build();
 		}
 		this.homesDirty = true;

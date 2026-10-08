@@ -197,26 +197,39 @@ onMounted(() => {
   updateActiveSection();
   nextTick(movePill);
   startParticles();
+  measureCompact();
+  updateCompact();
   if (desktopNav.value && typeof ResizeObserver !== 'undefined') {
     pillObserver = new ResizeObserver(() => movePill());
     pillObserver.observe(desktopNav.value);
   }
-  document.fonts?.ready.then(() => movePill()).catch(() => {});
+  document.fonts?.ready
+    .then(() => {
+      movePill();
+      measureCompact();
+    })
+    .catch(() => {});
+
+  function onScroll() {
+    updateActiveSection();
+    updateCompact();
+  }
 
   let detachLenis: (() => void) | null = null;
   function attachLenis() {
     if (detachLenis) return;
     const lenis = getLenis();
     if (!lenis) return;
-    lenis.on('scroll', updateActiveSection);
-    detachLenis = () => lenis.off('scroll', updateActiveSection);
+    lenis.on('scroll', onScroll);
+    detachLenis = () => lenis.off('scroll', onScroll);
   }
   attachLenis();
   const lenisTimer = window.setInterval(() => {
     attachLenis();
     if (detachLenis) window.clearInterval(lenisTimer);
   }, 250);
-  window.addEventListener('scroll', updateActiveSection, { passive: true });
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', measureCompact, { passive: true });
   window.addEventListener('hashchange', onHashChange);
   window.addEventListener('popstate', syncFromLocation);
   document.addEventListener('astro:page-load', onPageLoad);
@@ -225,7 +238,8 @@ onMounted(() => {
   navCleanup = () => {
     window.clearInterval(lenisTimer);
     detachLenis?.();
-    window.removeEventListener('scroll', updateActiveSection);
+    window.removeEventListener('scroll', onScroll);
+    window.removeEventListener('resize', measureCompact);
     window.removeEventListener('hashchange', onHashChange);
     window.removeEventListener('popstate', syncFromLocation);
     document.removeEventListener('astro:page-load', onPageLoad);
@@ -360,6 +374,35 @@ function startParticles() {
   };
 }
 
+// Away from the top the bar shrinks to hug its content; back at the top it spans the row again.
+const COMPACT_AFTER = 40;
+const logoLink = ref<HTMLElement | null>(null);
+const compact = ref(false);
+const compactWidth = ref(0);
+
+const shellStyle = computed(() => ({
+  width: compact.value && compactWidth.value ? `${compactWidth.value}px` : 'min(100%, 76rem)',
+}));
+
+function updateCompact() {
+  compact.value = window.scrollY > COMPACT_AFTER;
+}
+
+function measureCompact() {
+  const root = particleRoot.value;
+  const nav = desktopNav.value;
+  const logo = logoLink.value;
+  const cta = root?.querySelector<HTMLElement>('.pn-cta');
+  if (!root || !nav || !logo || !cta || !root.offsetWidth) return;
+  const items = Array.from(nav.querySelectorAll<HTMLElement>('.pn-link'));
+  if (!items.length) return;
+  const last = items[items.length - 1];
+  const linksWidth = last.offsetLeft + last.offsetWidth - items[0].offsetLeft;
+  // 3px rim each side, bar padding (12px left, 8px right), and on each side of the links
+  // the 8px grid gap plus 16px of air.
+  compactWidth.value = Math.ceil(6 + 12 + 8 + logo.offsetWidth + linksWidth + cta.offsetWidth + 2 * (8 + 16));
+}
+
 const cream = '#f5f3ee';
 const ink = '#111111';
 </script>
@@ -372,7 +415,8 @@ const ink = '#111111';
     <div class="nav-shell hidden px-[clamp(0.75rem,3vw,1.25rem)] pb-2 pt-3 min-[1020px]:block">
       <div
         ref="particleRoot"
-        class="relative isolate mx-auto w-[min(100%,76rem)] rounded-full p-0.75 [background:linear-gradient(180deg,rgba(255,255,255,0.85)_0%,rgba(244,245,247,0.55)_40%,rgba(255,255,255,0.7)_100%)] [box-shadow:0.29px_4.36px_2.18px_rgba(0,0,0,0.01),0.48px_7.24px_3.63px_rgba(0,0,0,0.01),0.78px_11.7px_5.86px_rgba(0,0,0,0.015),1.28px_19.15px_9.6px_rgba(0,0,0,0.02),2.2px_32.97px_16.52px_rgba(0,0,0,0.025),4px_60px_30.07px_rgba(0,0,0,0.04)]"
+        class="relative isolate mx-auto max-w-full rounded-full p-0.75 transition-[width] duration-640 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none [background:linear-gradient(180deg,rgba(255,255,255,0.85)_0%,rgba(244,245,247,0.55)_40%,rgba(255,255,255,0.7)_100%)] [box-shadow:0.29px_4.36px_2.18px_rgba(0,0,0,0.01),0.48px_7.24px_3.63px_rgba(0,0,0,0.01),0.78px_11.7px_5.86px_rgba(0,0,0,0.015),1.28px_19.15px_9.6px_rgba(0,0,0,0.02),2.2px_32.97px_16.52px_rgba(0,0,0,0.025),4px_60px_30.07px_rgba(0,0,0,0.04)]"
+        :style="shellStyle"
       >
         <!-- Glass sits on its own layer so the particles can run between it and the labels. -->
         <div
@@ -387,7 +431,7 @@ const ink = '#111111';
         <div
           class="pn-bar relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 overflow-hidden rounded-full px-2 py-2 pl-3"
         >
-          <a href="/" class="relative z-10 inline-flex shrink-0 items-center gap-1.5 no-underline" data-astro-prefetch>
+          <a ref="logoLink" href="/" class="relative z-10 inline-flex shrink-0 items-center gap-1.5 no-underline" data-astro-prefetch>
             <span
               class="grid size-7.5 place-items-center rounded-[0.2rem] [background:linear-gradient(135deg,#f4f5f8_0%,#c4c8d0_55%,#9ea2ac_100%)] [box-shadow:inset_0_1px_1px_rgba(255,255,255,0.9),0_4px_7px_-1px_rgba(0,0,0,0.35)]"
               aria-hidden="true"
